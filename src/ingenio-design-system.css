@@ -1,0 +1,1341 @@
+/* ============================================================
+   INGENIO ISD — CONSTRUCT ERP / HUB
+   Design System · CSS Variables
+   v2.0 · Julio 2026
+   Compatible con: Figma Tokens, shadcn/ui, Tailwind CSS, Lovable
+   Sustituye por completo a v1.0 (Mayo 2026)
+   ============================================================ */
+
+/* ============================================================
+   IMPORTAR TIPOGRAFÍA
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   1. TOKENS GLOBALES (Light Mode — único modo en MVP)
+   ============================================================ */
+:root {
+
+  /* ----------------------------------------------------------
+     1.1 PALETA DE MARCA (nunca usar directamente en UI)
+     ---------------------------------------------------------- */
+  --brand-navy:        #002F53;  /* Azul oscuro Ingenio */
+  --brand-navy-deep:   #001e38;  /* Versión más oscura — sidebar modo dirección */
+  --brand-lime:        #B3FF00;  /* Verde lima — acento activo, SOLO modo dirección */
+  --brand-cyan-vivid:  #00FFF0;  /* Cian intenso */
+  --brand-cyan:        #00DFF7;  /* Cian — uso decorativo puntual (ya no se usa en sidebar) */
+  --brand-verde-bosque: #2E4F3E; /* Verde bosque — sidebar modo proyecto */
+
+  /* ----------------------------------------------------------
+     1.2 COLORES SEMÁNTICOS DE UI
+     ---------------------------------------------------------- */
+
+  /* Backgrounds */
+  --bg-app:            #F4F6F9;  /* Fondo general de la aplicación */
+  --bg-surface:        #FFFFFF;  /* Cards, modales, panels */
+  --bg-surface-hover:  #F8FAFC;  /* Hover sobre superficie blanca */
+  --bg-muted:          #F0F2F5;  /* Fondos secundarios, filas alternas */
+  --bg-info:           #E8F0F7;  /* Cajas informativas azul claro */
+  --bg-overlay:        rgba(0, 30, 56, 0.40); /* Overlay de modales */
+
+  /* Texto */
+  --text-primary:      #1A2035;  /* Texto principal */
+  --text-secondary:    #555555;  /* Etiquetas, texto secundario */
+  --text-muted:        #6B7280;  /* Placeholders, texto terciario */
+  --text-disabled:     #9199A8;  /* Campos y elementos deshabilitados */
+  --text-inverse:      #FFFFFF;  /* Texto sobre fondos oscuros */
+  --text-on-lime:      #001e38;  /* Texto sobre fondo lima (contraste) */
+
+  /* Bordes */
+  --border-default:    #E0E4ED;  /* Bordes de cards y tablas */
+  --border-strong:     #C0C4D0;  /* Bordes de inputs */
+  --border-focus:      #002F53;  /* Borde de campo activo/focus */
+  --border-error:      #C62828;  /* Borde de campo con error */
+
+  /* Interactivos — Primario */
+  --interactive-primary-bg:        #001e38;
+  --interactive-primary-text:      #B3FF00;
+  --interactive-primary-hover-bg:  #002F53;
+  --interactive-primary-active-bg: #001525;
+
+  /* Interactivos — Secundario */
+  --interactive-secondary-bg:        #FFFFFF;
+  --interactive-secondary-text:      #1A2035;
+  --interactive-secondary-border:    #C0C4D0;
+  --interactive-secondary-hover-bg:  #F4F6F9;
+
+  /* Interactivos — Ghost / Destructivo */
+  --interactive-ghost-text:         #555555;
+  --interactive-ghost-hover-bg:     #F4F6F9;
+  --interactive-danger-bg:          #C62828;
+  --interactive-danger-text:        #FFFFFF;
+  --interactive-danger-hover-bg:    #B71C1C;
+
+  /* Estados semánticos */
+  --state-success:        #1D6A3A;
+  --state-success-bg:     #E6F4EC;
+  --state-success-border: #A8D5B5;
+  --state-warning:        #E65100;
+  --state-warning-bg:     #FFF3E0;
+  --state-warning-border: #FFCC80;
+  --state-error:          #C62828;
+  --state-error-bg:       #FDECEA;
+  --state-error-border:   #EF9A9A;
+  --state-info:           #002F53;
+  --state-info-bg:        #E8F0F7;
+  --state-info-border:    #90BDD9;
+  --state-neutral:        #555555;
+  --state-neutral-bg:     #F0F2F5;
+  --state-neutral-border: #C0C4D0;
+
+  /* ----------------------------------------------------------
+     1.3 SIDEBAR — MODO DIRECCIÓN (corporativo, navy)
+     Se usa en: Inicio HUB general, Módulos (vista dirección),
+     Proyectos, Apps, Agentes, Datos Maestros, Configuración,
+     y en cualquier módulo abierto SIN un proyecto seleccionado.
+     ---------------------------------------------------------- */
+  --sidebar-bg:             #001e38;
+  --sidebar-text:           rgba(255, 255, 255, 0.70);
+  --sidebar-text-active:    #B3FF00;
+  --sidebar-item-hover-bg:  rgba(255, 255, 255, 0.06);
+  --sidebar-item-active-bg: rgba(179, 255, 0, 0.07);
+  --sidebar-item-active-border: #B3FF00;
+  --sidebar-border:         rgba(255, 255, 255, 0.08);
+  --sidebar-width:          240px;
+  --sidebar-width-collapsed: 60px;
+
+  /* ----------------------------------------------------------
+     1.4 SIDEBAR — MODO PROYECTO (verde bosque)
+     Se usa en: Inicio de proyecto, Módulos de proyecto, y en
+     cualquier módulo abierto DESDE dentro de un proyecto.
+     El color de fondo del sidebar es SIEMPRE el indicador de
+     modo — nunca cambia por capítulo ni por módulo.
+     ---------------------------------------------------------- */
+  --sidebar-proyecto-bg:                 #2E4F3E;
+  --sidebar-proyecto-text:               rgba(255, 255, 255, 0.70);
+  --sidebar-proyecto-text-active:        #FFFFFF;   /* Blanco, NUNCA lima en este modo */
+  --sidebar-proyecto-item-hover-bg:      rgba(255, 255, 255, 0.08);
+  --sidebar-proyecto-item-active-bg:     rgba(255, 255, 255, 0.14); /* Blanco translúcido, no pastilla sólida */
+  --sidebar-proyecto-item-active-border: #FFFFFF;
+  --sidebar-proyecto-border:             rgba(255, 255, 255, 0.12);
+  --sidebar-proyecto-text-muted:         rgba(255, 255, 255, 0.45);
+
+  /* Bloque "Obra activa" en la parte superior del sidebar de proyecto */
+  --sidebar-proyecto-nombre-color:       #FFFFFF; /* Nombre del proyecto, debajo del logo */
+  --sidebar-proyecto-badge-bg:           rgba(255, 255, 255, 0.14);
+  --sidebar-proyecto-badge-text:         #FFFFFF;
+
+  /* ----------------------------------------------------------
+     1.5 CAPÍTULOS DE MÓDULOS (paleta de 9 — jul 2026)
+     Un único par fondo/texto por capítulo. Se usa IGUAL en:
+     - Las cajas de la pantalla "Módulos" (dirección y proyecto)
+     - La franja superior del módulo cuando se abre
+     Nunca se inventa un tono nuevo para la franja: siempre el
+     mismo par que ya tiene la caja del capítulo.
+     Datos Maestros NO tiene color de capítulo (vive fijo en el
+     pie del sidebar, no es una caja de "Módulos").
+     ---------------------------------------------------------- */
+  --capitulo-estudios-ofertas-bg:     #C2E6FF;
+  --capitulo-estudios-ofertas-text:   #346180;
+
+  --capitulo-gestion-contractual-bg:   #FAECBD;
+  --capitulo-gestion-contractual-text: #806E34;
+
+  --capitulo-operaciones-bg:   #FFE0C2;
+  --capitulo-operaciones-text: #805934;
+
+  --capitulo-gestion-economica-bg:   #F2FFD6;
+  --capitulo-gestion-economica-text: #698039;
+
+  --capitulo-recursos-bg:   #C5D6FF;
+  --capitulo-recursos-text: #364B80;
+
+  --capitulo-cumplimiento-bg:   #EAE1FF;
+  --capitulo-cumplimiento-text: #4E3980;
+
+  --capitulo-documentacion-bg:   #E8DBC9;  /* Marrón/taupe — antes #F9E1A6, se confundía con Operaciones/G.Contractual */
+  --capitulo-documentacion-text: #806239;
+
+  --capitulo-riesgos-bg:   #FD9E96;
+  --capitulo-riesgos-text: #80261F;
+
+  --capitulo-comunicacion-bg:   #F5D6EC;
+  --capitulo-comunicacion-text: #80396B;
+
+  /* ----------------------------------------------------------
+     1.6 Tablas
+     ---------------------------------------------------------- */
+  --table-header-bg:   #F4F6F9;
+  --table-row-hover:   #F8FAFC;
+  --table-row-alt:     #F5F5F5;
+  --table-border:      #E0E4ED;
+  --table-cell-focus:  rgba(0, 47, 83, 0.08); /* Celda inline editable activa */
+
+  /* Gráficas (colores de serie para recharts) */
+  --chart-1:  #002F53;
+  --chart-2:  #00DFF7;
+  --chart-3:  #B3FF00;
+  --chart-4:  #1D6A3A;
+  --chart-5:  #E65100;
+  --chart-6:  #9199A8;
+
+  /* ----------------------------------------------------------
+     1.7 TIPOGRAFÍA
+     ---------------------------------------------------------- */
+  --font-family:        'Inter', Arial, sans-serif;
+
+  /* Escala de tamaños */
+  --text-xs:   11px;   /* Meta labels, etiquetas uppercase */
+  --text-sm:   13px;   /* Etiquetas de campo, texto en sidebar */
+  --text-base: 14px;   /* Texto en tablas, texto de formulario */
+  --text-md:   16px;   /* Texto base en escritorio */
+  --text-lg:   18px;   /* Subtítulos, valores KPI secundarios */
+  --text-xl:   20px;   /* H2 — Encabezados de sección */
+  --text-2xl:  24px;   /* H1 — Encabezados de página */
+  --text-3xl:  30px;   /* KPIs grandes en dashboard */
+  --text-4xl:  36px;   /* KPIs muy grandes */
+
+  /* Pesos */
+  --font-regular:   400;
+  --font-medium:    500;
+  --font-semibold:  600;
+  --font-bold:      700;
+
+  /* Altura de línea */
+  --leading-tight:   1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  /* Tracking */
+  --tracking-wide:  0.05em;   /* Uppercase meta labels */
+  --tracking-wider: 0.08em;   /* Uppercase badges de estado */
+
+  /* ----------------------------------------------------------
+     1.8 ESPACIADO (escala de 4px)
+     ---------------------------------------------------------- */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* Espaciados semánticos */
+  --page-padding-x:       32px;  /* Padding horizontal de contenido en escritorio */
+  --page-padding-y:       24px;  /* Padding vertical de contenido */
+  --page-padding-mobile:  16px;  /* Padding en móvil */
+  --section-gap:          24px;  /* Separación entre secciones */
+  --card-padding:         20px;  /* Padding interno de cards */
+  --card-padding-sm:      16px;  /* Padding interno de cards pequeñas */
+  --form-gap:             20px;  /* Separación entre campos de formulario */
+  --table-cell-px:        16px;  /* Padding horizontal de celda */
+  --table-cell-py:        12px;  /* Padding vertical de celda */
+  --sidebar-item-px:      16px;  /* Padding horizontal de item de sidebar */
+  --sidebar-item-py:      10px;  /* Padding vertical de item de sidebar */
+
+  /* ----------------------------------------------------------
+     1.9 BORDES Y RADIOS
+     ---------------------------------------------------------- */
+  --radius-sm:   4px;   /* Badges, chips pequeños */
+  --radius-md:   7px;   /* Botones, inputs */
+  --radius-lg:   9px;   /* Cards */
+  --radius-xl:   12px;  /* Cards grandes, modales */
+  --radius-full: 9999px; /* Pills, avatares */
+
+  --border-width-thin:   0.5px;  /* Bordes de cards */
+  --border-width-base:   1px;    /* Bordes de inputs */
+  --border-width-medium: 1.5px;  /* Borde de sidebar item activo */
+  --border-width-thick:  2.5px;  /* Acento izquierdo sidebar item activo (modo dirección) */
+
+  /* ----------------------------------------------------------
+     1.10 SOMBRAS
+     ---------------------------------------------------------- */
+  --shadow-xs:  0 1px 2px rgba(0, 30, 56, 0.04);
+  --shadow-sm:  0 1px 3px rgba(0, 30, 56, 0.08), 0 1px 2px rgba(0, 30, 56, 0.04);
+  --shadow-md:  0 4px 6px rgba(0, 30, 56, 0.06), 0 2px 4px rgba(0, 30, 56, 0.04);
+  --shadow-lg:  0 10px 15px rgba(0, 30, 56, 0.08), 0 4px 6px rgba(0, 30, 56, 0.04);
+  --shadow-xl:  0 20px 25px rgba(0, 30, 56, 0.10), 0 10px 10px rgba(0, 30, 56, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(0, 47, 83, 0.15); /* Ring de focus en inputs */
+
+  /* ----------------------------------------------------------
+     1.11 TRANSICIONES Y ANIMACIONES
+     ---------------------------------------------------------- */
+  --transition-fast:    100ms ease;
+  --transition-base:    150ms ease;
+  --transition-slow:    200ms ease;
+  --transition-sidebar: 250ms ease;
+
+  /* ----------------------------------------------------------
+     1.12 Z-INDEX
+     ---------------------------------------------------------- */
+  --z-below:    -1;
+  --z-base:      0;
+  --z-raised:   10;    /* Cards, botones flotantes */
+  --z-dropdown: 100;   /* Dropdowns, tooltips */
+  --z-sticky:   200;   /* Headers sticky, barra inferior móvil, franja de módulo */
+  --z-sidebar:  300;   /* Sidebar */
+  --z-modal:    400;   /* Modales */
+  --z-toast:    500;   /* Toast notifications */
+
+  /* ----------------------------------------------------------
+     1.13 LAYOUT — BREAKPOINTS (para uso en JS/Tailwind reference)
+     ---------------------------------------------------------- */
+  --bp-mobile:  768px;
+  --bp-tablet:  1024px;
+  --bp-desktop: 1440px;
+
+  /* ----------------------------------------------------------
+     1.14 TAMAÑOS TÁCTILES (WCAG 2.5.5)
+     ---------------------------------------------------------- */
+  --touch-target: 44px;  /* Mínimo táctil */
+  --touch-target-sm: 36px; /* Mínimo en escritorio */
+
+  /* ----------------------------------------------------------
+     1.15 COMPONENTES — HEADER
+     ---------------------------------------------------------- */
+  --header-height: 56px;
+  --header-bg:     #FFFFFF;
+  --header-border: #E0E4ED;
+
+  /* ----------------------------------------------------------
+     1.16 COMPONENTES — FRANJA SUPERIOR DE MÓDULO/APP/AGENTE
+     Aparece SOLO cuando se abre un módulo, app o agente concreto
+     (nunca en Inicio, Módulos o Proyectos). Usa el par de color
+     del capítulo (--capitulo-*-bg / --capitulo-*-text), igual
+     en modo dirección que en modo proyecto — lo único que cambia
+     entre modos es el color del SIDEBAR, no el de la franja.
+     ---------------------------------------------------------- */
+  --franja-height:       56px;
+  --franja-padding-x:    24px;
+  --franja-icon-size:    32px;
+  --franja-icon-radius:  var(--radius-md);
+  --franja-title-size:   16px;
+  --franja-title-weight: var(--font-bold);
+  --franja-subtitle-size: 12px;
+  --franja-subtitle-opacity: 0.75;
+
+  /* ----------------------------------------------------------
+     1.17 COMPONENTES — INPUTS
+     ---------------------------------------------------------- */
+  --input-height:     40px;
+  --input-height-sm:  32px;
+  --input-height-lg:  48px;  /* Móvil */
+  --input-bg:         #FFFFFF;
+  --input-bg-disabled: #F4F6F9;
+  --input-border:     #C0C4D0;
+  --input-border-focus: #002F53;
+  --input-border-error: #C62828;
+  --input-placeholder: #9199A8;
+  --input-padding-x:  12px;
+
+  /* ----------------------------------------------------------
+     1.18 COMPONENTES — BOTONES
+     ---------------------------------------------------------- */
+  --btn-height:       36px;
+  --btn-height-sm:    28px;
+  --btn-height-lg:    44px;  /* Mínimo táctil móvil */
+  --btn-padding-x:    16px;
+  --btn-padding-x-sm: 10px;
+  --btn-font-size:    13px;
+  --btn-font-weight:  500;
+
+  /* ----------------------------------------------------------
+     1.19 COMPONENTES — SIDEBAR (dimensiones comunes a ambos modos)
+     ---------------------------------------------------------- */
+  --sidebar-item-height: 40px;
+  --sidebar-icon-size:   18px;
+  --sidebar-logo-width:  70px;
+  --sidebar-avatar-size: 32px;
+
+  /* ----------------------------------------------------------
+     1.20 COMPONENTES — TARJETA DE MÓDULO (pantalla "Módulos")
+     ---------------------------------------------------------- */
+  --module-card-bg:          #FFFFFF;
+  --module-card-radius:      var(--radius-md);
+  --module-card-padding:     12px;
+  --module-card-icon-size:   36px;
+  --module-card-icon-radius: var(--radius-md);
+  --module-card-title-size:  14px;
+  --module-card-title-weight: var(--font-semibold);
+  --module-card-desc-size:   12px;
+  --module-card-desc-color:  var(--text-muted);
+  --module-chapter-radius:   var(--radius-lg);
+  --module-chapter-padding:  20px;
+  --module-chapter-accent-w: 3px; /* Barra vertical de color a la izquierda del título de capítulo */
+
+  /* ----------------------------------------------------------
+     1.21 COMPONENTES — BADGES DE ESTADO (E-11)
+     ---------------------------------------------------------- */
+  --badge-font-size:   11px;
+  --badge-font-weight: 600;
+  --badge-padding-x:   8px;
+  --badge-padding-y:   3px;
+  --badge-radius:      4px;
+
+  /* ----------------------------------------------------------
+     1.22 COMPONENTES — TABLAS
+     ---------------------------------------------------------- */
+  --table-header-font-size:   12px;
+  --table-header-font-weight: 600;
+  --table-row-height:         48px;
+  --table-row-height-dense:   40px;
+  --table-row-height-mobile:  auto; /* Cards en móvil */
+
+  /* ----------------------------------------------------------
+     1.23 COMPONENTES — TOAST (E-05)
+     ---------------------------------------------------------- */
+  --toast-width:         360px;
+  --toast-border-radius: var(--radius-lg);
+
+  /* ----------------------------------------------------------
+     1.24 COMPONENTES — BARRA INFERIOR MÓVIL
+     ---------------------------------------------------------- */
+  --bottom-bar-height:  64px;
+  --bottom-bar-bg:      #FFFFFF;
+  --bottom-bar-border:  #E0E4ED;
+  --fab-size:           48px;
+
+  /* ----------------------------------------------------------
+     1.25 LOGO Y BRANDING
+     ---------------------------------------------------------- */
+  --logo-client-max-w:  160px;
+  --logo-client-max-h:  48px;
+  --logo-group-max-w:   120px;
+  --logo-group-max-h:   36px;
+  --logo-digital-w:     70px;
+
+}
+
+/* ============================================================
+   2. RESET Y BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   3. TIPOGRAFÍA BASE
+   ============================================================ */
+h1, .h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+h2, .h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+h3, .h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+p {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.text-secondary { color: var(--text-secondary); }
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.meta-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   4. LAYOUT PRINCIPAL
+   ============================================================ */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+/* Sidebar — por defecto, modo dirección (navy). Añadir la clase
+   .app-sidebar--proyecto para conmutar a modo proyecto (verde bosque). */
+.app-sidebar {
+  width: var(--sidebar-width);
+  min-height: 100vh;
+  background-color: var(--sidebar-bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-sidebar);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-sidebar), transform var(--transition-sidebar);
+  flex-shrink: 0;
+}
+
+.app-sidebar--proyecto {
+  background-color: var(--sidebar-proyecto-bg);
+}
+
+.app-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition-sidebar);
+  max-width: calc(1440px - var(--sidebar-width));
+}
+
+.app-header {
+  height: var(--header-height);
+  background-color: var(--header-bg);
+  border-bottom: var(--border-width-thin) solid var(--header-border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--page-padding-x);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  gap: var(--space-4);
+}
+
+.app-content {
+  flex: 1;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  overflow-y: auto;
+}
+
+/* Sidebar colapsado (tablet) */
+.app-sidebar.collapsed { width: var(--sidebar-width-collapsed); }
+.app-sidebar.collapsed + .app-main { margin-left: var(--sidebar-width-collapsed); }
+
+/* ============================================================
+   5. SIDEBAR — COMPONENTES INTERNOS
+   ============================================================ */
+.sidebar-logo {
+  padding: var(--space-4) var(--sidebar-item-px);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.app-sidebar--proyecto .sidebar-logo {
+  border-bottom-color: var(--sidebar-proyecto-border);
+}
+
+.sidebar-logo img {
+  width: var(--logo-digital-w);
+  height: auto;
+  object-fit: contain;
+}
+
+/* Bloque "Obra activa" — SOLO en sidebar de modo proyecto,
+   justo debajo del logo, antes del menú de navegación. */
+.sidebar-obra-activa {
+  padding: var(--space-4) var(--sidebar-item-px);
+  border-bottom: 1px solid var(--sidebar-proyecto-border);
+}
+
+.sidebar-obra-activa .label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--sidebar-proyecto-text-muted);
+  margin-bottom: 4px;
+}
+
+.sidebar-obra-activa .nombre {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--sidebar-proyecto-nombre-color);
+  line-height: 1.3;
+}
+
+.sidebar-obra-activa .badge-estado {
+  display: inline-flex;
+  margin-top: var(--space-2);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  background-color: var(--sidebar-proyecto-badge-bg);
+  color: var(--sidebar-proyecto-badge-text);
+}
+
+.sidebar-back-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--sidebar-item-px);
+  font-size: var(--text-sm);
+  color: var(--sidebar-proyecto-text-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: var(--space-3) 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--sidebar-item-py) var(--sidebar-item-px);
+  height: var(--sidebar-item-height);
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+  border-left: var(--border-width-thick) solid transparent;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--sidebar-item-hover-bg);
+  color: rgba(255, 255, 255, 0.90);
+}
+
+/* Modo dirección: item activo en lima con acento izquierdo */
+.sidebar-nav-item.active {
+  color: var(--sidebar-text-active);
+  background-color: var(--sidebar-item-active-bg);
+  border-left-color: var(--sidebar-item-active-border);
+  font-weight: var(--font-semibold);
+}
+
+/* Modo proyecto: item activo en BLANCO, fondo translúcido, SIN lima */
+.app-sidebar--proyecto .sidebar-nav-item {
+  color: var(--sidebar-proyecto-text);
+}
+
+.app-sidebar--proyecto .sidebar-nav-item:hover {
+  background-color: var(--sidebar-proyecto-item-hover-bg);
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.app-sidebar--proyecto .sidebar-nav-item.active {
+  color: var(--sidebar-proyecto-text-active);
+  background-color: var(--sidebar-proyecto-item-active-bg);
+  border-left-color: var(--sidebar-proyecto-item-active-border);
+  font-weight: var(--font-semibold);
+}
+
+.sidebar-nav-item .nav-icon {
+  width: var(--sidebar-icon-size);
+  height: var(--sidebar-icon-size);
+  flex-shrink: 0;
+}
+
+.sidebar-section-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: rgba(255, 255, 255, 0.30);
+  padding: var(--space-4) var(--sidebar-item-px) var(--space-2);
+}
+
+.app-sidebar--proyecto .sidebar-section-label {
+  color: var(--sidebar-proyecto-text-muted);
+}
+
+.sidebar-footer {
+  padding: var(--space-4) var(--sidebar-item-px);
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.app-sidebar--proyecto .sidebar-footer {
+  border-top-color: var(--sidebar-proyecto-border);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.sidebar-user:hover { background-color: var(--sidebar-item-hover-bg); }
+
+.sidebar-avatar {
+  width: var(--sidebar-avatar-size);
+  height: var(--sidebar-avatar-size);
+  border-radius: var(--radius-full);
+  background-color: rgba(179, 255, 0, 0.12);
+  color: var(--brand-lime);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-user-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.2;
+}
+
+.sidebar-user-role {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.2;
+}
+
+/* ============================================================
+   6. FRANJA SUPERIOR DE MÓDULO / APP / AGENTE
+   Aparece solo dentro de la pestaña de un módulo, app o agente
+   concreto. Usa las variables --capitulo-*-bg/text del capítulo
+   correspondiente (ver sección 7). Idéntica en modo dirección
+   y en modo proyecto.
+   ============================================================ */
+.module-franja {
+  height: var(--franja-height);
+  padding: 0 var(--franja-padding-x);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.module-franja-icon {
+  width: var(--franja-icon-size);
+  height: var(--franja-icon-size);
+  border-radius: var(--franja-icon-radius);
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.module-franja-title {
+  font-size: var(--franja-title-size);
+  font-weight: var(--franja-title-weight);
+  line-height: 1.2;
+}
+
+.module-franja-subtitle {
+  font-size: var(--franja-subtitle-size);
+  opacity: var(--franja-subtitle-opacity);
+  line-height: 1.2;
+}
+
+/* Ejemplo de aplicación por capítulo — se generan pares análogos
+   para cada uno de los 9 capítulos definidos en la sección 7. */
+.module-franja--gestion-economica {
+  background-color: var(--capitulo-gestion-economica-bg);
+  color: var(--capitulo-gestion-economica-text);
+}
+
+/* ============================================================
+   7. CAPÍTULOS DE MÓDULOS — PANTALLA "MÓDULOS"
+   ============================================================ */
+.chapter-box {
+  border-radius: var(--module-chapter-radius);
+  padding: var(--module-chapter-padding);
+}
+
+.chapter-box-title {
+  display: flex;
+  align-items: center;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-4);
+  padding-left: 10px;
+  position: relative;
+}
+
+.chapter-box-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--module-chapter-accent-w);
+  border-radius: 2px;
+  background-color: currentColor;
+}
+
+.module-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background-color: var(--module-card-bg);
+  border-radius: var(--module-card-radius);
+  padding: var(--module-card-padding);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.module-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.module-card-icon {
+  width: var(--module-card-icon-size);
+  height: var(--module-card-icon-size);
+  border-radius: var(--module-card-icon-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.module-card-title {
+  font-size: var(--module-card-title-size);
+  font-weight: var(--module-card-title-weight);
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.module-card-description {
+  font-size: var(--module-card-desc-size);
+  color: var(--module-card-desc-color);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* Pares fondo/texto por capítulo, aplicados al contenedor .chapter-box
+   y heredados por .chapter-box-title (currentColor) */
+.chapter-box--estudios-ofertas     { background-color: var(--capitulo-estudios-ofertas-bg);     color: var(--capitulo-estudios-ofertas-text); }
+.chapter-box--gestion-contractual  { background-color: var(--capitulo-gestion-contractual-bg);  color: var(--capitulo-gestion-contractual-text); }
+.chapter-box--operaciones          { background-color: var(--capitulo-operaciones-bg);          color: var(--capitulo-operaciones-text); }
+.chapter-box--gestion-economica    { background-color: var(--capitulo-gestion-economica-bg);    color: var(--capitulo-gestion-economica-text); }
+.chapter-box--recursos             { background-color: var(--capitulo-recursos-bg);             color: var(--capitulo-recursos-text); }
+.chapter-box--cumplimiento         { background-color: var(--capitulo-cumplimiento-bg);         color: var(--capitulo-cumplimiento-text); }
+.chapter-box--documentacion        { background-color: var(--capitulo-documentacion-bg);        color: var(--capitulo-documentacion-text); }
+.chapter-box--riesgos              { background-color: var(--capitulo-riesgos-bg);              color: var(--capitulo-riesgos-text); }
+.chapter-box--comunicacion         { background-color: var(--capitulo-comunicacion-bg);          color: var(--capitulo-comunicacion-text); }
+
+/* ============================================================
+   8. BOTONES
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--btn-height);
+  padding: 0 var(--btn-padding-x);
+  font-family: var(--font-family);
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
+  line-height: 1;
+  border-radius: var(--radius-md);
+  border: var(--border-width-base) solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--transition-base), border-color var(--transition-base), opacity var(--transition-base), box-shadow var(--transition-base);
+  user-select: none;
+  min-width: var(--touch-target-sm);
+}
+
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+.btn-primary {
+  background-color: var(--interactive-primary-bg);
+  color: var(--interactive-primary-text);
+  border-color: var(--interactive-primary-bg);
+}
+.btn-primary:hover:not(:disabled) { background-color: var(--interactive-primary-hover-bg); border-color: var(--interactive-primary-hover-bg); }
+.btn-primary:active:not(:disabled) { background-color: var(--interactive-primary-active-bg); }
+
+.btn-secondary {
+  background-color: var(--interactive-secondary-bg);
+  color: var(--interactive-secondary-text);
+  border-color: var(--interactive-secondary-border);
+}
+.btn-secondary:hover:not(:disabled) { background-color: var(--interactive-secondary-hover-bg); }
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--interactive-ghost-text);
+  border-color: transparent;
+}
+.btn-ghost:hover:not(:disabled) { background-color: var(--interactive-ghost-hover-bg); }
+
+.btn-danger {
+  background-color: var(--interactive-danger-bg);
+  color: var(--interactive-danger-text);
+  border-color: var(--interactive-danger-bg);
+}
+.btn-danger:hover:not(:disabled) { background-color: var(--interactive-danger-hover-bg); }
+
+.btn-sm { height: var(--btn-height-sm); padding: 0 var(--btn-padding-x-sm); font-size: 12px; }
+.btn-lg { height: var(--btn-height-lg); padding: 0 var(--space-6); font-size: var(--text-base); min-width: var(--touch-target); }
+
+/* ============================================================
+   9. INPUTS Y FORMULARIOS
+   ============================================================ */
+.form-group { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.form-label { font-size: 13px; font-weight: var(--font-medium); color: var(--text-secondary); line-height: 1.4; }
+.form-label .required { color: var(--state-error); margin-left: 2px; }
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 var(--input-padding-x);
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  color: var(--text-primary);
+  background-color: var(--input-bg);
+  border: var(--border-width-base) solid var(--input-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  appearance: none;
+}
+
+.form-input::placeholder, .form-textarea::placeholder { color: var(--input-placeholder); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--input-border-focus); box-shadow: var(--shadow-focus); }
+.form-input.error, .form-select.error, .form-textarea.error { border-color: var(--input-border-error); }
+.form-input:disabled, .form-select:disabled, .form-textarea:disabled { background-color: var(--input-bg-disabled); color: var(--text-disabled); cursor: not-allowed; }
+
+.form-textarea { height: auto; min-height: 96px; padding: var(--space-3) var(--input-padding-x); resize: vertical; line-height: var(--leading-normal); }
+
+.form-textarea-voice { position: relative; }
+.form-textarea-voice .form-textarea { padding-bottom: 40px; }
+
+.btn-voice {
+  position: absolute;
+  bottom: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.btn-voice:hover { background-color: var(--state-info-bg); color: var(--state-info); }
+.btn-voice.recording { background-color: var(--state-error-bg); color: var(--state-error); border-color: var(--state-error-border); animation: pulse-record 1s infinite; }
+
+@keyframes pulse-record { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.form-error { font-size: var(--text-sm); color: var(--state-error); }
+.form-hint { font-size: var(--text-sm); color: var(--text-muted); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--form-gap); }
+.form-row.thirds { grid-template-columns: 1fr 1fr 1fr; }
+.form-section { display: flex; flex-direction: column; gap: var(--form-gap); }
+
+.autosave-indicator { font-size: var(--text-xs); color: var(--text-muted); display: flex; align-items: center; gap: var(--space-1); }
+
+/* ============================================================
+   10. CARDS
+   ============================================================ */
+.card {
+  background-color: var(--bg-surface);
+  border: var(--border-width-thin) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--card-padding);
+}
+.card-sm { padding: var(--card-padding-sm); border-radius: var(--radius-md); }
+.card-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.card-title { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--text-primary); }
+.card-body { color: var(--text-secondary); font-size: var(--text-sm); }
+
+.card-kpi { display: flex; flex-direction: column; gap: var(--space-2); }
+.card-kpi-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-kpi-value { font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--text-primary); line-height: 1; }
+.card-kpi-label { font-size: var(--text-sm); color: var(--text-secondary); font-weight: var(--font-medium); }
+.card-kpi-delta { font-size: var(--text-sm); font-weight: var(--font-medium); }
+.card-kpi-delta.positive { color: var(--state-success); }
+.card-kpi-delta.negative { color: var(--state-error); }
+.card-kpi-delta.neutral  { color: var(--text-muted); }
+
+/* ============================================================
+   11. TABLAS (E-03, E-07)
+   ============================================================ */
+.table-wrapper { overflow-x: auto; border-radius: var(--radius-lg); border: var(--border-width-thin) solid var(--table-border); background-color: var(--bg-surface); }
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+
+.table thead th {
+  background-color: var(--table-header-bg);
+  font-size: var(--table-header-font-size);
+  font-weight: var(--table-header-font-weight);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding: var(--space-3) var(--table-cell-px);
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.table thead th:hover { background-color: #EAECF0; }
+
+.table tbody tr { border-bottom: var(--border-width-thin) solid var(--table-border); transition: background-color var(--transition-fast); }
+.table tbody tr:last-child { border-bottom: none; }
+.table tbody tr:hover { background-color: var(--table-row-hover); }
+.table tbody tr.alt { background-color: var(--table-row-alt); }
+.table tbody td { padding: var(--table-cell-py) var(--table-cell-px); color: var(--text-primary); vertical-align: middle; }
+
+.table td.editable { cursor: pointer; position: relative; }
+.table td.editable:hover::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: var(--radius-sm);
+  background-color: var(--table-cell-focus);
+  pointer-events: none;
+}
+.table td.editable.active input { border: 1.5px solid var(--border-focus); border-radius: var(--radius-sm); box-shadow: var(--shadow-focus); }
+.table td.readonly { background-color: var(--bg-muted); color: var(--text-muted); cursor: default; }
+.table td.cell-error input { border-color: var(--state-error); }
+.table .cell-saved { font-size: var(--text-xs); color: var(--state-success); position: absolute; top: 2px; right: 4px; }
+
+.table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; flex-wrap: wrap; }
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-surface);
+  border: var(--border-width-base) solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  height: var(--input-height);
+  min-width: 280px;
+  color: var(--text-muted);
+}
+.table-search input { border: none; background: transparent; font-family: var(--font-family); font-size: var(--text-base); color: var(--text-primary); flex: 1; outline: none; }
+
+/* ============================================================
+   12. BADGES DE ESTADO (E-11)
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--badge-padding-y) var(--badge-padding-x);
+  font-size: var(--badge-font-size);
+  font-weight: var(--badge-font-weight);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  border-radius: var(--badge-radius);
+  white-space: nowrap;
+  line-height: 1;
+}
+.badge-success { background-color: var(--state-success-bg); color: var(--state-success); border: 0.5px solid var(--state-success-border); }
+.badge-warning { background-color: var(--state-warning-bg); color: var(--state-warning); border: 0.5px solid var(--state-warning-border); }
+.badge-error   { background-color: var(--state-error-bg);   color: var(--state-error);   border: 0.5px solid var(--state-error-border); }
+.badge-info    { background-color: var(--state-info-bg);    color: var(--state-info);    border: 0.5px solid var(--state-info-border); }
+.badge-neutral { background-color: var(--state-neutral-bg); color: var(--state-neutral); border: 0.5px solid var(--state-neutral-border); }
+
+/* ============================================================
+   13. BREADCRUMB (E-09)
+   ============================================================ */
+.breadcrumb { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+.breadcrumb-item { display: flex; align-items: center; gap: var(--space-2); }
+.breadcrumb-link { color: var(--text-muted); text-decoration: none; transition: color var(--transition-base); }
+.breadcrumb-link:hover { color: var(--text-primary); }
+.breadcrumb-current { color: var(--text-primary); font-weight: var(--font-medium); }
+
+/* ============================================================
+   14. BARRAS DE PROGRESO (E-13)
+   ============================================================ */
+.progress-bar { width: 100%; height: 8px; background-color: var(--bg-muted); border-radius: var(--radius-full); overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width var(--transition-slow); }
+.progress-bar-fill.on-track { background-color: var(--state-success); }
+.progress-bar-fill.over-budget { background-color: var(--state-warning); }
+.progress-bar-fill.critical { background-color: var(--state-error); }
+
+/* ============================================================
+   15. TOAST NOTIFICATIONS (E-05)
+   ============================================================ */
+.toast-container { position: fixed; top: var(--space-4); right: var(--space-4); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-2); pointer-events: none; }
+.toast {
+  width: var(--toast-width);
+  background-color: var(--bg-surface);
+  border-radius: var(--toast-border-radius);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-width-thin) solid var(--border-default);
+  padding: var(--space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  pointer-events: all;
+  border-left: 4px solid;
+  animation: toast-in 200ms ease;
+}
+@keyframes toast-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+.toast-success { border-left-color: var(--state-success); }
+.toast-warning { border-left-color: var(--state-warning); }
+.toast-error   { border-left-color: var(--state-error); }
+.toast-info    { border-left-color: var(--state-info); }
+.toast-title { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--text-primary); }
+.toast-message { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 2px; }
+
+/* ============================================================
+   16. CABECERA DE PÁGINA
+   ============================================================ */
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.page-title { font-size: var(--text-2xl); font-weight: var(--font-bold); color: var(--text-primary); line-height: var(--leading-tight); }
+.page-subtitle { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-1); }
+.page-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+
+/* ============================================================
+   17. TABS (navegación dentro de módulo — NUNCA duplicar la
+   navegación del sidebar; los tabs son para subsecciones que no
+   están en el sidebar, no un segundo menú)
+   ============================================================ */
+.tabs { display: flex; border-bottom: 1px solid var(--border-default); gap: 0; margin-bottom: var(--section-gap); }
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--transition-base), border-color var(--transition-base);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tab-item:hover { color: var(--text-primary); }
+.tab-item.active { color: var(--brand-navy); border-bottom-color: var(--brand-navy); font-weight: var(--font-semibold); }
+
+/* ============================================================
+   18. CHIPS / FILTROS ACTIVOS
+   ============================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+}
+.chip.active, .chip:hover { background-color: var(--interactive-primary-bg); color: var(--interactive-primary-text); border-color: var(--interactive-primary-bg); }
+
+/* ============================================================
+   19. DIVIDERS Y SEPARADORES
+   ============================================================ */
+.divider { border: none; border-top: var(--border-width-thin) solid var(--border-default); margin: var(--section-gap) 0; }
+
+/* ============================================================
+   20. BOTÓN DE IMAGEN (E-01)
+   ============================================================ */
+.btn-image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 96px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-muted);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+.btn-image-upload:hover { border-color: var(--brand-navy); background-color: var(--state-info-bg); color: var(--brand-navy); }
+.image-options-menu { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ============================================================
+   21. NOTIFICACIONES (E-14)
+   ============================================================ */
+.notification-bell {
+  position: relative;
+  width: var(--touch-target-sm);
+  height: var(--touch-target-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+.notification-bell:hover { background-color: var(--bg-muted); color: var(--text-primary); }
+.notification-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background-color: var(--state-error);
+  color: white;
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-surface);
+}
+
+/* ============================================================
+   22. BARRA INFERIOR MÓVIL
+   ============================================================ */
+.bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-bar-height);
+  background-color: var(--bottom-bar-bg);
+  border-top: 1px solid var(--bottom-bar-border);
+  z-index: var(--z-sticky);
+  padding: 0 var(--space-4);
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: flex-end;
+}
+.bottom-bar-btn { width: var(--fab-size); height: var(--fab-size); border-radius: var(--radius-full); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; border: none; font-family: var(--font-family); }
+.bottom-bar-btn-label { font-size: 8px; font-weight: var(--font-medium); color: #9199A8; line-height: 1; letter-spacing: 0.02em; }
+.bottom-bar-btn.primary { background-color: var(--interactive-primary-bg); color: var(--interactive-primary-text); }
+.bottom-bar-btn.secondary { background-color: var(--bg-surface); border: 1px solid var(--border-strong); color: var(--text-primary); }
+.bottom-bar-btn.ghost { background-color: var(--bg-muted); color: var(--text-muted); }
+
+/* ============================================================
+   23. RESPONSIVE — MOBILE FIRST OVERRIDES
+   ============================================================ */
+@media (max-width: 767px) {
+  .app-sidebar { transform: translateX(-100%); }
+  .app-sidebar.open { transform: translateX(0); }
+  .app-main { margin-left: 0; }
+  .app-content { padding: var(--page-padding-mobile); padding-bottom: calc(var(--bottom-bar-height) + var(--space-4)); }
+  .app-header { padding: 0 var(--page-padding-mobile); }
+  .bottom-bar { display: flex; }
+  .form-input, .form-select, .form-textarea { height: var(--input-height-lg); font-size: var(--text-md); }
+  .btn-full-mobile { width: 100%; }
+  .form-row, .form-row.thirds { grid-template-columns: 1fr; }
+  .table-mobile-cards .table { display: none; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .page-title { font-size: var(--text-xl); }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  /* En móvil, cada módulo/proyecto/app sustituye la pantalla entera
+     (no hay pestañas reales de navegador como concepto de UI) */
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-sidebar { width: var(--sidebar-width-collapsed); }
+  .app-sidebar .sidebar-nav-item span,
+  .app-sidebar .sidebar-section-label,
+  .app-sidebar .sidebar-obra-activa,
+  .app-sidebar .sidebar-user-name,
+  .app-sidebar .sidebar-user-role { display: none; }
+  .app-main { margin-left: var(--sidebar-width-collapsed); }
+  .app-content { padding: var(--page-padding-y) var(--space-6); }
+}
+
+/* ============================================================
+   24. GRIDS DE CONTENIDO
+   ============================================================ */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+.content-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+.content-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.chapter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); }
+
+@media (max-width: 1023px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-grid-2, .content-grid-3, .chapter-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   25. RESULTADOS ECONÓMICOS (E-12)
+   ============================================================ */
+.amount-positive { color: var(--state-success); font-weight: var(--font-medium); }
+.amount-negative { color: var(--state-error);   font-weight: var(--font-medium); }
+.amount-warning  { color: var(--state-warning);  font-weight: var(--font-medium); }
+
+/* ============================================================
+   26. ESTADOS DE CARGA Y VACÍO
+   ============================================================ */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-surface-hover) 50%, var(--bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); padding: var(--space-16) var(--space-8); text-align: center; color: var(--text-muted); }
+.empty-state-icon { width: 48px; height: 48px; opacity: 0.4; }
+.empty-state-title { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--text-secondary); }
+.empty-state-description { font-size: var(--text-sm); max-width: 320px; }
+
+/* ============================================================
+   FIN DEL ARCHIVO
+   v2.0 · Ingenio ISD · Construct ERP / HUB · Julio 2026
+   ============================================================ */
