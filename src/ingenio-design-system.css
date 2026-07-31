@@ -413,10 +413,10 @@
 /* ============================================================
    2. RESET Y BASE
    ============================================================ */
+/* Nota: el reset de márgenes/padding lo aporta Tailwind Preflight. Aquí no se
+   usa un reset universal porque anularía las utilidades de espaciado. */
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
