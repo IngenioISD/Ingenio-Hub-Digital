@@ -10,33 +10,160 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
+import { Route as AuthenticatedDatosMaestrosRouteImport } from './routes/_authenticated/datos-maestros'
+import { Route as AuthenticatedDigitalAgentesRouteImport } from './routes/_authenticated/digital.agentes'
+import { Route as AuthenticatedDigitalAppsRouteImport } from './routes/_authenticated/digital.apps'
+import { Route as AuthenticatedDigitalInicioRouteImport } from './routes/_authenticated/digital.inicio'
+import { Route as AuthenticatedHubInicioRouteImport } from './routes/_authenticated/hub.inicio'
+import { Route as AuthenticatedHubModulosRouteImport } from './routes/_authenticated/hub.modulos'
+import { Route as AuthenticatedHubProyectosRouteImport } from './routes/_authenticated/hub.proyectos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedConfiguracionRoute =
+  AuthenticatedConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDatosMaestrosRoute =
+  AuthenticatedDatosMaestrosRouteImport.update({
+    id: '/datos-maestros',
+    path: '/datos-maestros',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDigitalAgentesRoute =
+  AuthenticatedDigitalAgentesRouteImport.update({
+    id: '/digital/agentes',
+    path: '/digital/agentes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDigitalAppsRoute =
+  AuthenticatedDigitalAppsRouteImport.update({
+    id: '/digital/apps',
+    path: '/digital/apps',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDigitalInicioRoute =
+  AuthenticatedDigitalInicioRouteImport.update({
+    id: '/digital/inicio',
+    path: '/digital/inicio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHubInicioRoute = AuthenticatedHubInicioRouteImport.update({
+  id: '/hub/inicio',
+  path: '/hub/inicio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHubModulosRoute = AuthenticatedHubModulosRouteImport.update({
+  id: '/hub/modulos',
+  path: '/hub/modulos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHubProyectosRoute =
+  AuthenticatedHubProyectosRouteImport.update({
+    id: '/hub/proyectos',
+    path: '/hub/proyectos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
+  '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
+  '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
+  '/digital/apps': typeof AuthenticatedDigitalAppsRoute
+  '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
+  '/hub/inicio': typeof AuthenticatedHubInicioRoute
+  '/hub/modulos': typeof AuthenticatedHubModulosRoute
+  '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRoute
+  '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
+  '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
+  '/digital/apps': typeof AuthenticatedDigitalAppsRoute
+  '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
+  '/hub/inicio': typeof AuthenticatedHubInicioRoute
+  '/hub/modulos': typeof AuthenticatedHubModulosRoute
+  '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
+  '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
+  '/_authenticated/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
+  '/_authenticated/digital/apps': typeof AuthenticatedDigitalAppsRoute
+  '/_authenticated/digital/inicio': typeof AuthenticatedDigitalInicioRoute
+  '/_authenticated/hub/inicio': typeof AuthenticatedHubInicioRoute
+  '/_authenticated/hub/modulos': typeof AuthenticatedHubModulosRoute
+  '/_authenticated/hub/proyectos': typeof AuthenticatedHubProyectosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/configuracion'
+    | '/datos-maestros'
+    | '/digital/agentes'
+    | '/digital/apps'
+    | '/digital/inicio'
+    | '/hub/inicio'
+    | '/hub/modulos'
+    | '/hub/proyectos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/configuracion'
+    | '/datos-maestros'
+    | '/digital/agentes'
+    | '/digital/apps'
+    | '/digital/inicio'
+    | '/hub/inicio'
+    | '/hub/modulos'
+    | '/hub/proyectos'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/configuracion'
+    | '/_authenticated/datos-maestros'
+    | '/_authenticated/digital/agentes'
+    | '/_authenticated/digital/apps'
+    | '/_authenticated/digital/inicio'
+    | '/_authenticated/hub/inicio'
+    | '/_authenticated/hub/modulos'
+    | '/_authenticated/hub/proyectos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +175,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/configuracion': {
+      id: '/_authenticated/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof AuthenticatedConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/datos-maestros': {
+      id: '/_authenticated/datos-maestros'
+      path: '/datos-maestros'
+      fullPath: '/datos-maestros'
+      preLoaderRoute: typeof AuthenticatedDatosMaestrosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/digital/agentes': {
+      id: '/_authenticated/digital/agentes'
+      path: '/digital/agentes'
+      fullPath: '/digital/agentes'
+      preLoaderRoute: typeof AuthenticatedDigitalAgentesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/digital/apps': {
+      id: '/_authenticated/digital/apps'
+      path: '/digital/apps'
+      fullPath: '/digital/apps'
+      preLoaderRoute: typeof AuthenticatedDigitalAppsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/digital/inicio': {
+      id: '/_authenticated/digital/inicio'
+      path: '/digital/inicio'
+      fullPath: '/digital/inicio'
+      preLoaderRoute: typeof AuthenticatedDigitalInicioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hub/inicio': {
+      id: '/_authenticated/hub/inicio'
+      path: '/hub/inicio'
+      fullPath: '/hub/inicio'
+      preLoaderRoute: typeof AuthenticatedHubInicioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hub/modulos': {
+      id: '/_authenticated/hub/modulos'
+      path: '/hub/modulos'
+      fullPath: '/hub/modulos'
+      preLoaderRoute: typeof AuthenticatedHubModulosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hub/proyectos': {
+      id: '/_authenticated/hub/proyectos'
+      path: '/hub/proyectos'
+      fullPath: '/hub/proyectos'
+      preLoaderRoute: typeof AuthenticatedHubProyectosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
+  AuthenticatedDatosMaestrosRoute: typeof AuthenticatedDatosMaestrosRoute
+  AuthenticatedDigitalAgentesRoute: typeof AuthenticatedDigitalAgentesRoute
+  AuthenticatedDigitalAppsRoute: typeof AuthenticatedDigitalAppsRoute
+  AuthenticatedDigitalInicioRoute: typeof AuthenticatedDigitalInicioRoute
+  AuthenticatedHubInicioRoute: typeof AuthenticatedHubInicioRoute
+  AuthenticatedHubModulosRoute: typeof AuthenticatedHubModulosRoute
+  AuthenticatedHubProyectosRoute: typeof AuthenticatedHubProyectosRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
+  AuthenticatedDatosMaestrosRoute: AuthenticatedDatosMaestrosRoute,
+  AuthenticatedDigitalAgentesRoute: AuthenticatedDigitalAgentesRoute,
+  AuthenticatedDigitalAppsRoute: AuthenticatedDigitalAppsRoute,
+  AuthenticatedDigitalInicioRoute: AuthenticatedDigitalInicioRoute,
+  AuthenticatedHubInicioRoute: AuthenticatedHubInicioRoute,
+  AuthenticatedHubModulosRoute: AuthenticatedHubModulosRoute,
+  AuthenticatedHubProyectosRoute: AuthenticatedHubProyectosRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
