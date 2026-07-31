@@ -20,6 +20,7 @@ import { Route as AuthenticatedDigitalInicioRouteImport } from './routes/_authen
 import { Route as AuthenticatedHubInicioRouteImport } from './routes/_authenticated/hub.inicio'
 import { Route as AuthenticatedHubModulosRouteImport } from './routes/_authenticated/hub.modulos'
 import { Route as AuthenticatedHubProyectosRouteImport } from './routes/_authenticated/hub.proyectos'
+import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +82,12 @@ const AuthenticatedHubProyectosRoute =
     path: '/hub/proyectos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProyectoIdInicioRoute =
+  AuthenticatedProyectoIdInicioRouteImport.update({
+    id: '/proyecto/$id/inicio',
+    path: '/proyecto/$id/inicio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/_authenticated/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/_authenticated/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/hub/inicio'
     | '/hub/modulos'
     | '/hub/proyectos'
+    | '/proyecto/$id/inicio'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/hub/inicio'
     | '/hub/modulos'
     | '/hub/proyectos'
+    | '/proyecto/$id/inicio'
   id:
     | '__root__'
     | '/'
@@ -158,6 +170,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hub/inicio'
     | '/_authenticated/hub/modulos'
     | '/_authenticated/hub/proyectos'
+    | '/_authenticated/proyecto/$id/inicio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHubProyectosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/proyecto/$id/inicio': {
+      id: '/_authenticated/proyecto/$id/inicio'
+      path: '/proyecto/$id/inicio'
+      fullPath: '/proyecto/$id/inicio'
+      preLoaderRoute: typeof AuthenticatedProyectoIdInicioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -257,6 +277,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHubInicioRoute: typeof AuthenticatedHubInicioRoute
   AuthenticatedHubModulosRoute: typeof AuthenticatedHubModulosRoute
   AuthenticatedHubProyectosRoute: typeof AuthenticatedHubProyectosRoute
+  AuthenticatedProyectoIdInicioRoute: typeof AuthenticatedProyectoIdInicioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -268,6 +289,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHubInicioRoute: AuthenticatedHubInicioRoute,
   AuthenticatedHubModulosRoute: AuthenticatedHubModulosRoute,
   AuthenticatedHubProyectosRoute: AuthenticatedHubProyectosRoute,
+  AuthenticatedProyectoIdInicioRoute: AuthenticatedProyectoIdInicioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
