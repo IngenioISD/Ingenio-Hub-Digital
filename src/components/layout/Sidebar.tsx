@@ -1,14 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  Boxes,
-  Bot,
-  Database,
-  Home,
-  LayoutGrid,
-  LayoutList,
-  ArrowLeft,
-  type LucideIcon,
-} from "lucide-react";
+import { Boxes, Bot, Database, Home, LayoutGrid, LayoutList, ArrowLeft, type LucideIcon } from "lucide-react";
 
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
 
@@ -72,15 +63,9 @@ export function Sidebar({
 
   const bg = esDireccion ? "var(--sidebar-bg)" : "var(--sidebar-proyecto-bg)";
   const textColor = esDireccion ? "var(--sidebar-text)" : "var(--sidebar-proyecto-text)";
-  const activeText = esDireccion
-    ? "var(--sidebar-text-active)"
-    : "var(--sidebar-proyecto-text-active)";
-  const activeBg = esDireccion
-    ? "var(--sidebar-item-active-bg)"
-    : "var(--sidebar-proyecto-item-active-bg)";
-  const activeBorder = esDireccion
-    ? "var(--sidebar-item-active-border)"
-    : "var(--sidebar-proyecto-item-active-border)";
+  const activeText = esDireccion ? "var(--sidebar-text-active)" : "var(--sidebar-proyecto-text-active)";
+  const activeBg = esDireccion ? "var(--sidebar-item-active-bg)" : "var(--sidebar-proyecto-item-active-bg)";
+  const activeBorder = esDireccion ? "var(--sidebar-item-active-border)" : "var(--sidebar-proyecto-item-active-border)";
   const borderColor = esDireccion ? "var(--sidebar-border)" : "var(--sidebar-proyecto-border)";
 
   const menu = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
@@ -116,7 +101,7 @@ export function Sidebar({
         <img
           src={contexto === "digital" ? "/digital-sin-fondo.svg" : "/hub-sin-fondo.svg"}
           alt={contexto === "digital" ? "Ingenio Digital" : "Ingenio Hub"}
-          className="h-7 w-auto object-contain object-left"
+          className="h-10 w-auto object-contain object-left"
         />
         <div
           className="mt-1 hidden lg:block uppercase"
@@ -213,10 +198,7 @@ export function Sidebar({
             >
               {perfil?.nombreCompleto ?? "Cargando..."}
             </span>
-            <span
-              className="block truncate"
-              style={{ color: "rgba(255,255,255,0.55)", fontSize: "12px" }}
-            >
+            <span className="block truncate" style={{ color: "rgba(255,255,255,0.55)", fontSize: "12px" }}>
               {perfil?.rolEtiqueta ?? ""}
             </span>
           </span>
