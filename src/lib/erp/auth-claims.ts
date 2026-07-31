@@ -5,13 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
  * Nunca se toman decisiones a partir de nombres de rol, solo de estos campos.
  */
 export type IngenioClaims = {
-  empresa_id?: string;
-  rol_id?: string;
-  portal?: string;
-  nivel_aprobacion?: number;
-  es_corporativo?: boolean;
-  acceso_total_proyectos?: boolean;
-  grupo_id?: string;
+  empresa_id?: string | undefined;
+  rol_id?: string | undefined;
+  portal?: string | undefined;
+  nivel_aprobacion?: number | undefined;
+  es_corporativo?: boolean | undefined;
+  acceso_total_proyectos?: boolean | undefined;
+  grupo_id?: string | undefined;
 };
 
 /** Decodifica el payload de un JWT (base64url) sin dependencias externas. */
