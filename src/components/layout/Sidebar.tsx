@@ -103,17 +103,6 @@ export function Sidebar({
           alt={contexto === "digital" ? "Ingenio Digital" : "Ingenio Hub"}
           className="h-14 w-auto object-contain"
         />
-        <div
-          className="mt-1 hidden lg:block uppercase"
-          style={{
-            color: esDireccion ? "var(--brand-lime)" : "var(--text-inverse)",
-            fontSize: "var(--text-xs)",
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-          }}
-        >
-          {contexto === "digital" ? "Digital" : "Hub"}
-        </div>
       </div>
 
       {/* Bloque obra activa (modo proyecto) */}
