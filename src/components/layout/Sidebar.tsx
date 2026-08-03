@@ -97,11 +97,11 @@ export function Sidebar({
       style={{ backgroundColor: bg, fontFamily: "var(--font-family)" }}
     >
       {/* Cabecera / logo */}
-      <div className="px-4 py-5" style={{ borderBottom: `1px solid ${borderColor}` }}>
+      <div className="px-4 py-5 flex flex-col items-center" style={{ borderBottom: `1px solid ${borderColor}` }}>
         <img
           src={contexto === "digital" ? "/digital-sin-fondo.svg" : "/hub-sin-fondo.svg"}
           alt={contexto === "digital" ? "Ingenio Digital" : "Ingenio Hub"}
-          className="h-10 w-auto object-contain object-left"
+          className="h-14 w-auto object-contain"
         />
         <div
           className="mt-1 hidden lg:block uppercase"
