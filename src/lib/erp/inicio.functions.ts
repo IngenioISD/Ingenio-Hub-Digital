@@ -45,12 +45,20 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
 
     const { data: proyectos, error } = await supabase
       .from("proyectos")
-      .select(
-        "id, nombre, estado, provincia, tipo_obra, propiedad_id, proyectos_config(presupuesto_venta_estimado)",
-      )
+      .select("id, nombre, estado, provincia, tipo_obra, propiedad_id")
       .eq("cliente_id", clienteId)
       .eq("activo", true);
     if (error) throw error;
+
+    const { data: configs } = await supabase
+      .from("proyectos_config")
+      .select("proyecto_id, presupuesto_venta_estimado")
+      .eq("cliente_id", clienteId);
+
+    const presupuestos = new Map(
+      (configs ?? []).map((c) => [c.proyecto_id, c.presupuesto_venta_estimado]),
+    );
+
 
     const { data: propiedadesCliente } = await supabase
       .from("clientes_propiedades")
@@ -65,11 +73,9 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
     const legal = new Map((propiedades ?? []).map((p) => [p.id, p.nombre_legal]));
 
     return (proyectos ?? []).map((p) => {
-      const config = p.proyectos_config as unknown;
-      const configRow = Array.isArray(config) ? config[0] : config;
-      const presupuesto =
-        (configRow as { presupuesto_venta_estimado: number | null } | null | undefined)
-          ?.presupuesto_venta_estimado ?? null;
+      const presupuesto = presupuestos.get(p.id) ?? null;
+
+
 
       return {
         id: p.id,
