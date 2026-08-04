@@ -144,7 +144,7 @@ function DialogCapitulo({ capitulo }: { capitulo: CapituloCatalogo }) {
         </DialogHeader>
         <div className="grid min-h-0 grid-cols-1 gap-x-3 overflow-y-auto px-6 pb-6 md:grid-cols-2">
           {capitulo.modulos.map((modulo) => (
-            <TarjetaModulo key={modulo.titulo} modulo={modulo} />
+            <TarjetaModulo key={modulo.titulo} modulo={modulo} slugCapitulo={capitulo.slug} />
           ))}
         </div>
       </DialogContent>
