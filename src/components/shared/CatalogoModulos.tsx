@@ -1,4 +1,13 @@
-import { icons, type LucideIcon } from "lucide-react";
+import {
+  AlertCircle, AlertTriangle, ArrowLeftRight, Award, BarChart3, BookOpen,
+  Calendar, CalendarDays, Car, ClipboardCheck, ClipboardList, Clock, Cloud,
+  Copy, DoorOpen, FileCheck, FileSignature, FileText, FolderCheck, Gauge,
+  GitCompare, Globe, HardHat, History, Image, Landmark, Layers, Library,
+  ListChecks, ListTodo, Mail, Receipt, RefreshCw, Scale, Search, Settings,
+  ShieldAlert, ShieldCheck, ShoppingCart, Trash2, TrendingDown, TrendingUp,
+  Truck, Users, Wallet, Warehouse, Wrench, XCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +24,16 @@ import {
 
 type CatalogoModulosProps = {
   subtitulo: string;
+};
+
+const ICONOS_MODULOS: Record<ModuloCatalogo["icono"], LucideIcon> = {
+  AlertCircle, AlertTriangle, ArrowLeftRight, Award, BarChart3, BookOpen,
+  Calendar, CalendarDays, Car, ClipboardCheck, ClipboardList, Clock, Cloud,
+  Copy, DoorOpen, FileCheck, FileSignature, FileText, FolderCheck, Gauge,
+  GitCompare, Globe, HardHat, History, Image, Landmark, Layers, Library,
+  ListChecks, ListTodo, Mail, Receipt, RefreshCw, Scale, Search, Settings,
+  ShieldAlert, ShieldCheck, ShoppingCart, Trash2, TrendingDown, TrendingUp,
+  Truck, Users, Wallet, Warehouse, Wrench, XCircle,
 };
 
 export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
@@ -57,8 +76,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 }
 
 function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
-  const iconosCatalogo = icons as unknown as Record<ModuloCatalogo["icono"], LucideIcon>;
-  const IconoModulo = iconosCatalogo[modulo.icono];
+  const IconoModulo = ICONOS_MODULOS[modulo.icono];
 
   return (
     <article className="module-card cursor-default opacity-70 shadow-none hover:shadow-none">
