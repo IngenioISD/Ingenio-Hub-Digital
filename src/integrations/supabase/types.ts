@@ -1987,6 +1987,7 @@ export type Database = {
           longitud: number | null
           moneda: string
           pais_proyecto: string | null
+          presupuesto_venta_estimado: number | null
           proyecto_id: string
           zona_horaria: string | null
         }
@@ -2001,6 +2002,7 @@ export type Database = {
           longitud?: number | null
           moneda?: string
           pais_proyecto?: string | null
+          presupuesto_venta_estimado?: number | null
           proyecto_id: string
           zona_horaria?: string | null
         }
@@ -2015,6 +2017,7 @@ export type Database = {
           longitud?: number | null
           moneda?: string
           pais_proyecto?: string | null
+          presupuesto_venta_estimado?: number | null
           proyecto_id?: string
           zona_horaria?: string | null
         }
