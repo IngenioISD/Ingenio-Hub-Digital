@@ -46,22 +46,22 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Estudios y Ofertas",
         icono: "Search",
-        descripcion: "Generación de estudios de obra con distintas versiones y ofertas asociadas.",
+        descripcion: "Estudios de obra con versiones y ofertas asociadas.",
       },
       {
         titulo: "Histórico de Ofertas y Licitaciones",
         icono: "History",
-        descripcion: "Comparativo de licitaciones pasadas por competidor, tipo de obra, fecha y cliente.",
+        descripcion: "Comparativo de licitaciones por competidor y tipo de obra.",
       },
       {
         titulo: "Biblioteca de Costes",
         icono: "Library",
-        descripcion: "Costes actuales e históricos de material, maquinaria y mano de obra, por proveedor, región y año.",
+        descripcion: "Costes de material, maquinaria y mano de obra por proveedor.",
       },
       {
         titulo: "Catálogo de Proyectos Ejecutados",
         icono: "FolderCheck",
-        descripcion: "Experiencias y lecciones aprendidas de proyectos ya ejecutados.",
+        descripcion: "Experiencias y lecciones de proyectos ejecutados.",
       },
       {
         titulo: "Plantillas y Versiones",
@@ -77,17 +77,17 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Gestión de Contratos",
         icono: "FileSignature",
-        descripcion: "Control de contratos vigentes, fechas contractuales y litigios.",
+        descripcion: "Control de contratos vigentes y fechas clave.",
       },
       {
         titulo: "Órdenes de Cambio",
         icono: "RefreshCw",
-        descripcion: "Flujo de aprobación automático de órdenes de cambio.",
+        descripcion: "Flujo de aprobación de órdenes de cambio.",
       },
       {
         titulo: "Decisiones Pendientes",
         icono: "ListChecks",
-        descripcion: "Seguimiento de decisiones pendientes de aprobación del cliente.",
+        descripcion: "Decisiones pendientes de aprobación del cliente.",
       },
       {
         titulo: "Registro de Reclamaciones",
@@ -97,7 +97,7 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Comunicaciones con Cliente",
         icono: "Mail",
-        descripcion: "Repositorio de comunicaciones (email, chat, correo) con DF, propiedad y DO.",
+        descripcion: "Repositorio de comunicaciones con DF y propiedad.",
       },
       {
         titulo: "Actas de Reuniones con Cliente",
@@ -123,12 +123,12 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Planificación de Equipos y Tareas",
         icono: "Users",
-        descripcion: "Coordinación de cuadrillas según los tajos a ejecutar.",
+        descripcion: "Coordinación de cuadrillas por tajo.",
       },
       {
         titulo: "Diario de Obra",
         icono: "BookOpen",
-        descripcion: "Registro diario de trabajos ejecutados, general o por tajos.",
+        descripcion: "Registro diario de trabajos, general o por tajos.",
       },
       {
         titulo: "Partes de Trabajo",
@@ -138,12 +138,12 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Control de Albaranes",
         icono: "Truck",
-        descripcion: "Digitalización, aprobación e imputación a centro de costes de albaranes de obra.",
+        descripcion: "Digitalización e imputación de albaranes de obra.",
       },
       {
         titulo: "Repasos y Tareas Pendientes",
         icono: "ListTodo",
-        descripcion: "Repasos y deficiencias con avisos y flujo de aprobación.",
+        descripcion: "Repasos y deficiencias con flujo de aprobación.",
       },
       {
         titulo: "Reuniones de Obra",
@@ -164,32 +164,32 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Producción y Costes",
         icono: "BarChart3",
-        descripcion: "Control de la producción y gestión económica del proyecto.",
+        descripcion: "Control de producción y economía del proyecto.",
       },
       {
         titulo: "Certificaciones y Facturas a Clientes",
         icono: "Receipt",
-        descripcion: "Certifica y genera facturas a clientes de forma automática.",
+        descripcion: "Certifica y factura a clientes automáticamente.",
       },
       {
         titulo: "Ofertas y Comparativos",
         icono: "GitCompare",
-        descripcion: "Solicitud de ofertas a proveedores y comparativos.",
+        descripcion: "Solicitud de ofertas y comparativos a proveedores.",
       },
       {
         titulo: "Gestión de Compras",
         icono: "ShoppingCart",
-        descripcion: "Gestión de compras a subcontratistas y proveedores.",
+        descripcion: "Compras a subcontratistas y proveedores.",
       },
       {
         titulo: "Facturas de Proveedores y Subcontratas",
         icono: "FileText",
-        descripcion: "Recepción, aprobación y remesas de pago de facturas.",
+        descripcion: "Recepción, aprobación y pago de facturas.",
       },
       {
         titulo: "Cash-flow",
         icono: "Wallet",
-        descripcion: "Control de flujo de caja, previsión vs real.",
+        descripcion: "Flujo de caja: previsión frente a real.",
       },
       {
         titulo: "Gastos Generales",
@@ -199,7 +199,7 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Gastos de Personal",
         icono: "Users",
-        descripcion: "Digitalización e imputación de gastos de personal.",
+        descripcion: "Imputación de gastos de personal.",
       },
       {
         titulo: "Gastos Financieros",
@@ -209,7 +209,7 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Seguros y Avales",
         icono: "ShieldCheck",
-        descripcion: "Gestión de seguros y avales de todas las obras.",
+        descripcion: "Seguros y avales de todas las obras.",
       },
     ],
   },
@@ -220,37 +220,37 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Control de Acceso a Obra",
         icono: "DoorOpen",
-        descripcion: "Control digital de acceso, verificando documentación del operario.",
+        descripcion: "Control digital de acceso a obra.",
       },
       {
         titulo: "Control Horario",
         icono: "Clock",
-        descripcion: "Control digital de entrada y salida del personal.",
+        descripcion: "Entrada y salida digital del personal.",
       },
       {
         titulo: "Control de Almacenes",
         icono: "Warehouse",
-        descripcion: "Existencias, entradas y salidas de todos los almacenes y proyectos.",
+        descripcion: "Existencias y movimientos de almacenes.",
       },
       {
         titulo: "Control de Pequeña Maquinaria",
         icono: "Wrench",
-        descripcion: "Número y coste de maquinaria propia y alquilada.",
+        descripcion: "Coste de maquinaria propia y alquilada.",
       },
       {
         titulo: "Control de Camiones y Maquinaria Pesada",
         icono: "Truck",
-        descripcion: "Producción y costes de la flota pesada.",
+        descripcion: "Producción y coste de la flota pesada.",
       },
       {
         titulo: "Control de Flotas",
         icono: "Car",
-        descripcion: "Control de los vehículos de flota de cada proyecto.",
+        descripcion: "Vehículos de flota de cada proyecto.",
       },
       {
         titulo: "Gestión del Parque de Maquinaria",
         icono: "Settings",
-        descripcion: "Existencias, mantenimiento, coste horario y amortizaciones.",
+        descripcion: "Mantenimiento, coste y amortización.",
       },
     ],
   },
@@ -261,22 +261,22 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Documentación de Seguridad y Salud",
         icono: "ShieldCheck",
-        descripcion: "Control automatizado de documentación de S&S de proveedores y personal.",
+        descripcion: "Documentación de S&S de proveedores y personal.",
       },
       {
         titulo: "EPIs y Protecciones Colectivas",
         icono: "HardHat",
-        descripcion: "Recepción de EPIs e inspección/mantenimiento de protecciones colectivas.",
+        descripcion: "Recepción e inspección de EPIs y protecciones.",
       },
       {
         titulo: "Incidencias de Seguridad y Salud",
         icono: "AlertTriangle",
-        descripcion: "Creación y seguimiento de incidencias y accidentes.",
+        descripcion: "Seguimiento de incidencias y accidentes.",
       },
       {
         titulo: "Inspecciones de Calidad",
         icono: "ClipboardCheck",
-        descripcion: "Plan de Calidad de la obra, con seguimiento y aprobaciones.",
+        descripcion: "Plan de Calidad con seguimiento y aprobaciones.",
       },
       {
         titulo: "No Conformidades",
@@ -291,22 +291,22 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Gestión de Residuos",
         icono: "Trash2",
-        descripcion: "Gestión de residuos de obra y control de vertederos.",
+        descripcion: "Residuos de obra y control de vertederos.",
       },
       {
         titulo: "Permisos y Licencias",
         icono: "FileCheck",
-        descripcion: "Solicitudes y permisos/licencias aprobados del proyecto.",
+        descripcion: "Solicitudes y permisos aprobados del proyecto.",
       },
       {
         titulo: "Gestor de Auditorías",
         icono: "ClipboardList",
-        descripcion: "Docs, informes e inspecciones de auditorías (Calidad, Medioambiente, Seguridad).",
+        descripcion: "Docs e inspecciones de auditorías.",
       },
       {
         titulo: "Certificaciones ISO",
         icono: "Award",
-        descripcion: "Calidad, Seguridad y Salud, Medioambiente y Seguridad de la Información.",
+        descripcion: "Calidad, S&S, Medioambiente y Seg. Información.",
       },
     ],
   },
@@ -317,17 +317,17 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Planos",
         icono: "Layers",
-        descripcion: "Control de versiones y distribución de planos, con visor integrado.",
+        descripcion: "Versiones y distribución de planos, con visor.",
       },
       {
         titulo: "Fotos y Vídeos",
         icono: "Image",
-        descripcion: "Repositorio de fotos y vídeos por obra, con búsqueda por fecha.",
+        descripcion: "Fotos y vídeos por obra, con búsqueda por fecha.",
       },
       {
         titulo: "Gestor de Reportes",
         icono: "FileText",
-        descripcion: "Repositorio de todos los reportes oficiales de obra.",
+        descripcion: "Repositorio de reportes oficiales de obra.",
       },
     ],
   },
@@ -338,42 +338,42 @@ export const CATALOGO_MODULOS: readonly CapituloCatalogo[] = [
       {
         titulo: "Panel de Riesgos",
         icono: "Gauge",
-        descripcion: "Semáforo global, riesgos abiertos, impacto estimado y tendencia.",
+        descripcion: "Semáforo global e impacto de riesgos.",
       },
       {
         titulo: "Riesgo de Plazo",
         icono: "Clock",
-        descripcion: "Hitos comprometidos, retrasos y restricciones críticas.",
+        descripcion: "Hitos, retrasos y restricciones críticas.",
       },
       {
         titulo: "Riesgo de Costes",
         icono: "TrendingDown",
-        descripcion: "Sobrecostes, baja productividad, compras por encima de objetivo.",
+        descripcion: "Sobrecostes y baja productividad.",
       },
       {
         titulo: "Riesgo de Tipo de Cambio",
         icono: "ArrowLeftRight",
-        descripcion: "Variación de tipo de cambio en proyectos en moneda extranjera.",
+        descripcion: "Variación de tipo de cambio en moneda extranjera.",
       },
       {
         titulo: "Riesgos de Cliente",
         icono: "AlertCircle",
-        descripcion: "Órdenes de cambio sin aprobar, decisiones pendientes, impago o deuda.",
+        descripcion: "Órdenes sin aprobar, impago o deuda.",
       },
       {
         titulo: "Riesgo País",
         icono: "Globe",
-        descripcion: "Falta de estabilidad económica o jurídica del país del proyecto.",
+        descripcion: "Estabilidad económica y jurídica del país.",
       },
       {
         titulo: "Riesgos de Calidad",
         icono: "ShieldAlert",
-        descripcion: "Incidencias recurrentes, no conformidades abiertas, hallazgos críticos.",
+        descripcion: "Incidencias y no conformidades críticas.",
       },
       {
         titulo: "Riesgos PRL",
         icono: "HardHat",
-        descripcion: "Incidencias recurrentes, no conformidades abiertas, hallazgos críticos de PRL.",
+        descripcion: "Incidencias recurrentes de PRL.",
       },
     ],
   },
