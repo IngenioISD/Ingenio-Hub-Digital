@@ -59,7 +59,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
               </span>
             </div>
 
-            <div className="min-h-0 space-y-1.5">
+            <div className="flex min-h-0 flex-col gap-3">
               {capitulo.modulos.slice(0, 3).map((modulo) => (
                 <TarjetaModulo key={modulo.titulo} modulo={modulo} slugCapitulo={capitulo.slug} />
               ))}
@@ -142,7 +142,7 @@ function DialogCapitulo({ capitulo }: { capitulo: CapituloCatalogo }) {
             </span>
           </div>
         </DialogHeader>
-        <div className="grid min-h-0 grid-cols-1 gap-x-3 overflow-y-auto px-6 pb-6 md:grid-cols-2">
+        <div className="grid min-h-0 grid-cols-1 gap-3 overflow-y-auto px-6 pb-6 md:grid-cols-2">
           {capitulo.modulos.map((modulo) => (
             <TarjetaModulo key={modulo.titulo} modulo={modulo} slugCapitulo={capitulo.slug} />
           ))}
