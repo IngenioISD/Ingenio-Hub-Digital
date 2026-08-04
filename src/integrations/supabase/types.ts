@@ -679,6 +679,76 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_comunidades_autonomas: {
+        Row: {
+          id: string
+          nombre: string
+          pais_id: string
+        }
+        Insert: {
+          id?: string
+          nombre: string
+          pais_id: string
+        }
+        Update: {
+          id?: string
+          nombre?: string
+          pais_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_comunidades_autonomas_pais_id_fkey"
+            columns: ["pais_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_paises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalogo_paises: {
+        Row: {
+          codigo_iso: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          codigo_iso?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          codigo_iso?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: []
+      }
+      catalogo_provincias: {
+        Row: {
+          comunidad_autonoma_id: string
+          id: string
+          nombre: string
+        }
+        Insert: {
+          comunidad_autonoma_id: string
+          id?: string
+          nombre: string
+        }
+        Update: {
+          comunidad_autonoma_id?: string
+          id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogo_provincias_comunidad_autonoma_id_fkey"
+            columns: ["comunidad_autonoma_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_comunidades_autonomas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cliente_modulos: {
         Row: {
           activo: boolean | null
@@ -1900,6 +1970,7 @@ export type Database = {
           propiedad_id: string
           propiedad_nif: string | null
           provincia: string | null
+          provincia_id: string | null
           tipo_obra: string | null
           tipo_via: string | null
         }
@@ -1924,6 +1995,7 @@ export type Database = {
           propiedad_id: string
           propiedad_nif?: string | null
           provincia?: string | null
+          provincia_id?: string | null
           tipo_obra?: string | null
           tipo_via?: string | null
         }
@@ -1948,6 +2020,7 @@ export type Database = {
           propiedad_id?: string
           propiedad_nif?: string | null
           provincia?: string | null
+          provincia_id?: string | null
           tipo_obra?: string | null
           tipo_via?: string | null
         }
@@ -1971,6 +2044,13 @@ export type Database = {
             columns: ["propiedad_id"]
             isOneToOne: false
             referencedRelation: "propiedad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proyectos_provincia_id_fkey"
+            columns: ["provincia_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_provincias"
             referencedColumns: ["id"]
           },
         ]
@@ -2444,6 +2524,65 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zonas_operativas_cliente: {
+        Row: {
+          cliente_id: string
+          creado_en: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          cliente_id: string
+          creado_en?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          cliente_id?: string
+          creado_en?: string | null
+          id?: string
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zonas_operativas_cliente_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zonas_operativas_provincias: {
+        Row: {
+          provincia_id: string
+          zona_id: string
+        }
+        Insert: {
+          provincia_id: string
+          zona_id: string
+        }
+        Update: {
+          provincia_id?: string
+          zona_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zonas_operativas_provincias_provincia_id_fkey"
+            columns: ["provincia_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_provincias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zonas_operativas_provincias_zona_id_fkey"
+            columns: ["zona_id"]
+            isOneToOne: false
+            referencedRelation: "zonas_operativas_cliente"
             referencedColumns: ["id"]
           },
         ]
