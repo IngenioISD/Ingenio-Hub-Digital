@@ -6,9 +6,23 @@ type KpiCardProps = {
   subtitulo?: string | undefined;
   /** Dato aún no disponible: muestra "—" y el subtítulo en gris apagado */
   proximamente?: boolean;
+  /** Color semántico del valor destacado */
+  color?: "default" | "warning";
 };
 
-export function KpiCard({ titulo, valor, subtitulo, proximamente = false }: KpiCardProps) {
+export function KpiCard({
+  titulo,
+  valor,
+  subtitulo,
+  proximamente = false,
+  color = "default",
+}: KpiCardProps) {
+  const valorColor = proximamente
+    ? "var(--text-muted)"
+    : color === "warning"
+      ? "var(--state-warning)"
+      : "var(--text-primary)";
+
   return (
     <div
       style={{
@@ -35,7 +49,7 @@ export function KpiCard({ titulo, valor, subtitulo, proximamente = false }: KpiC
         style={{
           fontSize: "var(--text-2xl)",
           fontWeight: 700,
-          color: proximamente ? "var(--text-muted)" : "var(--text-primary)",
+          color: valorColor,
         }}
       >
         {proximamente ? "—" : valor}
@@ -48,3 +62,4 @@ export function KpiCard({ titulo, valor, subtitulo, proximamente = false }: KpiC
     </div>
   );
 }
+
