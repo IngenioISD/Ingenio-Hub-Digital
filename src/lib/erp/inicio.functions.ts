@@ -73,11 +73,9 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
     const legal = new Map((propiedades ?? []).map((p) => [p.id, p.nombre_legal]));
 
     return (proyectos ?? []).map((p) => {
-      const config = p.proyectos_config as unknown;
-      const configRow = Array.isArray(config) ? config[0] : config;
-      const presupuesto =
-        (configRow as { presupuesto_venta_estimado: number | null } | null | undefined)
-          ?.presupuesto_venta_estimado ?? null;
+      const presupuesto = presupuestos.get(p.id) ?? null;
+
+
 
       return {
         id: p.id,
