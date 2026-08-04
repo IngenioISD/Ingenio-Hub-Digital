@@ -8,13 +8,13 @@ import {
   Truck, Users, Wallet, Warehouse, Wrench, XCircle,
   type LucideIcon,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   CATALOGO_MODULOS,
@@ -96,17 +96,18 @@ function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
 
 function DialogCapitulo({ capitulo }: { capitulo: CapituloCatalogo }) {
   const restantes = capitulo.modulos.length - 3;
+  const [abierto, setAbierto] = useState(false);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="link"
-          className="h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
-        >
-          + {restantes} más →
-        </Button>
-      </DialogTrigger>
+    <Dialog open={abierto} onOpenChange={setAbierto}>
+      <Button
+        type="button"
+        variant="link"
+        className="h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
+        onClick={() => setAbierto(true)}
+      >
+        + {restantes} más →
+      </Button>
       <DialogContent
         className={`chapter-box--${capitulo.slug} max-h-[85vh] w-[calc(100%-2rem)] max-w-4xl overflow-hidden border-0 p-0 text-current sm:rounded-lg`}
       >
