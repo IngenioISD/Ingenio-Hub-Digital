@@ -50,7 +50,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
         {CATALOGO_MODULOS.map((capitulo) => (
           <section
             key={capitulo.slug}
-            className={`chapter-box chapter-box--${capitulo.slug} flex h-[32rem] min-w-0 flex-col`}
+            className={`chapter-box chapter-box--${capitulo.slug} flex h-[19rem] min-w-0 flex-col !p-4`}
           >
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
               <h2 className="chapter-box-title min-w-0">{capitulo.titulo}</h2>
@@ -59,13 +59,13 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
               </span>
             </div>
 
-            <div className="min-h-0">
+            <div className="min-h-0 space-y-1.5">
               {capitulo.modulos.slice(0, 3).map((modulo) => (
                 <TarjetaModulo key={modulo.titulo} modulo={modulo} compacta />
               ))}
             </div>
 
-            <div className="mt-auto flex min-h-8 items-end">
+            <div className="mt-auto flex min-h-5 items-end">
               {capitulo.modulos.length > 3 ? <DialogCapitulo capitulo={capitulo} /> : null}
             </div>
           </section>
@@ -75,21 +75,19 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
   );
 }
 
-function TarjetaModulo({ modulo, compacta = false }: { modulo: ModuloCatalogo; compacta?: boolean }) {
+function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo; compacta?: boolean }) {
   const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
-    <article className="module-card cursor-default opacity-70 shadow-none hover:shadow-none">
+    <article className="module-card relative !mb-0 h-[4.25rem] cursor-default !items-center !py-2 opacity-70 transition-[background-color,box-shadow] duration-(--transition-base) hover:!bg-(--bg-surface-hover) hover:shadow-(--shadow-sm)">
       <span className="module-card-icon" aria-hidden="true">
         <IconoModulo size={18} strokeWidth={1.8} />
       </span>
-      <div className="min-w-0 flex-1">
-        <h3 className={`module-card-title min-w-0 ${compacta ? "line-clamp-2" : ""}`}>{modulo.titulo}</h3>
-        <span className="badge badge-neutral mt-1 w-fit">En desarrollo</span>
-        <p className={`module-card-description ${compacta ? "line-clamp-3" : ""}`}>
-          {modulo.descripcion}
-        </p>
+      <div className="min-w-0 flex-1 pr-14">
+        <h3 className="module-card-title truncate">{modulo.titulo}</h3>
+        <p className="module-card-description line-clamp-2 text-muted">{modulo.descripcion}</p>
       </div>
+      <span className="badge badge-neutral absolute right-2 top-2 !px-1.5 !py-0.5 !text-[9px]">En desarrollo</span>
     </article>
   );
 }
