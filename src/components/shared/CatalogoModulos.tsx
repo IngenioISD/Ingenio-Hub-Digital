@@ -1,4 +1,4 @@
-import { DynamicIcon } from "lucide-react/dynamic";
+import { icons } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,10 +57,12 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 }
 
 function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
+  const IconoModulo = icons[modulo.icono];
+
   return (
     <article className="module-card cursor-default opacity-70 shadow-none hover:shadow-none">
       <span className="module-card-icon" aria-hidden="true">
-        <DynamicIcon name={modulo.icono} size={18} strokeWidth={1.8} />
+        <IconoModulo size={18} strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
