@@ -58,6 +58,7 @@ function Page() {
   const plazo = proyecto?.plazoEjecucionMeses;
   const fin = inicio && plazo ? sumarMeses(inicio, plazo) : null;
   const dias = fin ? diasHasta(fin) : null;
+  const retraso = dias !== null && dias < 0;
 
   const direccion =
     [
@@ -86,12 +87,20 @@ function Page() {
         <KpiCard titulo="Avance de obra" valor="—" subtitulo="Próximamente (Control de Costes)" proximamente />
         <KpiCard titulo="Coste ejecutado" valor="—" subtitulo="Próximamente (Control de Costes)" proximamente />
         <KpiCard
-          titulo="Días para entrega"
-          valor={dias ?? "—"}
-          subtitulo={fin ? `Fin previsto ${mesAnio(fin)}` : "Pendiente de adjudicación"}
+          titulo={retraso ? "Retraso sobre plazo" : "Días para entrega"}
+          valor={dias === null ? "—" : retraso ? Math.abs(dias) : dias}
+          subtitulo={
+            fin
+              ? retraso
+                ? `Debía finalizar en ${mesAnio(fin)}`
+                : `Fin previsto ${mesAnio(fin)}`
+              : "Pendiente de adjudicación"
+          }
           proximamente={dias === null}
+          color={retraso ? "warning" : "default"}
         />
       </div>
+
 
       <div
         className="mt-8 max-w-4xl"
