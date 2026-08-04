@@ -25,7 +25,8 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
               {capitulo.modulos.map((modulo) => (
                 <article
                   key={modulo.titulo}
-                  className="module-card cursor-default opacity-70 hover:shadow-none"
+                  className="module-card"
+                  style={{ cursor: "default", opacity: 0.7, boxShadow: "none" }}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-start justify-between gap-2">
