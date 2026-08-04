@@ -1,4 +1,4 @@
-import { icons } from "lucide-react";
+import { icons, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,7 +57,8 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 }
 
 function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
-  const IconoModulo = icons[modulo.icono];
+  const iconosCatalogo = icons as unknown as Record<ModuloCatalogo["icono"], LucideIcon>;
+  const IconoModulo = iconosCatalogo[modulo.icono];
 
   return (
     <article className="module-card cursor-default opacity-70 shadow-none hover:shadow-none">
