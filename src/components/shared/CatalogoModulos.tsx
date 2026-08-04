@@ -75,19 +75,42 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
   );
 }
 
-function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo; compacta?: boolean }) {
+function TarjetaModulo({
+  modulo,
+  slugCapitulo,
+}: {
+  modulo: ModuloCatalogo;
+  slugCapitulo: string;
+  compacta?: boolean;
+}) {
   const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
     <article className="module-card relative !mb-0 h-[4.25rem] !cursor-default !items-center !py-2 opacity-70 transition-[background-color,box-shadow] duration-(--transition-base) hover:!bg-(--bg-surface-hover) hover:shadow-(--shadow-sm)">
-      <span className="module-card-icon" aria-hidden="true">
-        <IconoModulo size={18} strokeWidth={1.8} />
+      <span
+        className="module-card-icon"
+        aria-hidden="true"
+        style={{ backgroundColor: "var(--bg-muted)" }}
+      >
+        <IconoModulo
+          size={18}
+          strokeWidth={1.8}
+          style={{ color: `var(--capitulo-${slugCapitulo}-text)` }}
+        />
       </span>
-      <div className="min-w-0 flex-1 pr-14">
-        <h3 className="module-card-title truncate">{modulo.titulo}</h3>
-        <p className="module-card-description line-clamp-2 text-muted">{modulo.descripcion}</p>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="module-card-title flex-1 truncate min-w-0">
+            {modulo.titulo}
+          </h3>
+          <span className="badge badge-neutral shrink-0 !px-1.5 !py-0.5 !text-[9px]">
+            En desarrollo
+          </span>
+        </div>
+        <p className="module-card-description line-clamp-2 text-muted">
+          {modulo.descripcion}
+        </p>
       </div>
-      <span className="badge badge-neutral absolute right-2 top-2 !px-1.5 !py-0.5 !text-[9px]">En desarrollo</span>
     </article>
   );
 }
