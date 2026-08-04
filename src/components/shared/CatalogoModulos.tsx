@@ -79,7 +79,7 @@ function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo; compacta?: boolean 
   const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
-    <article className="module-card relative !mb-0 h-[4.25rem] cursor-default !items-center !py-2 opacity-70 transition-[background-color,box-shadow] duration-(--transition-base) hover:!bg-(--bg-surface-hover) hover:shadow-(--shadow-sm)">
+    <article className="module-card relative !mb-0 h-[4.25rem] !cursor-default !items-center !py-2 opacity-70 transition-[background-color,box-shadow] duration-(--transition-base) hover:!bg-(--bg-surface-hover) hover:shadow-(--shadow-sm)">
       <span className="module-card-icon" aria-hidden="true">
         <IconoModulo size={18} strokeWidth={1.8} />
       </span>
