@@ -59,7 +59,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
               </span>
             </div>
 
-            <div className="min-h-0 space-y-1.5">
+            <div className="flex min-h-0 flex-col gap-3">
               {capitulo.modulos.slice(0, 3).map((modulo) => (
                 <TarjetaModulo key={modulo.titulo} modulo={modulo} slugCapitulo={capitulo.slug} />
               ))}
