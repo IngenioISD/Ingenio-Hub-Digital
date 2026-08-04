@@ -176,7 +176,7 @@ function DialogCapitulo({ capitulo }: { capitulo: CapituloCatalogo }) {
       <Button
         type="button"
         variant="link"
-        className="mt-3 h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
+        className="mt-5 h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
         onClick={() => setAbierto(true)}
       >
         + {restantes} más →
