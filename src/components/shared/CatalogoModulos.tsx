@@ -61,7 +61,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 
             <div className="min-h-0 space-y-1.5">
               {capitulo.modulos.slice(0, 3).map((modulo) => (
-                <TarjetaModulo key={modulo.titulo} modulo={modulo} compacta />
+                <TarjetaModulo key={modulo.titulo} modulo={modulo} slugCapitulo={capitulo.slug} />
               ))}
             </div>
 
