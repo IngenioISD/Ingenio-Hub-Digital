@@ -76,7 +76,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 }
 
 function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
-  const IconoModulo = ICONOS_MODULOS[modulo.icono];
+  const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
     <article className="module-card cursor-default opacity-70 shadow-none hover:shadow-none">
