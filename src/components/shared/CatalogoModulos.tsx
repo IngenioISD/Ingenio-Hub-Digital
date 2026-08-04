@@ -61,7 +61,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
 
             <div className="min-h-0">
               {capitulo.modulos.slice(0, 3).map((modulo) => (
-                <TarjetaModulo key={modulo.titulo} modulo={modulo} />
+                <TarjetaModulo key={modulo.titulo} modulo={modulo} compacta />
               ))}
             </div>
 
@@ -75,7 +75,7 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
   );
 }
 
-function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
+function TarjetaModulo({ modulo, compacta = false }: { modulo: ModuloCatalogo; compacta?: boolean }) {
   const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
@@ -84,11 +84,11 @@ function TarjetaModulo({ modulo }: { modulo: ModuloCatalogo }) {
         <IconoModulo size={18} strokeWidth={1.8} />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-          <h3 className="module-card-title min-w-0">{modulo.titulo}</h3>
-          <span className="badge badge-neutral shrink-0">En desarrollo</span>
-        </div>
-        <p className="module-card-description">{modulo.descripcion}</p>
+        <h3 className={`module-card-title min-w-0 ${compacta ? "line-clamp-2" : ""}`}>{modulo.titulo}</h3>
+        <span className="badge badge-neutral mt-1 w-fit">En desarrollo</span>
+        <p className={`module-card-description ${compacta ? "line-clamp-3" : ""}`}>
+          {modulo.descripcion}
+        </p>
       </div>
     </article>
   );
