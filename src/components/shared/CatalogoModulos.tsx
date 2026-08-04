@@ -1,39 +1,112 @@
 import {
-  AlertCircle, AlertTriangle, ArrowLeftRight, Award, BarChart3, BookOpen,
-  Calendar, CalendarDays, Car, ClipboardCheck, ClipboardList, Clock, Cloud,
-  Copy, DoorOpen, FileCheck, FileSignature, FileText, FolderCheck, Gauge,
-  GitCompare, Globe, HardHat, History, Image, Landmark, Layers, Library,
-  ListChecks, ListTodo, Mail, Receipt, RefreshCw, Scale, Search, Settings,
-  ShieldAlert, ShieldCheck, ShoppingCart, Trash2, TrendingDown, TrendingUp,
-  Truck, Users, Wallet, Warehouse, Wrench, XCircle,
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeftRight,
+  Award,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CalendarDays,
+  Car,
+  ClipboardCheck,
+  ClipboardList,
+  Clock,
+  Cloud,
+  Copy,
+  DoorOpen,
+  FileCheck,
+  FileSignature,
+  FileText,
+  FolderCheck,
+  Gauge,
+  GitCompare,
+  Globe,
+  HardHat,
+  History,
+  Image,
+  Landmark,
+  Layers,
+  Library,
+  ListChecks,
+  ListTodo,
+  Mail,
+  Receipt,
+  RefreshCw,
+  Scale,
+  Search,
+  Settings,
+  ShieldAlert,
+  ShieldCheck,
+  ShoppingCart,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Truck,
+  Users,
+  Wallet,
+  Warehouse,
+  Wrench,
+  XCircle,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  CATALOGO_MODULOS,
-  type CapituloCatalogo,
-  type ModuloCatalogo,
-} from "@/lib/erp/modulos-catalogo";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CATALOGO_MODULOS, type CapituloCatalogo, type ModuloCatalogo } from "@/lib/erp/modulos-catalogo";
 
 type CatalogoModulosProps = {
   subtitulo: string;
 };
 
 const ICONOS_MODULOS: Record<ModuloCatalogo["icono"], LucideIcon> = {
-  AlertCircle, AlertTriangle, ArrowLeftRight, Award, BarChart3, BookOpen,
-  Calendar, CalendarDays, Car, ClipboardCheck, ClipboardList, Clock, Cloud,
-  Copy, DoorOpen, FileCheck, FileSignature, FileText, FolderCheck, Gauge,
-  GitCompare, Globe, HardHat, History, Image, Landmark, Layers, Library,
-  ListChecks, ListTodo, Mail, Receipt, RefreshCw, Scale, Search, Settings,
-  ShieldAlert, ShieldCheck, ShoppingCart, Trash2, TrendingDown, TrendingUp,
-  Truck, Users, Wallet, Warehouse, Wrench, XCircle,
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeftRight,
+  Award,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CalendarDays,
+  Car,
+  ClipboardCheck,
+  ClipboardList,
+  Clock,
+  Cloud,
+  Copy,
+  DoorOpen,
+  FileCheck,
+  FileSignature,
+  FileText,
+  FolderCheck,
+  Gauge,
+  GitCompare,
+  Globe,
+  HardHat,
+  History,
+  Image,
+  Landmark,
+  Layers,
+  Library,
+  ListChecks,
+  ListTodo,
+  Mail,
+  Receipt,
+  RefreshCw,
+  Scale,
+  Search,
+  Settings,
+  ShieldAlert,
+  ShieldCheck,
+  ShoppingCart,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Truck,
+  Users,
+  Wallet,
+  Warehouse,
+  Wrench,
+  XCircle,
 };
 
 export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
@@ -75,41 +148,20 @@ export function CatalogoModulos({ subtitulo }: CatalogoModulosProps) {
   );
 }
 
-function TarjetaModulo({
-  modulo,
-  slugCapitulo,
-}: {
-  modulo: ModuloCatalogo;
-  slugCapitulo: string;
-  compacta?: boolean;
-}) {
+function TarjetaModulo({ modulo, slugCapitulo }: { modulo: ModuloCatalogo; slugCapitulo: string; compacta?: boolean }) {
   const IconoModulo = ICONOS_MODULOS[modulo.icono] ?? Search;
 
   return (
     <article className="module-card relative !mb-0 h-[4.25rem] !cursor-default !items-center !py-2 opacity-70 transition-[background-color,box-shadow] duration-(--transition-base) hover:!bg-(--bg-surface-hover) hover:shadow-(--shadow-sm)">
-      <span
-        className="module-card-icon"
-        aria-hidden="true"
-        style={{ backgroundColor: "var(--bg-muted)" }}
-      >
-        <IconoModulo
-          size={18}
-          strokeWidth={1.8}
-          style={{ color: `var(--capitulo-${slugCapitulo}-text)` }}
-        />
+      <span className="module-card-icon" aria-hidden="true" style={{ backgroundColor: "var(--bg-muted)" }}>
+        <IconoModulo size={18} strokeWidth={1.8} style={{ color: `var(--capitulo-${slugCapitulo}-text)` }} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="module-card-title flex-1 truncate min-w-0">
-            {modulo.titulo}
-          </h3>
-          <span className="badge badge-neutral shrink-0 !px-1.5 !py-0.5 !text-[9px]">
-            En desarrollo
-          </span>
+          <h3 className="module-card-title flex-1 truncate min-w-0">{modulo.titulo}</h3>
+          <span className="badge badge-neutral shrink-0 !px-1.5 !py-0.5 !text-[9px]">En desarrollo</span>
         </div>
-        <p className="module-card-description line-clamp-2 text-muted">
-          {modulo.descripcion}
-        </p>
+        <p className="module-card-description line-clamp-2 text-muted">{modulo.descripcion}</p>
       </div>
     </article>
   );
@@ -124,7 +176,7 @@ function DialogCapitulo({ capitulo }: { capitulo: CapituloCatalogo }) {
       <Button
         type="button"
         variant="link"
-        className="h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
+        className="mt-3 h-auto p-0 text-sm font-semibold text-current no-underline opacity-80 hover:opacity-100 hover:no-underline"
         onClick={() => setAbierto(true)}
       >
         + {restantes} más →
