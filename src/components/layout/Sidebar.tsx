@@ -93,7 +93,7 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex h-screen w-[60px] shrink-0 flex-col lg:w-[240px]"
+      className="sticky top-0 flex h-screen w-[60px] shrink-0 flex-col lg:w-[240px]"
       style={{ backgroundColor: bg, fontFamily: "var(--font-family)" }}
     >
       {/* Cabecera / logo */}
