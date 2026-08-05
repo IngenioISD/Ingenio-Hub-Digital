@@ -463,13 +463,13 @@ export function ProyectosPage() {
               </thead>
               <tbody>
                 {pageRows.map((row, index) => (
-                  <tr key={row.id} className={index % 2 === 1 ? "alt" : undefined}>
-                    <td className="font-semibold"><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.nombre}</Link></td>
-                    <td><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.propiedadNombre ?? "—"}</Link></td>
-                    <td><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}>{labelTipo(row.tipoObra)}</Link></td>
-                    <td><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.region ?? "—"}</Link></td>
-                    <td><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.presupuestoVenta == null ? "—" : formatoEuros(row.presupuestoVenta)}</Link></td>
-                    <td><Link className="block" to="/proyecto/$id/inicio" params={{ id: row.id }}><BadgeEstado estado={row.estado} /></Link></td>
+                  <tr key={row.id} className={index % 2 === 1 ? "bg-(--bg-muted)" : undefined}>
+                    <td className="!p-0 font-semibold"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.nombre}</Link></td>
+                    <td className="!p-0"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.propiedadNombre ?? "—"}</Link></td>
+                    <td className="!p-0"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}>{labelTipo(row.tipoObra)}</Link></td>
+                    <td className="!p-0"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.region ?? "—"}</Link></td>
+                    <td className="!p-0"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}>{row.presupuestoVenta == null ? "—" : formatoEuros(row.presupuestoVenta)}</Link></td>
+                    <td className="!p-0"><Link className="block px-(--table-cell-px) py-(--table-cell-py)" to="/proyecto/$id/inicio" params={{ id: row.id }}><BadgeEstado estado={row.estado} /></Link></td>
                   </tr>
                 ))}
               </tbody>
