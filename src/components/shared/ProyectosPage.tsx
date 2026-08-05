@@ -52,6 +52,14 @@ import type { EstadoProyecto, ProyectoListado } from "@/lib/erp/proyectos.types"
 const TODAS = "__todas__";
 const STORAGE_KEY = "ingenio:hub:proyectos:filtros";
 const ESTADOS: EstadoProyecto[] = ["en_estudio", "adjudicado", "perdido", "finalizado"];
+const EXPORT_HEADERS = [
+  "Proyecto",
+  "Propiedad",
+  "Tipo de obra",
+  "Región",
+  "Presupuesto de venta estimado",
+  "Estado",
+] as const;
 
 type SortKey = "nombre" | "propiedadNombre" | "tipoObra" | "region" | "presupuestoVenta" | "estado";
 type SortDirection = "asc" | "desc";
@@ -321,9 +329,8 @@ export function ProyectosPage() {
 
   function exportCsv() {
     const rows = exportRows(filtered);
-    const headers = Object.keys(rows[0] ?? exportRows([{ nombre: "", propiedadNombre: null, tipoObra: null, region: null, presupuestoVenta: null, estado: "", id: "", codigoEstudios: null, codigoObra: null }])[0]);
     const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-    const csv = [headers.map(escape), ...rows.map((row) => Object.values(row).map(escape))]
+    const csv = [EXPORT_HEADERS.map(escape), ...rows.map((row) => Object.values(row).map(escape))]
       .map((row) => row.join(";"))
       .join("\r\n");
     downloadBlob(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }), "proyectos-filtrados.csv");
