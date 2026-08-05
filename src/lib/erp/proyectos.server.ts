@@ -63,6 +63,7 @@ export async function readProyectosCliente(
     ),
     readAll((from, to) =>
       supabase.from("propiedad").select("id, nombre_legal").range(from, to),
+    ),
     readAll((from, to) =>
       supabase.from("catalogo_provincias").select("id, nombre").range(from, to),
     ),
