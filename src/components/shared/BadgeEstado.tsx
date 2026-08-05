@@ -2,6 +2,7 @@ const CLASES: Record<string, string> = {
   adjudicado: "badge badge-success",
   en_estudio: "badge badge-info",
   finalizado: "badge badge-neutral",
+  perdido: "badge badge-error",
   cancelado: "badge badge-error",
 };
 
@@ -9,6 +10,7 @@ const ETIQUETAS: Record<string, string> = {
   adjudicado: "Adjudicado",
   en_estudio: "En estudio",
   finalizado: "Finalizado",
+  perdido: "Perdido",
   cancelado: "Cancelado",
 };
 
