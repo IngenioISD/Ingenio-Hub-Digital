@@ -315,16 +315,24 @@ export function ProyectosPage() {
   }
 
   async function exportExcel() {
-    const XLSX = await import("xlsx");
-    const sheet = XLSX.utils.json_to_sheet(exportRows(filtered));
-    sheet["!cols"] = [{ wch: 34 }, { wch: 30 }, { wch: 20 }, { wch: 18 }, { wch: 28 }, { wch: 16 }];
-    for (let row = 2; row <= filtered.length + 1; row += 1) {
-      const cell = sheet[`E${row}`];
-      if (cell?.v != null) cell.z = "#,##0 [$€-es-ES]";
-    }
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheet, "Proyectos");
-    XLSX.writeFile(workbook, "proyectos-filtrados.xlsx");
+    const { default: writeXlsxFile } = await import("write-excel-file/browser");
+    const sheet = [
+      EXPORT_HEADERS.map((value) => ({ value, fontWeight: "bold" as const })),
+      ...filtered.map((row) => [
+        row.nombre,
+        row.propiedadNombre ?? "—",
+        labelTipo(row.tipoObra),
+        row.region ?? "—",
+        row.presupuestoVenta == null
+          ? "—"
+          : { value: row.presupuestoVenta, type: Number, format: "#,##0 [$€-es-ES]" },
+        etiquetaEstado(row.estado),
+      ]),
+    ];
+    await writeXlsxFile(sheet, {
+      sheet: "Proyectos",
+      columns: [{ width: 34 }, { width: 30 }, { width: 20 }, { width: 18 }, { width: 28 }, { width: 16 }],
+    }).toFile("proyectos-filtrados.xlsx");
   }
 
   function exportCsv() {
