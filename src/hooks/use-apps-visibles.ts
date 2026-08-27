@@ -25,15 +25,22 @@ export function useAppsVisibles(): AppVisible[] {
       const { data, error } = await supabase.from("apps_visibles_usuario").select("*");
       if (error || !data || cancelado) return;
 
-      setApps(
-        data.map((fila) => ({
-          id: fila.app_id ?? "",
+      // La vista devuelve una fila por rol con acceso: hay que deduplicar por app.
+      const unicas = new Map<string, AppVisible>();
+      for (const fila of data) {
+        const id = fila.app_id ?? "";
+        if (!id || unicas.has(id)) continue;
+        unicas.set(id, {
+          id,
           nombre: fila.nombre ?? "App",
           descripcion: fila.descripcion ?? null,
           icono: fila.icono ?? "LayoutGrid",
           urlBase: fila.url_base ?? null,
-        })),
-      );
+        });
+      }
+
+      setApps([...unicas.values()]);
+
     })();
 
     return () => {
