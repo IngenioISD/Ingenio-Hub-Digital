@@ -87,6 +87,19 @@
       "comunicacion":        { "bg": { "value": "#F5D6EC", "type": "color", "description": "Aproximado — verificar hex exacto de Figma cuando esté disponible" }, "text": { "value": "#80396B", "type": "color" } },
       "datos-maestros":      { "bg": { "value": null, "text": { "value": null } }, "description": "Sin color propio — no es una caja de capítulo, vive fijo en el pie del sidebar" }
     },
+    "apps": {
+      "description": "Par de color de las Apps de Ingenio Digital (tarjetas del catálogo y franja superior de una app abierta).",
+      "bg": { "value": "#BEF2E4", "type": "color" },
+      "text": { "value": "#0C6B54", "type": "color" }
+    },
+    "tipo-reunion": {
+      "description": "Badges de tipo de reunión en la App Actas de Reunión. El badge de Estado (borrador/generada) NO usa color propio: reutiliza state.warning y state.success.",
+      "df":          { "bg": { "value": "#EEEDFE", "type": "color" }, "text": { "value": "#534AB7", "type": "color" } },
+      "propiedad":   { "bg": { "value": "#EAF3DE", "type": "color" }, "text": { "value": "#3B6D11", "type": "color" } },
+      "interna":     { "bg": { "value": "#E6F1FB", "type": "color" }, "text": { "value": "#185FA5", "type": "color" } },
+      "subcontrata": { "bg": { "value": "#FAEEDA", "type": "color" }, "text": { "value": "#854F0B", "type": "color" } },
+      "otra":        { "bg": { "value": "#F1EFE8", "type": "color" }, "text": { "value": "#5F5E5A", "type": "color" } }
+    },
     "franja": {
       "description": "Franja superior de un módulo/app/agente abierto. Aparece SOLO dentro de esa pestaña (nunca en Inicio, Módulos o Proyectos). Usa siempre el mismo par bg/text que ya tiene el capítulo en la pantalla Módulos — nunca un tono nuevo con texto blanco.",
       "height": { "value": "56px", "type": "sizing" },

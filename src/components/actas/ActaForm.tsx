@@ -1,0 +1,650 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ImagePlus, Loader2, Save, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
+
+import { MicButton } from "@/components/mic-button";
+import { SignaturePad } from "@/components/signature-pad";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  BUCKET_FIRMAS,
+  BUCKET_IMAGENES,
+  aDatetimeLocal,
+  dataUrlToBlob,
+  urlFirmada,
+} from "@/lib/actas/actas";
+
+type Proyecto = { id: string; nombre: string; codigo_obra: string | null };
+type TipoReunion = { codigo: string; etiqueta: string };
+type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
+
+type ImagenExistente = { id: string; url: string; preview: string | null };
+
+function nombrePersona(p: Persona) {
+  return [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ");
+}
+
+export function ActaForm({ actaId }: { actaId?: string }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { usuarioCliente } = useAuth();
+  const clienteId = usuarioCliente?.cliente_id;
+
+  const [proyectoId, setProyectoId] = useState("");
+  const [fechaReunion, setFechaReunion] = useState(aDatetimeLocal(new Date().toISOString()));
+  const [lugar, setLugar] = useState("");
+  const [asunto, setAsunto] = useState("");
+  const [tipoReunion, setTipoReunion] = useState("");
+  const [tipoOtro, setTipoOtro] = useState("");
+  const [notas, setNotas] = useState("");
+  const [acciones, setAcciones] = useState("");
+  const [otrosAsistentes, setOtrosAsistentes] = useState("");
+  const [personalSeleccionado, setPersonalSeleccionado] = useState<string[]>([]);
+  const [participantesLibres, setParticipantesLibres] = useState<string[]>([]);
+  const [nuevoParticipante, setNuevoParticipante] = useState("");
+  const [imagenesNuevas, setImagenesNuevas] = useState<File[]>([]);
+  const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
+  const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
+  const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [cargado, setCargado] = useState(!actaId);
+
+  const { data: proyectos = [] } = useQuery<Proyecto[]>({
+    queryKey: ["actas", "proyectos", clienteId, usuarioCliente?.acceso_total_proyectos],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      let ids: string[] | null = null;
+      if (!usuarioCliente?.acceso_total_proyectos) {
+        const { data } = await supabase
+          .from("usuario_proyectos")
+          .select("proyecto_id")
+          .eq("user_id", usuarioCliente!.user_id)
+          .eq("activo", true);
+        ids = (data ?? []).map((f) => f.proyecto_id);
+      }
+      let q = supabase
+        .from("proyectos")
+        .select("id, nombre, codigo_obra")
+        .eq("cliente_id", clienteId!)
+        .order("nombre");
+      if (ids) q = q.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+      const { data } = await q;
+      return (data ?? []) as Proyecto[];
+    },
+  });
+
+  const { data: tipos = [] } = useQuery<TipoReunion[]>({
+    queryKey: ["actas", "tipos-reunion"],
+    staleTime: 10 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("catalogo")
+        .select("codigo, etiqueta")
+        .eq("categoria", "tipo_reunion")
+        .eq("activo", true)
+        .order("orden");
+      return (data ?? []) as TipoReunion[];
+    },
+  });
+
+  const esInterna = tipoReunion === "interna";
+  const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
+
+  const { data: personal = [] } = useQuery<Persona[]>({
+    queryKey: ["actas", "personal", clienteId],
+    enabled: !!clienteId && esInterna,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("personal")
+        .select("nif, nombre, apellido_1, apellido_2")
+        .eq("cliente_id", clienteId!)
+        .eq("activo", true)
+        .order("apellido_1");
+      return (data ?? []) as Persona[];
+    },
+  });
+
+  // Carga del acta existente
+  useEffect(() => {
+    if (!actaId) return;
+    let cancelado = false;
+
+    void (async () => {
+      const { data: acta } = await supabase
+        .from("actas")
+        .select("*")
+        .eq("id", actaId)
+        .maybeSingle();
+      if (!acta || cancelado) return;
+
+      setProyectoId(acta.proyecto_id ?? "");
+      setFechaReunion(aDatetimeLocal(acta.fecha_reunion));
+      setLugar(acta.lugar ?? "");
+      setAsunto(acta.asunto ?? "");
+      setTipoReunion(acta.tipo_reunion ?? "");
+      setTipoOtro(acta.tipo_otro_descripcion ?? "");
+      setNotas(acta.notas ?? "");
+      setAcciones(acta.acciones ?? "");
+      setOtrosAsistentes(acta.otros_asistentes ?? "");
+
+      const { data: participantes } = await supabase
+        .from("acta_participantes")
+        .select("tipo_participante, referencia_nif, nombre_libre")
+        .eq("acta_id", actaId);
+      setPersonalSeleccionado(
+        (participantes ?? [])
+          .filter((p) => p.tipo_participante === "interna" && p.referencia_nif)
+          .map((p) => p.referencia_nif as string),
+      );
+      setParticipantesLibres(
+        (participantes ?? [])
+          .filter((p) => p.tipo_participante !== "interna" && p.nombre_libre)
+          .map((p) => p.nombre_libre as string),
+      );
+
+      const { data: imagenes } = await supabase
+        .from("acta_imagenes")
+        .select("id, url")
+        .eq("acta_id", actaId)
+        .order("orden");
+      const conPreview = await Promise.all(
+        (imagenes ?? []).map(async (img) => ({
+          id: img.id,
+          url: img.url,
+          preview: await urlFirmada(BUCKET_IMAGENES, img.url),
+        })),
+      );
+      if (!cancelado) setImagenesExistentes(conPreview);
+
+      const { data: firma } = await supabase
+        .from("acta_firmas")
+        .select("firma_url")
+        .eq("acta_id", actaId)
+        .maybeSingle();
+      if (firma?.firma_url && !cancelado) {
+        setFirmaExistente(await urlFirmada(BUCKET_FIRMAS, firma.firma_url));
+      }
+
+      if (!cancelado) setCargado(true);
+    })();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [actaId]);
+
+  const nombresPersonal = useMemo(
+    () => new Map(personal.map((p) => [p.nif, nombrePersona(p)])),
+    [personal],
+  );
+
+  const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
+    setter(actual ? `${actual} ${texto}` : texto);
+
+  const guardar = async () => {
+    if (!clienteId || !usuarioCliente) {
+      toast.error("No se ha podido identificar tu empresa");
+      return;
+    }
+    if (!proyectoId || !asunto.trim() || !lugar.trim() || !tipoReunion || !notas.trim()) {
+      toast.error("Completa proyecto, asunto, lugar, tipo de reunión y notas");
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      // NIF del creador (actas.creado_por_nif es obligatorio)
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email ?? "";
+      const { data: yo } = await supabase
+        .from("personal")
+        .select("nif")
+        .eq("cliente_id", clienteId)
+        .eq("email", email)
+        .maybeSingle();
+
+      const payload = {
+        proyecto_id: proyectoId,
+        fecha_reunion: new Date(fechaReunion).toISOString(),
+        lugar: lugar.trim(),
+        asunto: asunto.trim(),
+        notas: notas.trim(),
+        tipo_reunion: tipoReunion,
+        tipo_otro_descripcion: esOtra ? tipoOtro.trim() || null : null,
+        acciones: acciones.trim() || null,
+        otros_asistentes: otrosAsistentes.trim() || null,
+      };
+
+      let id = actaId;
+      if (id) {
+        const { error } = await supabase.from("actas").update(payload).eq("id", id);
+        if (error) throw error;
+      } else {
+        if (!yo?.nif) {
+          throw new Error(
+            "Tu usuario no está dado de alta en la ficha de personal de la empresa (necesario para firmar el acta).",
+          );
+        }
+        const { data, error } = await supabase
+          .from("actas")
+          .insert({
+            ...payload,
+            cliente_id: clienteId,
+            creado_por_nif: yo.nif,
+            estado: "borrador",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        id = data.id;
+      }
+
+      // Participantes
+      await supabase.from("acta_participantes").delete().eq("acta_id", id!);
+      const filas = [
+        ...personalSeleccionado.map((nif) => ({
+          acta_id: id!,
+          tipo_participante: "interna",
+          referencia_nif: nif,
+          nombre_libre: null as string | null,
+        })),
+        ...participantesLibres.map((nombre) => ({
+          acta_id: id!,
+          tipo_participante: tipoReunion || "otro",
+          referencia_nif: null,
+          nombre_libre: nombre,
+        })),
+      ];
+      if (filas.length) await supabase.from("acta_participantes").insert(filas);
+
+      // Imágenes nuevas
+      let orden = imagenesExistentes.length;
+      for (const file of imagenesNuevas) {
+        const path = `${clienteId}/${id}/${crypto.randomUUID()}-${file.name}`;
+        const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
+        if (error) throw error;
+        await supabase.from("acta_imagenes").insert({ acta_id: id!, url: path, orden });
+        orden += 1;
+      }
+
+      // Firma
+      if (firmaDataUrl) {
+        const path = `${clienteId}/${id}/firma.png`;
+        const { error } = await supabase.storage
+          .from(BUCKET_FIRMAS)
+          .upload(path, dataUrlToBlob(firmaDataUrl), { upsert: true, contentType: "image/png" });
+        if (error) throw error;
+        await supabase.from("acta_firmas").delete().eq("acta_id", id!);
+        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: path });
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["actas"] });
+      toast.success(actaId ? "Acta actualizada" : "Acta creada");
+      void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id! } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se ha podido guardar el acta");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const borrarImagenExistente = async (imagen: ImagenExistente) => {
+    await supabase.from("acta_imagenes").delete().eq("id", imagen.id);
+    await supabase.storage.from(BUCKET_IMAGENES).remove([imagen.url]);
+    setImagenesExistentes((prev) => prev.filter((i) => i.id !== imagen.id));
+  };
+
+  if (!cargado) {
+    return (
+      <div className="flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+        <Loader2 className="animate-spin" size={16} /> Cargando acta…
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl">
+      <div className="card">
+        <div className="form-section">
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="proyecto">
+                Proyecto <span className="required">*</span>
+              </label>
+              <select
+                id="proyecto"
+                className="form-select"
+                value={proyectoId}
+                onChange={(e) => setProyectoId(e.target.value)}
+              >
+                <option value="">Selecciona un proyecto</option>
+                {proyectos.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.codigo_obra ? `${p.codigo_obra} · ` : ""}
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="fecha">
+                Fecha y hora <span className="required">*</span>
+              </label>
+              <input
+                id="fecha"
+                type="datetime-local"
+                className="form-input"
+                value={fechaReunion}
+                onChange={(e) => setFechaReunion(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="lugar">
+                Lugar <span className="required">*</span>
+              </label>
+              <input
+                id="lugar"
+                className="form-input"
+                value={lugar}
+                onChange={(e) => setLugar(e.target.value)}
+                placeholder="Oficina de obra, sala de reuniones…"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="tipo">
+                Tipo de reunión <span className="required">*</span>
+              </label>
+              <select
+                id="tipo"
+                className="form-select"
+                value={tipoReunion}
+                onChange={(e) => setTipoReunion(e.target.value)}
+              >
+                <option value="">Selecciona un tipo</option>
+                {tipos.map((t) => (
+                  <option key={t.codigo} value={t.codigo}>
+                    {t.etiqueta}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {esOtra ? (
+            <div className="form-group">
+              <label className="form-label" htmlFor="tipo-otro">
+                Describe el tipo de reunión
+              </label>
+              <input
+                id="tipo-otro"
+                className="form-input"
+                value={tipoOtro}
+                onChange={(e) => setTipoOtro(e.target.value)}
+              />
+            </div>
+          ) : null}
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="asunto">
+              Asunto <span className="required">*</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="asunto"
+                className="form-input"
+                value={asunto}
+                onChange={(e) => setAsunto(e.target.value)}
+              />
+              <MicButton onResult={anadirTexto(setAsunto, asunto)} title="Dictar asunto" />
+            </div>
+          </div>
+
+          {/* Asistentes */}
+          <div className="form-group">
+            <span className="form-label">Asistentes</span>
+            {esInterna ? (
+              <div
+                className="max-h-56 overflow-y-auto p-2"
+                style={{
+                  border: "var(--border-width-thin) solid var(--border-default)",
+                  borderRadius: "var(--radius-md)",
+                }}
+              >
+                {personal.length === 0 ? (
+                  <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                    No hay personal dado de alta.
+                  </span>
+                ) : (
+                  personal.map((p) => (
+                    <label key={p.nif} className="flex items-center gap-2 py-1">
+                      <input
+                        type="checkbox"
+                        checked={personalSeleccionado.includes(p.nif)}
+                        onChange={(e) =>
+                          setPersonalSeleccionado((prev) =>
+                            e.target.checked
+                              ? [...prev, p.nif]
+                              : prev.filter((n) => n !== p.nif),
+                          )
+                        }
+                      />
+                      <span style={{ fontSize: "var(--text-sm)" }}>{nombrePersona(p)}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    className="form-input"
+                    value={nuevoParticipante}
+                    placeholder="Nombre del asistente"
+                    onChange={(e) => setNuevoParticipante(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (nuevoParticipante.trim()) {
+                          setParticipantesLibres((prev) => [...prev, nuevoParticipante.trim()]);
+                          setNuevoParticipante("");
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      if (nuevoParticipante.trim()) {
+                        setParticipantesLibres((prev) => [...prev, nuevoParticipante.trim()]);
+                        setNuevoParticipante("");
+                      }
+                    }}
+                  >
+                    Añadir
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {participantesLibres.map((nombre, i) => (
+                    <span key={`${nombre}-${i}`} className="badge badge-neutral gap-1">
+                      {nombre}
+                      <button
+                        type="button"
+                        aria-label={`Quitar ${nombre}`}
+                        onClick={() =>
+                          setParticipantesLibres((prev) => prev.filter((_, j) => j !== i))
+                        }
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {esInterna && personalSeleccionado.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {personalSeleccionado.map((nif) => (
+                <span key={nif} className="badge badge-info">
+                  {nombresPersonal.get(nif) ?? nif}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="otros">
+              Otros asistentes
+            </label>
+            <input
+              id="otros"
+              className="form-input"
+              value={otrosAsistentes}
+              onChange={(e) => setOtrosAsistentes(e.target.value)}
+              placeholder="Personas ajenas al listado"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="notas">
+              Notas <span className="required">*</span>
+            </label>
+            <div className="form-textarea-voice">
+              <textarea
+                id="notas"
+                className="form-textarea"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+              />
+              <MicButton onResult={anadirTexto(setNotas, notas)} title="Dictar notas" />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="acciones">
+              Acciones a tomar
+            </label>
+            <div className="form-textarea-voice">
+              <textarea
+                id="acciones"
+                className="form-textarea"
+                value={acciones}
+                onChange={(e) => setAcciones(e.target.value)}
+              />
+              <MicButton onResult={anadirTexto(setAcciones, acciones)} title="Dictar acciones" />
+            </div>
+          </div>
+
+          {/* Imágenes */}
+          <div className="form-group">
+            <span className="form-label">Imágenes</span>
+            <div className="flex flex-wrap gap-3">
+              {imagenesExistentes.map((img) => (
+                <div key={img.id} className="relative">
+                  {img.preview ? (
+                    <img
+                      src={img.preview}
+                      alt="Imagen del acta"
+                      className="h-24 w-24 object-cover"
+                      style={{ borderRadius: "var(--radius-md)" }}
+                    />
+                  ) : null}
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm absolute -top-2 -right-2 !h-6 !w-6 !p-0"
+                    aria-label="Eliminar imagen"
+                    onClick={() => void borrarImagenExistente(img)}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {imagenesNuevas.map((file, i) => (
+                <div key={`${file.name}-${i}`} className="relative">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    className="h-24 w-24 object-cover"
+                    style={{ borderRadius: "var(--radius-md)" }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm absolute -top-2 -right-2 !h-6 !w-6 !p-0"
+                    aria-label="Quitar imagen"
+                    onClick={() => setImagenesNuevas((prev) => prev.filter((_, j) => j !== i))}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              <label className="btn btn-secondary cursor-pointer">
+                <ImagePlus size={16} /> Añadir fotos
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    setImagenesNuevas((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Firma */}
+          <div className="form-group">
+            <span className="form-label">Firma</span>
+            {firmaExistente && !firmaDataUrl ? (
+              <img
+                src={firmaExistente}
+                alt="Firma registrada"
+                className="h-24 w-auto"
+                style={{ borderRadius: "var(--radius-md)" }}
+              />
+            ) : null}
+            <SignaturePad onChange={setFirmaDataUrl} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          className="btn"
+          style={{
+            backgroundColor: "var(--brand-navy-deep)",
+            color: "var(--brand-lime)",
+            borderColor: "var(--brand-navy-deep)",
+          }}
+          disabled={guardando}
+          onClick={() => void guardar()}
+        >
+          {guardando ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+          {actaId ? "Guardar cambios" : "Crear acta"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() =>
+            actaId
+              ? void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } })
+              : void navigate({ to: "/digital/apps/actas-reunion" })
+          }
+        >
+          <Trash2 size={16} /> Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
