@@ -60,24 +60,22 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { getClienteApps, type AppCliente } from "@/lib/erp/apps.functions";
+import { useAppsVisibles, type AppVisible } from "@/hooks/use-apps-visibles";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/")({
   component: Page,
-  loader: async (): Promise<{ apps: AppCliente[] }> => ({
-    apps: await getClienteApps(),
-  }),
   head: () => ({
     meta: [
-      { title: "Apps · Ingenio Digital" },
-      { name: "description", content: "Catálogo de apps contratadas por tu empresa en Ingenio Digital." },
-      { property: "og:title", content: "Apps · Ingenio Digital" },
-      { property: "og:description", content: "Catálogo de apps contratadas por tu empresa en Ingenio Digital." },
+      { title: "Aplicaciones · Ingenio Digital" },
+      { name: "description", content: "Aplicaciones disponibles para tu rol en Ingenio Digital." },
+      { property: "og:title", content: "Aplicaciones · Ingenio Digital" },
+      { property: "og:description", content: "Aplicaciones disponibles para tu rol en Ingenio Digital." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
 });
+
 
 const ICONOS_APPS: Record<string, LucideIcon> = {
   LayoutGrid,

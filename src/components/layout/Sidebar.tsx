@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Boxes, Bot, Database, Home, LayoutGrid, LayoutList, ArrowLeft, type LucideIcon } from "lucide-react";
 
+import { useAppsVisibles } from "@/hooks/use-apps-visibles";
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
+
 
 export type SidebarMode = "direccion" | "proyecto";
 
@@ -59,6 +61,7 @@ export function Sidebar({
   volverLabel = "Proyectos",
 }: SidebarProps) {
   const perfil = usePerfilUsuario();
+  const appsVisibles = useAppsVisibles();
   const esDireccion = mode === "direccion";
 
   const bg = esDireccion ? "var(--sidebar-bg)" : "var(--sidebar-proyecto-bg)";
@@ -68,7 +71,11 @@ export function Sidebar({
   const activeBorder = esDireccion ? "var(--sidebar-item-active-border)" : "var(--sidebar-proyecto-item-active-border)";
   const borderColor = esDireccion ? "var(--sidebar-border)" : "var(--sidebar-proyecto-border)";
 
-  const menu = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
+  const menuBase = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
+  const menu = menuBase.filter(
+    (item) => item.key !== "apps" || appsVisibles.length > 0,
+  );
+
 
   const renderItem = (item: SidebarItem, isActive: boolean) => {
     const Icon = item.icon;
