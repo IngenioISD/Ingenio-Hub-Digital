@@ -822,6 +822,13 @@ export type Database = {
             foreignKeyName: "cliente_apps_app_id_fkey"
             columns: ["app_id"]
             isOneToOne: false
+            referencedRelation: "apps_visibles_usuario"
+            referencedColumns: ["app_id"]
+          },
+          {
+            foreignKeyName: "cliente_apps_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
             referencedRelation: "catalogo_apps"
             referencedColumns: ["id"]
           },
@@ -2694,7 +2701,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      apps_visibles_usuario: {
+        Row: {
+          app_id: string | null
+          cliente_id: string | null
+          codigo: string | null
+          descripcion: string | null
+          icono: string | null
+          nombre: string | null
+          rol_id: string | null
+          url_base: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_apps_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
