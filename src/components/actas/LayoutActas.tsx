@@ -15,7 +15,7 @@ export function LayoutActas({ subtitulo, children }: { subtitulo?: string; child
         colorTexto="var(--apps-text)"
         icono={ClipboardList}
         titulo="Actas de Reunión"
-        subtitulo={subtitulo}
+        {...(subtitulo ? { subtitulo } : {})}
       />
       <div className="mt-6">{children}</div>
     </>
