@@ -20,6 +20,7 @@ import { Route as AuthenticatedDigitalInicioRouteImport } from './routes/_authen
 import { Route as AuthenticatedHubInicioRouteImport } from './routes/_authenticated/hub.inicio'
 import { Route as AuthenticatedHubModulosRouteImport } from './routes/_authenticated/hub.modulos'
 import { Route as AuthenticatedHubProyectosRouteImport } from './routes/_authenticated/hub.proyectos'
+import { Route as AuthenticatedDigitalAppsIndexRouteImport } from './routes/_authenticated/digital.apps.index'
 import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 import { Route as AuthenticatedProyectoIdModulosRouteImport } from './routes/_authenticated/proyecto.$id.modulos'
 
@@ -83,6 +84,12 @@ const AuthenticatedHubProyectosRoute =
     path: '/hub/proyectos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDigitalAppsIndexRoute =
+  AuthenticatedDigitalAppsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDigitalAppsRoute,
+  } as any)
 const AuthenticatedProyectoIdInicioRoute =
   AuthenticatedProyectoIdInicioRouteImport.update({
     id: '/proyecto/$id/inicio',
@@ -102,13 +109,14 @@ export interface FileRoutesByFullPath {
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
-  '/digital/apps': typeof AuthenticatedDigitalAppsRoute
+  '/digital/apps': typeof AuthenticatedDigitalAppsRouteWithChildren
   '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
+  '/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,13 +124,13 @@ export interface FileRoutesByTo {
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
-  '/digital/apps': typeof AuthenticatedDigitalAppsRoute
   '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
+  '/digital/apps': typeof AuthenticatedDigitalAppsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,13 +140,14 @@ export interface FileRoutesById {
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
   '/_authenticated/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
-  '/_authenticated/digital/apps': typeof AuthenticatedDigitalAppsRoute
+  '/_authenticated/digital/apps': typeof AuthenticatedDigitalAppsRouteWithChildren
   '/_authenticated/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/_authenticated/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/_authenticated/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/_authenticated/hub/proyectos': typeof AuthenticatedHubProyectosRoute
   '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/_authenticated/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
+  '/_authenticated/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/hub/proyectos'
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
+    | '/digital/apps/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,13 +172,13 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/datos-maestros'
     | '/digital/agentes'
-    | '/digital/apps'
     | '/digital/inicio'
     | '/hub/inicio'
     | '/hub/modulos'
     | '/hub/proyectos'
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
+    | '/digital/apps'
   id:
     | '__root__'
     | '/'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hub/proyectos'
     | '/_authenticated/proyecto/$id/inicio'
     | '/_authenticated/proyecto/$id/modulos'
+    | '/_authenticated/digital/apps/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -271,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHubProyectosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/digital/apps/': {
+      id: '/_authenticated/digital/apps/'
+      path: '/'
+      fullPath: '/digital/apps/'
+      preLoaderRoute: typeof AuthenticatedDigitalAppsIndexRouteImport
+      parentRoute: typeof AuthenticatedDigitalAppsRoute
+    }
     '/_authenticated/proyecto/$id/inicio': {
       id: '/_authenticated/proyecto/$id/inicio'
       path: '/proyecto/$id/inicio'
@@ -288,11 +306,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedDigitalAppsRouteChildren {
+  AuthenticatedDigitalAppsIndexRoute: typeof AuthenticatedDigitalAppsIndexRoute
+}
+
+const AuthenticatedDigitalAppsRouteChildren: AuthenticatedDigitalAppsRouteChildren =
+  {
+    AuthenticatedDigitalAppsIndexRoute: AuthenticatedDigitalAppsIndexRoute,
+  }
+
+const AuthenticatedDigitalAppsRouteWithChildren =
+  AuthenticatedDigitalAppsRoute._addFileChildren(
+    AuthenticatedDigitalAppsRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
   AuthenticatedDatosMaestrosRoute: typeof AuthenticatedDatosMaestrosRoute
   AuthenticatedDigitalAgentesRoute: typeof AuthenticatedDigitalAgentesRoute
-  AuthenticatedDigitalAppsRoute: typeof AuthenticatedDigitalAppsRoute
+  AuthenticatedDigitalAppsRoute: typeof AuthenticatedDigitalAppsRouteWithChildren
   AuthenticatedDigitalInicioRoute: typeof AuthenticatedDigitalInicioRoute
   AuthenticatedHubInicioRoute: typeof AuthenticatedHubInicioRoute
   AuthenticatedHubModulosRoute: typeof AuthenticatedHubModulosRoute
@@ -305,7 +337,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
   AuthenticatedDatosMaestrosRoute: AuthenticatedDatosMaestrosRoute,
   AuthenticatedDigitalAgentesRoute: AuthenticatedDigitalAgentesRoute,
-  AuthenticatedDigitalAppsRoute: AuthenticatedDigitalAppsRoute,
+  AuthenticatedDigitalAppsRoute: AuthenticatedDigitalAppsRouteWithChildren,
   AuthenticatedDigitalInicioRoute: AuthenticatedDigitalInicioRoute,
   AuthenticatedHubInicioRoute: AuthenticatedHubInicioRoute,
   AuthenticatedHubModulosRoute: AuthenticatedHubModulosRoute,
