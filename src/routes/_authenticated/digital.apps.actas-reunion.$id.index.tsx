@@ -19,7 +19,7 @@ import {
 } from "@/lib/actas/actas";
 import { generarPdfActa } from "@/lib/actas/pdf";
 
-export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id")({
+export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id/")({
   component: Page,
   head: () => ({
     meta: [

@@ -24,6 +24,7 @@ import { Route as AuthenticatedDigitalAppsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 import { Route as AuthenticatedProyectoIdModulosRouteImport } from './routes/_authenticated/proyecto.$id.modulos'
 import { Route as AuthenticatedDigitalAppsActasReunionIndexRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.index'
+import { Route as AuthenticatedDigitalAppsActasReunionIdRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.$id'
 import { Route as AuthenticatedDigitalAppsActasReunionNewRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.new'
 import { Route as AuthenticatedDigitalAppsActasReunionIdEditRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.$id.edit'
 
@@ -111,6 +112,12 @@ const AuthenticatedDigitalAppsActasReunionIndexRoute =
     path: '/actas-reunion/',
     getParentRoute: () => AuthenticatedDigitalAppsRoute,
   } as any)
+const AuthenticatedDigitalAppsActasReunionIdRoute =
+  AuthenticatedDigitalAppsActasReunionIdRouteImport.update({
+    id: '/actas-reunion/$id',
+    path: '/actas-reunion/$id',
+    getParentRoute: () => AuthenticatedDigitalAppsRoute,
+  } as any)
 const AuthenticatedDigitalAppsActasReunionNewRoute =
   AuthenticatedDigitalAppsActasReunionNewRouteImport.update({
     id: '/actas-reunion/new',
@@ -119,9 +126,9 @@ const AuthenticatedDigitalAppsActasReunionNewRoute =
   } as any)
 const AuthenticatedDigitalAppsActasReunionIdEditRoute =
   AuthenticatedDigitalAppsActasReunionIdEditRouteImport.update({
-    id: '/actas-reunion/$id/edit',
-    path: '/actas-reunion/$id/edit',
-    getParentRoute: () => AuthenticatedDigitalAppsRoute,
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedDigitalAppsActasReunionIdRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/digital/apps/actas-reunion/$id': typeof AuthenticatedDigitalAppsActasReunionIdRouteWithChildren
   '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
@@ -155,6 +163,7 @@ export interface FileRoutesByTo {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps': typeof AuthenticatedDigitalAppsIndexRoute
+  '/digital/apps/actas-reunion/$id': typeof AuthenticatedDigitalAppsActasReunionIdRouteWithChildren
   '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/digital/apps/actas-reunion': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
@@ -175,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/_authenticated/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/_authenticated/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/_authenticated/digital/apps/actas-reunion/$id': typeof AuthenticatedDigitalAppsActasReunionIdRouteWithChildren
   '/_authenticated/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/_authenticated/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/_authenticated/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps/'
+    | '/digital/apps/actas-reunion/$id'
     | '/digital/apps/actas-reunion/new'
     | '/digital/apps/actas-reunion/'
     | '/digital/apps/actas-reunion/$id/edit'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps'
+    | '/digital/apps/actas-reunion/$id'
     | '/digital/apps/actas-reunion/new'
     | '/digital/apps/actas-reunion'
     | '/digital/apps/actas-reunion/$id/edit'
@@ -231,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proyecto/$id/inicio'
     | '/_authenticated/proyecto/$id/modulos'
     | '/_authenticated/digital/apps/'
+    | '/_authenticated/digital/apps/actas-reunion/$id'
     | '/_authenticated/digital/apps/actas-reunion/new'
     | '/_authenticated/digital/apps/actas-reunion/'
     | '/_authenticated/digital/apps/actas-reunion/$id/edit'
@@ -349,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDigitalAppsActasReunionIndexRouteImport
       parentRoute: typeof AuthenticatedDigitalAppsRoute
     }
+    '/_authenticated/digital/apps/actas-reunion/$id': {
+      id: '/_authenticated/digital/apps/actas-reunion/$id'
+      path: '/actas-reunion/$id'
+      fullPath: '/digital/apps/actas-reunion/$id'
+      preLoaderRoute: typeof AuthenticatedDigitalAppsActasReunionIdRouteImport
+      parentRoute: typeof AuthenticatedDigitalAppsRoute
+    }
     '/_authenticated/digital/apps/actas-reunion/new': {
       id: '/_authenticated/digital/apps/actas-reunion/new'
       path: '/actas-reunion/new'
@@ -358,30 +378,45 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/digital/apps/actas-reunion/$id/edit': {
       id: '/_authenticated/digital/apps/actas-reunion/$id/edit'
-      path: '/actas-reunion/$id/edit'
+      path: '/edit'
       fullPath: '/digital/apps/actas-reunion/$id/edit'
       preLoaderRoute: typeof AuthenticatedDigitalAppsActasReunionIdEditRouteImport
-      parentRoute: typeof AuthenticatedDigitalAppsRoute
+      parentRoute: typeof AuthenticatedDigitalAppsActasReunionIdRoute
     }
   }
 }
 
+interface AuthenticatedDigitalAppsActasReunionIdRouteChildren {
+  AuthenticatedDigitalAppsActasReunionIdEditRoute: typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
+}
+
+const AuthenticatedDigitalAppsActasReunionIdRouteChildren: AuthenticatedDigitalAppsActasReunionIdRouteChildren =
+  {
+    AuthenticatedDigitalAppsActasReunionIdEditRoute:
+      AuthenticatedDigitalAppsActasReunionIdEditRoute,
+  }
+
+const AuthenticatedDigitalAppsActasReunionIdRouteWithChildren =
+  AuthenticatedDigitalAppsActasReunionIdRoute._addFileChildren(
+    AuthenticatedDigitalAppsActasReunionIdRouteChildren,
+  )
+
 interface AuthenticatedDigitalAppsRouteChildren {
   AuthenticatedDigitalAppsIndexRoute: typeof AuthenticatedDigitalAppsIndexRoute
+  AuthenticatedDigitalAppsActasReunionIdRoute: typeof AuthenticatedDigitalAppsActasReunionIdRouteWithChildren
   AuthenticatedDigitalAppsActasReunionNewRoute: typeof AuthenticatedDigitalAppsActasReunionNewRoute
   AuthenticatedDigitalAppsActasReunionIndexRoute: typeof AuthenticatedDigitalAppsActasReunionIndexRoute
-  AuthenticatedDigitalAppsActasReunionIdEditRoute: typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
 }
 
 const AuthenticatedDigitalAppsRouteChildren: AuthenticatedDigitalAppsRouteChildren =
   {
     AuthenticatedDigitalAppsIndexRoute: AuthenticatedDigitalAppsIndexRoute,
+    AuthenticatedDigitalAppsActasReunionIdRoute:
+      AuthenticatedDigitalAppsActasReunionIdRouteWithChildren,
     AuthenticatedDigitalAppsActasReunionNewRoute:
       AuthenticatedDigitalAppsActasReunionNewRoute,
     AuthenticatedDigitalAppsActasReunionIndexRoute:
       AuthenticatedDigitalAppsActasReunionIndexRoute,
-    AuthenticatedDigitalAppsActasReunionIdEditRoute:
-      AuthenticatedDigitalAppsActasReunionIdEditRoute,
   }
 
 const AuthenticatedDigitalAppsRouteWithChildren =
