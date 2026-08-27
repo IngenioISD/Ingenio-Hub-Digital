@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -160,6 +160,7 @@ export type Database = {
           acciones: string | null
           actualizado_en: string | null
           asunto: string
+          cliente_id: string
           creado_en: string | null
           creado_por_nif: string
           email_enviado_en: string | null
@@ -180,6 +181,7 @@ export type Database = {
           acciones?: string | null
           actualizado_en?: string | null
           asunto: string
+          cliente_id: string
           creado_en?: string | null
           creado_por_nif: string
           email_enviado_en?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           acciones?: string | null
           actualizado_en?: string | null
           asunto?: string
+          cliente_id?: string
           creado_en?: string | null
           creado_por_nif?: string
           email_enviado_en?: string | null
@@ -217,6 +220,13 @@ export type Database = {
           tipo_reunion?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "actas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "actas_creado_por_nif_fkey"
             columns: ["creado_por_nif"]
@@ -634,6 +644,36 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_apps: {
+        Row: {
+          codigo: string
+          creado_en: string | null
+          descripcion: string | null
+          icono: string | null
+          id: string
+          nombre: string
+          url_base: string | null
+        }
+        Insert: {
+          codigo: string
+          creado_en?: string | null
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre: string
+          url_base?: string | null
+        }
+        Update: {
+          codigo?: string
+          creado_en?: string | null
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre?: string
+          url_base?: string | null
+        }
+        Relationships: []
+      }
       catalogo_campos: {
         Row: {
           activo_por_defecto: boolean | null
@@ -745,6 +785,51 @@ export type Database = {
             columns: ["comunidad_autonoma_id"]
             isOneToOne: false
             referencedRelation: "catalogo_comunidades_autonomas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cliente_apps: {
+        Row: {
+          activo: boolean | null
+          app_id: string
+          cliente_id: string
+          fecha_alta: string | null
+          fecha_baja: string | null
+          id: string
+          url_cliente: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          app_id: string
+          cliente_id: string
+          fecha_alta?: string | null
+          fecha_baja?: string | null
+          id?: string
+          url_cliente?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          app_id?: string
+          cliente_id?: string
+          fecha_alta?: string | null
+          fecha_baja?: string | null
+          id?: string
+          url_cliente?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_apps_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_apps_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]
@@ -981,6 +1066,8 @@ export type Database = {
           color_primario: string | null
           color_secundario: string | null
           creado_en: string | null
+          fecha_alta_digital: string | null
+          fecha_alta_hub: string | null
           formato_fecha: string | null
           formato_numero: string | null
           grupo_id: string | null
@@ -988,6 +1075,7 @@ export type Database = {
           logo_jpeg_url: string | null
           logo_png_url: string | null
           logo_url: string | null
+          modo: string
           moneda_defecto: string | null
           pais: string | null
           subdominio: string
@@ -1000,6 +1088,8 @@ export type Database = {
           color_primario?: string | null
           color_secundario?: string | null
           creado_en?: string | null
+          fecha_alta_digital?: string | null
+          fecha_alta_hub?: string | null
           formato_fecha?: string | null
           formato_numero?: string | null
           grupo_id?: string | null
@@ -1007,6 +1097,7 @@ export type Database = {
           logo_jpeg_url?: string | null
           logo_png_url?: string | null
           logo_url?: string | null
+          modo: string
           moneda_defecto?: string | null
           pais?: string | null
           subdominio: string
@@ -1019,6 +1110,8 @@ export type Database = {
           color_primario?: string | null
           color_secundario?: string | null
           creado_en?: string | null
+          fecha_alta_digital?: string | null
+          fecha_alta_hub?: string | null
           formato_fecha?: string | null
           formato_numero?: string | null
           grupo_id?: string | null
@@ -1026,6 +1119,7 @@ export type Database = {
           logo_jpeg_url?: string | null
           logo_png_url?: string | null
           logo_url?: string | null
+          modo?: string
           moneda_defecto?: string | null
           pais?: string | null
           subdominio?: string
@@ -1613,6 +1707,7 @@ export type Database = {
           activo: boolean | null
           apellido_1: string
           apellido_2: string | null
+          cliente_id: string
           email: string
           nif: string
           nombre: string
@@ -1622,6 +1717,7 @@ export type Database = {
           activo?: boolean | null
           apellido_1: string
           apellido_2?: string | null
+          cliente_id: string
           email: string
           nif: string
           nombre: string
@@ -1631,12 +1727,21 @@ export type Database = {
           activo?: boolean | null
           apellido_1?: string
           apellido_2?: string | null
+          cliente_id?: string
           email?: string
           nif?: string
           nombre?: string
           telefono?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "personal_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plantilla_detalle: {
         Row: {
