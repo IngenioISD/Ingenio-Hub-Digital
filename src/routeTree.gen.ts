@@ -24,6 +24,7 @@ import { Route as AuthenticatedDigitalAppsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 import { Route as AuthenticatedProyectoIdModulosRouteImport } from './routes/_authenticated/proyecto.$id.modulos'
 import { Route as AuthenticatedDigitalAppsActasReunionIndexRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.index'
+import { Route as AuthenticatedDigitalAppsActasReunionNewRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -109,6 +110,12 @@ const AuthenticatedDigitalAppsActasReunionIndexRoute =
     path: '/actas-reunion/',
     getParentRoute: () => AuthenticatedDigitalAppsRoute,
   } as any)
+const AuthenticatedDigitalAppsActasReunionNewRoute =
+  AuthenticatedDigitalAppsActasReunionNewRouteImport.update({
+    id: '/actas-reunion/new',
+    path: '/actas-reunion/new',
+    getParentRoute: () => AuthenticatedDigitalAppsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
 }
 export interface FileRoutesByTo {
@@ -139,6 +147,7 @@ export interface FileRoutesByTo {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps': typeof AuthenticatedDigitalAppsIndexRoute
+  '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/digital/apps/actas-reunion': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
 }
 export interface FileRoutesById {
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/_authenticated/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/_authenticated/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/_authenticated/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
   '/_authenticated/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
 }
 export interface FileRouteTypes {
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps/'
+    | '/digital/apps/actas-reunion/new'
     | '/digital/apps/actas-reunion/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps'
+    | '/digital/apps/actas-reunion/new'
     | '/digital/apps/actas-reunion'
   id:
     | '__root__'
@@ -207,6 +219,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proyecto/$id/inicio'
     | '/_authenticated/proyecto/$id/modulos'
     | '/_authenticated/digital/apps/'
+    | '/_authenticated/digital/apps/actas-reunion/new'
     | '/_authenticated/digital/apps/actas-reunion/'
   fileRoutesById: FileRoutesById
 }
@@ -323,17 +336,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDigitalAppsActasReunionIndexRouteImport
       parentRoute: typeof AuthenticatedDigitalAppsRoute
     }
+    '/_authenticated/digital/apps/actas-reunion/new': {
+      id: '/_authenticated/digital/apps/actas-reunion/new'
+      path: '/actas-reunion/new'
+      fullPath: '/digital/apps/actas-reunion/new'
+      preLoaderRoute: typeof AuthenticatedDigitalAppsActasReunionNewRouteImport
+      parentRoute: typeof AuthenticatedDigitalAppsRoute
+    }
   }
 }
 
 interface AuthenticatedDigitalAppsRouteChildren {
   AuthenticatedDigitalAppsIndexRoute: typeof AuthenticatedDigitalAppsIndexRoute
+  AuthenticatedDigitalAppsActasReunionNewRoute: typeof AuthenticatedDigitalAppsActasReunionNewRoute
   AuthenticatedDigitalAppsActasReunionIndexRoute: typeof AuthenticatedDigitalAppsActasReunionIndexRoute
 }
 
 const AuthenticatedDigitalAppsRouteChildren: AuthenticatedDigitalAppsRouteChildren =
   {
     AuthenticatedDigitalAppsIndexRoute: AuthenticatedDigitalAppsIndexRoute,
+    AuthenticatedDigitalAppsActasReunionNewRoute:
+      AuthenticatedDigitalAppsActasReunionNewRoute,
     AuthenticatedDigitalAppsActasReunionIndexRoute:
       AuthenticatedDigitalAppsActasReunionIndexRoute,
   }
