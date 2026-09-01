@@ -376,6 +376,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .maybeSingle();
 
       const payload = {
+        cliente_id: clienteId,
         proyecto_id: proyectoId,
         fecha_reunion: new Date(fechaReunion).toISOString(),
         lugar: lugar.trim(),
@@ -387,10 +388,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         otros_asistentes: otrosAsistentes.trim() || null,
       };
 
-      let id = actaId;
-      if (id) {
-        const { error } = await supabase.from("actas").update({ ...payload, estado }).eq("id", id);
+      let id: string;
+      if (actaId) {
+        const { data, error } = await supabase
+          .from("actas")
+          .update({ ...payload, estado })
+          .eq("id", actaId)
+          .eq("cliente_id", clienteId)
+          .select("id")
+          .single();
         if (error) throw error;
+        id = data.id;
       } else {
         if (!yo?.nif) {
           throw new Error(
@@ -401,33 +409,37 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .from("actas")
           .insert({
             ...payload,
-            cliente_id: clienteId,
             creado_por_nif: yo.nif,
             estado,
           })
           .select("id")
           .single();
         if (error) throw error;
+        if (!data?.id) throw new Error("Supabase no ha devuelto el identificador del acta");
         id = data.id;
       }
 
+
       // Participantes
-      await supabase.from("acta_participantes").delete().eq("acta_id", id!);
+      await supabase.from("acta_participantes").delete().eq("acta_id", id);
       const filas = [
         ...personalSeleccionado.map((nif) => ({
-          acta_id: id!,
+          acta_id: id,
           tipo_participante: "interna",
           referencia_nif: nif,
           nombre_libre: null as string | null,
         })),
         ...participantesLibres.map((nombre) => ({
-          acta_id: id!,
+          acta_id: id,
           tipo_participante: tipoReunion || "otro",
           referencia_nif: null,
           nombre_libre: nombre,
         })),
       ];
-      if (filas.length) await supabase.from("acta_participantes").insert(filas);
+      if (filas.length) {
+        const { error } = await supabase.from("acta_participantes").insert(filas);
+        if (error) throw error;
+      }
 
       // Imágenes nuevas — la primera carpeta debe ser el acta_id.
       let orden = imagenesExistentes.length;
@@ -435,7 +447,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         const path = `${id}/${crypto.randomUUID()}-${file.name}`;
         const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
         if (error) throw error;
-        await supabase.from("acta_imagenes").insert({ acta_id: id!, url: path, orden });
+        const { error: errImg } = await supabase
+          .from("acta_imagenes")
+          .insert({ acta_id: id, url: path, orden });
+        if (errImg) throw errImg;
         orden += 1;
       }
 
@@ -450,20 +465,23 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             contentType: "image/png",
           });
         if (error) throw error;
-        await supabase.from("acta_firmas").delete().eq("acta_id", id!);
-        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: firmaPath });
+        await supabase.from("acta_firmas").delete().eq("acta_id", id);
+        const { error: errFirma } = await supabase
+          .from("acta_firmas")
+          .insert({ acta_id: id, firma_url: firmaPath });
+        if (errFirma) throw errFirma;
       } else {
         const { data: firma } = await supabase
           .from("acta_firmas")
           .select("firma_url")
-          .eq("acta_id", id!)
+          .eq("acta_id", id)
           .maybeSingle();
         firmaPath = firma?.firma_url ?? null;
       }
 
       if (estado === "generada") {
         const { path, nombre } = await generarPdfActa({
-          id: id!,
+          id: id,
           asunto: payload.asunto,
           lugar: payload.lugar,
           fecha_reunion: payload.fecha_reunion,
@@ -479,7 +497,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         await supabase
           .from("actas")
           .update({ pdf_url: path, nombre_pdf: nombre })
-          .eq("id", id!);
+          .eq("id", id);
       }
 
       imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
@@ -487,7 +505,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setEstadoActa(estado);
       await queryClient.invalidateQueries({ queryKey: ["actas"] });
       toast.success(estado === "generada" ? "Acta generada" : "Borrador guardado");
-      void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id! } });
+      void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se ha podido guardar el acta");
     } finally {
