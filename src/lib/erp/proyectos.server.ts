@@ -28,7 +28,7 @@ export async function readProyectosCliente(
 ): Promise<ProyectoListado[]> {
   const { data: usuario, error: usuarioError } = await supabase
     .from("usuarios_cliente")
-    .select("cliente_id")
+    .select("cliente_id, acceso_total_proyectos")
     .eq("user_id", userId)
     .eq("activo", true)
     .limit(1)
@@ -37,16 +37,33 @@ export async function readProyectosCliente(
   if (!usuario?.cliente_id) return [];
 
   const clienteId = usuario.cliente_id;
+
+  let proyectoIds: string[] | null = null;
+  if (!usuario.acceso_total_proyectos) {
+    const { data: asignaciones, error: asignacionesError } = await supabase
+      .from("usuario_proyectos")
+      .select("proyecto_id")
+      .eq("user_id", userId)
+      .eq("activo", true);
+    if (asignacionesError) throw asignacionesError;
+    proyectoIds = (asignaciones ?? []).map((row) => row.proyecto_id);
+    if (proyectoIds.length === 0) return [];
+  }
+
   const [proyectos, configs, propiedadesCliente, propiedades, provincias] = await Promise.all([
-    readAll((from, to) =>
-      supabase
+    readAll((from, to) => {
+      let query = supabase
         .from("proyectos")
         .select(
           "id, nombre, codigo_estudios, codigo_obra, propiedad_id, provincia_id, tipo_obra, estado",
         )
         .eq("cliente_id", clienteId)
-        .range(from, to),
-    ),
+        .range(from, to);
+      if (proyectoIds) {
+        query = query.in("id", proyectoIds);
+      }
+      return query;
+    }),
     readAll((from, to) =>
       supabase
         .from("proyectos_config")
