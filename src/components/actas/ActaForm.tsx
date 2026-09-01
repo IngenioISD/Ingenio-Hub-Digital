@@ -213,6 +213,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setNotas(acta.notas ?? "");
       setAcciones(acta.acciones ?? "");
       setOtrosAsistentes(acta.otros_asistentes ?? "");
+      setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
 
       const { data: participantes } = await supabase
         .from("acta_participantes")
