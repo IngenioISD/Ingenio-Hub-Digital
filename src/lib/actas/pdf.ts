@@ -120,9 +120,18 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     }
   }
 
-  const blob = doc.output("blob");
+  return doc.output("blob");
+}
+
+/** Genera el PDF del acta, lo sube al bucket actas-pdf y devuelve la ruta y el nombre. */
+export async function generarPdfActa(
+  datos: DatosPdfActa,
+  _clienteId?: string,
+): Promise<{ path: string; nombre: string }> {
+  const blob = await blobPdfActa(datos);
   const nombre = `acta-${datos.id}.pdf`;
-  const path = `${clienteId}/${nombre}`;
+  // La primera carpeta debe ser el acta_id (así lo esperan las políticas de Storage).
+  const path = `${datos.id}/${nombre}`;
 
   const { error } = await supabase.storage
     .from(BUCKET_PDF)
