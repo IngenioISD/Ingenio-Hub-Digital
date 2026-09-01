@@ -47,6 +47,8 @@ export function itemsProyecto(id: string): SidebarItem[] {
   return [
     { key: "inicio", label: "Inicio", icon: Home, to: `/proyecto/${id}/inicio` },
     { key: "modulos", label: "Módulos", icon: Boxes, to: `/proyecto/${id}/modulos` },
+    { key: "apps", label: "Apps", icon: LayoutGrid, to: "/digital/apps" },
+    { key: "agentes", label: "Agentes", icon: Bot, to: "/digital/agentes" },
   ];
 }
 
