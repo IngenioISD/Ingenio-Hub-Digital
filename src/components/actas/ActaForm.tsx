@@ -259,6 +259,15 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     [personal],
   );
 
+  const toggleLibre = (nombre: string, checked: boolean) =>
+    setParticipantesLibres((prev) =>
+      checked
+        ? prev.includes(nombre)
+          ? prev
+          : [...prev, nombre]
+        : prev.filter((n) => n !== nombre),
+    );
+
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
     setter(actual ? `${actual} ${texto}` : texto);
 
