@@ -124,7 +124,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const { data } = await supabase
         .from("direc_facultativa")
         .select("persona_contacto_nombre, persona_contacto_apellido_1, persona_contacto_apellido_2")
-        .eq("id", proyectoSel!.df_id)
+        .eq("id", proyectoSel!.df_id!)
         .maybeSingle();
       if (!data) return null;
       const nombre = [
@@ -146,7 +146,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const { data } = await supabase
         .from("propiedad_contactos")
         .select("nombre, apellido_1, apellido_2")
-        .eq("propiedad_id", proyectoSel!.propiedad_id)
+        .eq("propiedad_id", proyectoSel!.propiedad_id!)
         .order("apellido_1");
       return (data ?? [])
         .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
