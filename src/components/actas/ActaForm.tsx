@@ -124,7 +124,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const { data } = await supabase
         .from("direc_facultativa")
         .select("persona_contacto_nombre, persona_contacto_apellido_1, persona_contacto_apellido_2")
-        .eq("id", proyectoSel!.df_id!)
+        .eq("id", proyectoSel!.df_id)
         .maybeSingle();
       if (!data) return null;
       const nombre = [
@@ -146,7 +146,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const { data } = await supabase
         .from("propiedad_contactos")
         .select("nombre, apellido_1, apellido_2")
-        .eq("propiedad_id", proyectoSel!.propiedad_id!)
+        .eq("propiedad_id", proyectoSel!.propiedad_id)
         .order("apellido_1");
       return (data ?? [])
         .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
@@ -421,22 +421,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
 
       // Participantes
-      await supabase.from("acta_participantes").delete().eq("acta_id", id!);
+      await supabase.from("acta_participantes").delete().eq("acta_id", id);
       const filas = [
         ...personalSeleccionado.map((nif) => ({
-          acta_id: id!,
+          acta_id: id,
           tipo_participante: "interna",
           referencia_nif: nif,
           nombre_libre: null as string | null,
         })),
         ...participantesLibres.map((nombre) => ({
-          acta_id: id!,
+          acta_id: id,
           tipo_participante: tipoReunion || "otro",
           referencia_nif: null,
           nombre_libre: nombre,
         })),
       ];
-      if (filas.length) await supabase.from("acta_participantes").insert(filas);
+      if (filas.length) {
+        const { error } = await supabase.from("acta_participantes").insert(filas);
+        if (error) throw error;
+      }
 
       // Imágenes nuevas — la primera carpeta debe ser el acta_id.
       let orden = imagenesExistentes.length;
@@ -444,7 +447,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         const path = `${id}/${crypto.randomUUID()}-${file.name}`;
         const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
         if (error) throw error;
-        await supabase.from("acta_imagenes").insert({ acta_id: id!, url: path, orden });
+        const { error: errImg } = await supabase
+          .from("acta_imagenes")
+          .insert({ acta_id: id, url: path, orden });
+        if (errImg) throw errImg;
         orden += 1;
       }
 
@@ -459,20 +465,23 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             contentType: "image/png",
           });
         if (error) throw error;
-        await supabase.from("acta_firmas").delete().eq("acta_id", id!);
-        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: firmaPath });
+        await supabase.from("acta_firmas").delete().eq("acta_id", id);
+        const { error: errFirma } = await supabase
+          .from("acta_firmas")
+          .insert({ acta_id: id, firma_url: firmaPath });
+        if (errFirma) throw errFirma;
       } else {
         const { data: firma } = await supabase
           .from("acta_firmas")
           .select("firma_url")
-          .eq("acta_id", id!)
+          .eq("acta_id", id)
           .maybeSingle();
         firmaPath = firma?.firma_url ?? null;
       }
 
       if (estado === "generada") {
         const { path, nombre } = await generarPdfActa({
-          id: id!,
+          id: id,
           asunto: payload.asunto,
           lugar: payload.lugar,
           fecha_reunion: payload.fecha_reunion,
@@ -488,7 +497,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         await supabase
           .from("actas")
           .update({ pdf_url: path, nombre_pdf: nombre })
-          .eq("id", id!);
+          .eq("id", id);
       }
 
       imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
@@ -496,7 +505,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setEstadoActa(estado);
       await queryClient.invalidateQueries({ queryKey: ["actas"] });
       toast.success(estado === "generada" ? "Acta generada" : "Borrador guardado");
-      void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id! } });
+      void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se ha podido guardar el acta");
     } finally {
