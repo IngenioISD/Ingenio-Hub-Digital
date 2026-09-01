@@ -32,11 +32,8 @@ async function cargarImagen(url: string): Promise<string | null> {
   }
 }
 
-/** Genera el PDF del acta, lo sube al bucket actas-pdf y devuelve la ruta y el nombre. */
-export async function generarPdfActa(
-  datos: DatosPdfActa,
-  clienteId: string,
-): Promise<{ path: string; nombre: string }> {
+/** Construye el PDF del acta en memoria y devuelve el Blob (no guarda nada). */
+export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const margen = 48;
   const ancho = doc.internal.pageSize.getWidth() - margen * 2;
