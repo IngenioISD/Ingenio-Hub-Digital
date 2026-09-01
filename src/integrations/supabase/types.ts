@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -1442,6 +1442,7 @@ export type Database = {
       direc_facultativa: {
         Row: {
           activo: boolean | null
+          cliente_id: string
           email: string | null
           id: string
           nif: string
@@ -1453,6 +1454,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean | null
+          cliente_id: string
           email?: string | null
           id?: string
           nif: string
@@ -1464,6 +1466,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean | null
+          cliente_id?: string
           email?: string | null
           id?: string
           nif?: string
@@ -1473,7 +1476,15 @@ export type Database = {
           persona_contacto_nombre?: string | null
           telefono?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "direc_facultativa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       etiquetas_cliente: {
         Row: {
