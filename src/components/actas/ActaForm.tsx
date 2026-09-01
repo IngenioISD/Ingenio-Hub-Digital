@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Loader2, Save, Trash2, X } from "lucide-react";
+import { Eraser, Eye, FileCheck2, ImagePlus, Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
@@ -10,6 +10,8 @@ import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useEmpresa } from "@/hooks/use-empresa";
+import { blobPdfActa, generarPdfActa } from "@/lib/actas/pdf";
 import {
   BUCKET_FIRMAS,
   BUCKET_IMAGENES,
@@ -23,6 +25,7 @@ type TipoReunion = { codigo: string; etiqueta: string };
 type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
 
 type ImagenExistente = { id: string; url: string; preview: string | null };
+type ImagenNueva = { file: File; preview: string };
 
 function nombrePersona(p: Persona) {
   return [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ");
@@ -32,6 +35,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { usuarioCliente } = useAuth();
+  const { data: empresa } = useEmpresa();
   const clienteId = usuarioCliente?.cliente_id;
 
   const [proyectoId, setProyectoId] = useState("");
@@ -46,11 +50,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [personalSeleccionado, setPersonalSeleccionado] = useState<string[]>([]);
   const [participantesLibres, setParticipantesLibres] = useState<string[]>([]);
   const [nuevoParticipante, setNuevoParticipante] = useState("");
-  const [imagenesNuevas, setImagenesNuevas] = useState<File[]>([]);
+  const [imagenesNuevas, setImagenesNuevas] = useState<ImagenNueva[]>([]);
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
   const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
+  const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
   const [guardando, setGuardando] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
 
   const { data: proyectos = [] } = useQuery<Proyecto[]>({
@@ -207,6 +213,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setNotas(acta.notas ?? "");
       setAcciones(acta.acciones ?? "");
       setOtrosAsistentes(acta.otros_asistentes ?? "");
+      setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
 
       const { data: participantes } = await supabase
         .from("acta_participantes")
@@ -271,7 +278,82 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
     setter(actual ? `${actual} ${texto}` : texto);
 
-  const guardar = async () => {
+  const hayDatos = Boolean(
+    asunto.trim() ||
+      lugar.trim() ||
+      notas.trim() ||
+      acciones.trim() ||
+      otrosAsistentes.trim() ||
+      tipoReunion ||
+      proyectoId ||
+      personalSeleccionado.length ||
+      participantesLibres.length ||
+      imagenesNuevas.length ||
+      firmaDataUrl,
+  );
+
+  const nombresParticipantes = () => [
+    ...personalSeleccionado.map((nif) => nombresPersonal.get(nif) ?? nif),
+    ...participantesLibres,
+  ];
+
+  const etiquetaTipo =
+    tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
+  const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
+
+  const limpiarCampos = () => {
+    if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
+    imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
+    setProyectoId("");
+    setFechaReunion(aDatetimeLocal(new Date().toISOString()));
+    setLugar("");
+    setAsunto("");
+    setTipoReunion("");
+    setTipoOtro("");
+    setNotas("");
+    setAcciones("");
+    setOtrosAsistentes("");
+    setPersonalSeleccionado([]);
+    setParticipantesLibres([]);
+    setNuevoParticipante("");
+    setImagenesNuevas([]);
+    setFirmaDataUrl(null);
+  };
+
+  const cancelar = () => {
+    if (hayDatos && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
+    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
+    else void navigate({ to: "/digital/apps/actas-reunion" });
+  };
+
+  const previsualizar = async () => {
+    setPrevisualizando(true);
+    try {
+      const blob = await blobPdfActa({
+        id: actaId ?? "borrador",
+        asunto: asunto.trim(),
+        lugar: lugar.trim(),
+        fecha_reunion: new Date(fechaReunion).toISOString(),
+        tipoReunionEtiqueta: etiquetaTipo,
+        proyectoNombre: nombreProyecto,
+        notas: notas.trim(),
+        acciones: acciones.trim() || null,
+        otros_asistentes: otrosAsistentes.trim() || null,
+        participantes: nombresParticipantes(),
+        empresaNombre: empresa?.nombre ?? "",
+        firmaPath: null,
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se ha podido generar la previsualización");
+    } finally {
+      setPrevisualizando(false);
+    }
+  };
+
+  const guardar = async (estado: "borrador" | "generada") => {
     if (!clienteId || !usuarioCliente) {
       toast.error("No se ha podido identificar tu empresa");
       return;
@@ -307,7 +389,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
       let id = actaId;
       if (id) {
-        const { error } = await supabase.from("actas").update(payload).eq("id", id);
+        const { error } = await supabase.from("actas").update({ ...payload, estado }).eq("id", id);
         if (error) throw error;
       } else {
         if (!yo?.nif) {
@@ -321,7 +403,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             ...payload,
             cliente_id: clienteId,
             creado_por_nif: yo.nif,
-            estado: "borrador",
+            estado,
           })
           .select("id")
           .single();
@@ -347,29 +429,64 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       ];
       if (filas.length) await supabase.from("acta_participantes").insert(filas);
 
-      // Imágenes nuevas
+      // Imágenes nuevas — la primera carpeta debe ser el acta_id.
       let orden = imagenesExistentes.length;
-      for (const file of imagenesNuevas) {
-        const path = `${clienteId}/${id}/${crypto.randomUUID()}-${file.name}`;
+      for (const { file } of imagenesNuevas) {
+        const path = `${id}/${crypto.randomUUID()}-${file.name}`;
         const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
         if (error) throw error;
         await supabase.from("acta_imagenes").insert({ acta_id: id!, url: path, orden });
         orden += 1;
       }
 
-      // Firma
+      // Firma — la primera carpeta debe ser el acta_id.
+      let firmaPath: string | null = null;
       if (firmaDataUrl) {
-        const path = `${clienteId}/${id}/firma.png`;
+        firmaPath = `${id}/firma.png`;
         const { error } = await supabase.storage
           .from(BUCKET_FIRMAS)
-          .upload(path, dataUrlToBlob(firmaDataUrl), { upsert: true, contentType: "image/png" });
+          .upload(firmaPath, dataUrlToBlob(firmaDataUrl), {
+            upsert: true,
+            contentType: "image/png",
+          });
         if (error) throw error;
         await supabase.from("acta_firmas").delete().eq("acta_id", id!);
-        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: path });
+        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: firmaPath });
+      } else {
+        const { data: firma } = await supabase
+          .from("acta_firmas")
+          .select("firma_url")
+          .eq("acta_id", id!)
+          .maybeSingle();
+        firmaPath = firma?.firma_url ?? null;
       }
 
+      if (estado === "generada") {
+        const { path, nombre } = await generarPdfActa({
+          id: id!,
+          asunto: payload.asunto,
+          lugar: payload.lugar,
+          fecha_reunion: payload.fecha_reunion,
+          tipoReunionEtiqueta: etiquetaTipo,
+          proyectoNombre: nombreProyecto,
+          notas: payload.notas,
+          acciones: payload.acciones,
+          otros_asistentes: payload.otros_asistentes,
+          participantes: nombresParticipantes(),
+          empresaNombre: empresa?.nombre ?? "",
+          firmaPath,
+        });
+        await supabase
+          .from("actas")
+          .update({ pdf_url: path, nombre_pdf: nombre })
+          .eq("id", id!);
+      }
+
+      imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
+      setImagenesNuevas([]);
+      setEstadoActa(estado);
       await queryClient.invalidateQueries({ queryKey: ["actas"] });
-      toast.success(actaId ? "Acta actualizada" : "Acta creada");
+      toast.success(estado === "generada" ? "Acta generada" : "Borrador guardado");
       void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id! } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se ha podido guardar el acta");
@@ -669,11 +786,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                   </button>
                 </div>
               ))}
-              {imagenesNuevas.map((file, i) => (
-                <div key={`${file.name}-${i}`} className="relative">
+              {imagenesNuevas.map((img, i) => (
+                <div key={`${img.file.name}-${i}`} className="relative">
                   <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
+                    src={img.preview}
+                    alt={img.file.name}
                     className="h-24 w-24 object-cover"
                     style={{ borderRadius: "var(--radius-md)" }}
                   />
@@ -681,7 +798,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                     type="button"
                     className="btn btn-danger btn-sm absolute -top-2 -right-2 !h-6 !w-6 !p-0"
                     aria-label="Quitar imagen"
-                    onClick={() => setImagenesNuevas((prev) => prev.filter((_, j) => j !== i))}
+                    onClick={() =>
+                      setImagenesNuevas((prev) => {
+                        const fuera = prev[i];
+                        if (fuera) URL.revokeObjectURL(fuera.preview);
+                        return prev.filter((_, j) => j !== i);
+                      })
+                    }
                   >
                     <X size={12} />
                   </button>
@@ -695,7 +818,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                   multiple
                   className="hidden"
                   onChange={(e) => {
-                    setImagenesNuevas((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+                    const nuevos = Array.from(e.target.files ?? []).map((file) => ({
+                      file,
+                      preview: URL.createObjectURL(file),
+                    }));
+                    setImagenesNuevas((prev) => [...prev, ...nuevos]);
                     e.target.value = "";
                   }}
                 />
@@ -729,23 +856,36 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             borderColor: "var(--brand-navy-deep)",
           }}
           disabled={guardando}
-          onClick={() => void guardar()}
+          onClick={() => void guardar("generada")}
         >
-          {guardando ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-          {actaId ? "Guardar cambios" : "Crear acta"}
+          {guardando ? <Loader2 className="animate-spin" size={16} /> : <FileCheck2 size={16} />}
+          Generar acta
         </button>
         <button
           type="button"
           className="btn btn-secondary"
-          onClick={() =>
-            actaId
-              ? void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } })
-              : void navigate({ to: "/digital/apps/actas-reunion" })
-          }
+          disabled={guardando}
+          onClick={() => void guardar("borrador")}
         >
-          <Trash2 size={16} /> Cancelar
+          <Save size={16} /> Guardar borrador
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={previsualizando}
+          onClick={() => void previsualizar()}
+        >
+          {previsualizando ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
+          {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={limpiarCampos}>
+          <Eraser size={16} /> Limpiar campos
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={cancelar}>
+          <X size={16} /> Cancelar
         </button>
       </div>
+
     </div>
   );
 }
