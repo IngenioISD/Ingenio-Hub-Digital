@@ -90,21 +90,98 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   const esInterna = tipoReunion === "interna";
+  const esDf = tipoReunion === "df";
+  const esPropiedad = tipoReunion === "propiedad";
   const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
 
+  // Proyecto seleccionado (para conocer su propiedad y su dirección facultativa)
+  const { data: proyectoSel } = useQuery<{ propiedad_id: string | null; df_id: string | null } | null>({
+    queryKey: ["actas", "proyecto-detalle", proyectoId],
+    enabled: !!proyectoId && (esDf || esPropiedad),
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proyectos")
+        .select("propiedad_id, df_id")
+        .eq("id", proyectoId)
+        .maybeSingle();
+      return data ?? null;
+    },
+  });
+
+  // Contacto habitual de la Dirección Facultativa
+  const { data: dfNombre = null } = useQuery<string | null>({
+    queryKey: ["actas", "df-contacto", proyectoSel?.df_id],
+    enabled: esDf && !!proyectoSel?.df_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("direc_facultativa")
+        .select("persona_contacto_nombre, persona_contacto_apellido_1, persona_contacto_apellido_2")
+        .eq("id", proyectoSel!.df_id!)
+        .maybeSingle();
+      if (!data) return null;
+      const nombre = [
+        data.persona_contacto_nombre,
+        data.persona_contacto_apellido_1,
+        data.persona_contacto_apellido_2,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return nombre || null;
+    },
+  });
+
+  // Contactos de la Propiedad del proyecto
+  const { data: contactosPropiedad = [] } = useQuery<string[]>({
+    queryKey: ["actas", "propiedad-contactos", proyectoSel?.propiedad_id],
+    enabled: esPropiedad && !!proyectoSel?.propiedad_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("propiedad_contactos")
+        .select("nombre, apellido_1, apellido_2")
+        .eq("propiedad_id", proyectoSel!.propiedad_id!)
+        .order("apellido_1");
+      return (data ?? [])
+        .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
+        .filter((n) => n.length > 0);
+    },
+  });
+
+  const accesoTotal = usuarioCliente?.acceso_total_proyectos === true;
+
   const { data: personal = [] } = useQuery<Persona[]>({
-    queryKey: ["actas", "personal", clienteId],
-    enabled: !!clienteId && esInterna,
+    queryKey: ["actas", "personal", clienteId, accesoTotal, accesoTotal ? null : proyectoId],
+    enabled: !!clienteId && esInterna && (accesoTotal || !!proyectoId),
     queryFn: async () => {
       const { data } = await supabase
         .from("personal")
-        .select("nif, nombre, apellido_1, apellido_2")
+        .select("nif, nombre, apellido_1, apellido_2, email")
         .eq("cliente_id", clienteId!)
         .eq("activo", true)
         .order("apellido_1");
-      return (data ?? []) as Persona[];
+      const filas = (data ?? []) as (Persona & { email: string | null })[];
+      if (accesoTotal) return filas;
+
+      // Roles de un solo proyecto: solo personas asignadas al proyecto de la acta.
+      const { data: asignaciones } = await supabase
+        .from("usuario_proyectos")
+        .select("user_id")
+        .eq("proyecto_id", proyectoId)
+        .eq("activo", true);
+      const userIds = (asignaciones ?? []).map((a) => a.user_id);
+      if (userIds.length === 0) return [];
+
+      const { data: usuarios } = await supabase
+        .from("usuarios_cliente")
+        .select("email")
+        .eq("cliente_id", clienteId!)
+        .in("user_id", userIds);
+      const emails = new Set(
+        (usuarios ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean),
+      );
+      return filas.filter((p) => p.email && emails.has(p.email.toLowerCase()));
     },
   });
+
 
   // Carga del acta existente
   useEffect(() => {
