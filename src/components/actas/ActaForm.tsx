@@ -487,36 +487,48 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           <div className="form-group">
             <span className="form-label">Asistentes</span>
             {esInterna ? (
-              <div
-                className="max-h-56 overflow-y-auto p-2"
-                style={{
-                  border: "var(--border-width-thin) solid var(--border-default)",
-                  borderRadius: "var(--radius-md)",
-                }}
-              >
-                {personal.length === 0 ? (
-                  <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                    No hay personal dado de alta.
-                  </span>
-                ) : (
-                  personal.map((p) => (
-                    <label key={p.nif} className="flex items-center gap-2 py-1">
-                      <input
-                        type="checkbox"
-                        checked={personalSeleccionado.includes(p.nif)}
-                        onChange={(e) =>
-                          setPersonalSeleccionado((prev) =>
-                            e.target.checked
-                              ? [...prev, p.nif]
-                              : prev.filter((n) => n !== p.nif),
-                          )
-                        }
-                      />
-                      <span style={{ fontSize: "var(--text-sm)" }}>{nombrePersona(p)}</span>
-                    </label>
-                  ))
-                )}
-              </div>
+              <PersonMultiSelect
+                opciones={personal.map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
+                seleccionados={personalSeleccionado}
+                onToggle={(nif, checked) =>
+                  setPersonalSeleccionado((prev) =>
+                    checked ? [...prev, nif] : prev.filter((n) => n !== nif),
+                  )
+                }
+                mensajeVacio={
+                  proyectoId
+                    ? "No hay personal asignado a este proyecto."
+                    : "Selecciona un proyecto para ver el personal."
+                }
+              />
+            ) : esPropiedad ? (
+              contactosPropiedad.length === 0 ? (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  Propiedad no asignada.
+                </span>
+              ) : (
+                <PersonMultiSelect
+                  opciones={contactosPropiedad.map((n) => ({ value: n, label: n }))}
+                  seleccionados={participantesLibres}
+                  onToggle={toggleLibre}
+                  mensajeVacio="Propiedad no asignada."
+                />
+              )
+            ) : esDf ? (
+              dfNombre ? (
+                <label className="flex items-center gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    checked={participantesLibres.includes(dfNombre)}
+                    onChange={(e) => toggleLibre(dfNombre, e.target.checked)}
+                  />
+                  <span style={{ fontSize: "var(--text-sm)" }}>¿Asiste {dfNombre}?</span>
+                </label>
+              ) : (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  Dirección facultativa no asignada.
+                </span>
+              )
             ) : (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -566,6 +578,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 </div>
               </div>
             )}
+
           </div>
 
           {esInterna && personalSeleccionado.length > 0 ? (
