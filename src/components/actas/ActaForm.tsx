@@ -389,7 +389,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
       let id = actaId;
       if (id) {
-        const { error } = await supabase.from("actas").update(payload).eq("id", id);
+        const { error } = await supabase.from("actas").update({ ...payload, estado }).eq("id", id);
         if (error) throw error;
       } else {
         if (!yo?.nif) {
@@ -403,7 +403,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             ...payload,
             cliente_id: clienteId,
             creado_por_nif: yo.nif,
-            estado: "borrador",
+            estado,
           })
           .select("id")
           .single();
@@ -429,29 +429,64 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       ];
       if (filas.length) await supabase.from("acta_participantes").insert(filas);
 
-      // Imágenes nuevas
+      // Imágenes nuevas — la primera carpeta debe ser el acta_id.
       let orden = imagenesExistentes.length;
-      for (const file of imagenesNuevas) {
-        const path = `${clienteId}/${id}/${crypto.randomUUID()}-${file.name}`;
+      for (const { file } of imagenesNuevas) {
+        const path = `${id}/${crypto.randomUUID()}-${file.name}`;
         const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
         if (error) throw error;
         await supabase.from("acta_imagenes").insert({ acta_id: id!, url: path, orden });
         orden += 1;
       }
 
-      // Firma
+      // Firma — la primera carpeta debe ser el acta_id.
+      let firmaPath: string | null = null;
       if (firmaDataUrl) {
-        const path = `${clienteId}/${id}/firma.png`;
+        firmaPath = `${id}/firma.png`;
         const { error } = await supabase.storage
           .from(BUCKET_FIRMAS)
-          .upload(path, dataUrlToBlob(firmaDataUrl), { upsert: true, contentType: "image/png" });
+          .upload(firmaPath, dataUrlToBlob(firmaDataUrl), {
+            upsert: true,
+            contentType: "image/png",
+          });
         if (error) throw error;
         await supabase.from("acta_firmas").delete().eq("acta_id", id!);
-        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: path });
+        await supabase.from("acta_firmas").insert({ acta_id: id!, firma_url: firmaPath });
+      } else {
+        const { data: firma } = await supabase
+          .from("acta_firmas")
+          .select("firma_url")
+          .eq("acta_id", id!)
+          .maybeSingle();
+        firmaPath = firma?.firma_url ?? null;
       }
 
+      if (estado === "generada") {
+        const { path, nombre } = await generarPdfActa({
+          id: id!,
+          asunto: payload.asunto,
+          lugar: payload.lugar,
+          fecha_reunion: payload.fecha_reunion,
+          tipoReunionEtiqueta: etiquetaTipo,
+          proyectoNombre: nombreProyecto,
+          notas: payload.notas,
+          acciones: payload.acciones,
+          otros_asistentes: payload.otros_asistentes,
+          participantes: nombresParticipantes(),
+          empresaNombre: empresa?.nombre ?? "",
+          firmaPath,
+        });
+        await supabase
+          .from("actas")
+          .update({ pdf_url: path, nombre_pdf: nombre })
+          .eq("id", id!);
+      }
+
+      imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
+      setImagenesNuevas([]);
+      setEstadoActa(estado);
       await queryClient.invalidateQueries({ queryKey: ["actas"] });
-      toast.success(actaId ? "Acta actualizada" : "Acta creada");
+      toast.success(estado === "generada" ? "Acta generada" : "Borrador guardado");
       void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: id! } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se ha podido guardar el acta");
