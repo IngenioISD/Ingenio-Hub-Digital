@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
 import { SignaturePad } from "@/components/signature-pad";
+import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -90,21 +92,98 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   const esInterna = tipoReunion === "interna";
+  const esDf = tipoReunion === "df";
+  const esPropiedad = tipoReunion === "propiedad";
   const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
 
+  // Proyecto seleccionado (para conocer su propiedad y su dirección facultativa)
+  const { data: proyectoSel } = useQuery<{ propiedad_id: string | null; df_id: string | null } | null>({
+    queryKey: ["actas", "proyecto-detalle", proyectoId],
+    enabled: !!proyectoId && (esDf || esPropiedad),
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proyectos")
+        .select("propiedad_id, df_id")
+        .eq("id", proyectoId)
+        .maybeSingle();
+      return data ?? null;
+    },
+  });
+
+  // Contacto habitual de la Dirección Facultativa
+  const { data: dfNombre = null } = useQuery<string | null>({
+    queryKey: ["actas", "df-contacto", proyectoSel?.df_id],
+    enabled: esDf && !!proyectoSel?.df_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("direc_facultativa")
+        .select("persona_contacto_nombre, persona_contacto_apellido_1, persona_contacto_apellido_2")
+        .eq("id", proyectoSel!.df_id!)
+        .maybeSingle();
+      if (!data) return null;
+      const nombre = [
+        data.persona_contacto_nombre,
+        data.persona_contacto_apellido_1,
+        data.persona_contacto_apellido_2,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return nombre || null;
+    },
+  });
+
+  // Contactos de la Propiedad del proyecto
+  const { data: contactosPropiedad = [] } = useQuery<string[]>({
+    queryKey: ["actas", "propiedad-contactos", proyectoSel?.propiedad_id],
+    enabled: esPropiedad && !!proyectoSel?.propiedad_id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("propiedad_contactos")
+        .select("nombre, apellido_1, apellido_2")
+        .eq("propiedad_id", proyectoSel!.propiedad_id!)
+        .order("apellido_1");
+      return (data ?? [])
+        .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
+        .filter((n) => n.length > 0);
+    },
+  });
+
+  const accesoTotal = usuarioCliente?.acceso_total_proyectos === true;
+
   const { data: personal = [] } = useQuery<Persona[]>({
-    queryKey: ["actas", "personal", clienteId],
-    enabled: !!clienteId && esInterna,
+    queryKey: ["actas", "personal", clienteId, accesoTotal, accesoTotal ? null : proyectoId],
+    enabled: !!clienteId && esInterna && (accesoTotal || !!proyectoId),
     queryFn: async () => {
       const { data } = await supabase
         .from("personal")
-        .select("nif, nombre, apellido_1, apellido_2")
+        .select("nif, nombre, apellido_1, apellido_2, email")
         .eq("cliente_id", clienteId!)
         .eq("activo", true)
         .order("apellido_1");
-      return (data ?? []) as Persona[];
+      const filas = (data ?? []) as (Persona & { email: string | null })[];
+      if (accesoTotal) return filas;
+
+      // Roles de un solo proyecto: solo personas asignadas al proyecto de la acta.
+      const { data: asignaciones } = await supabase
+        .from("usuario_proyectos")
+        .select("user_id")
+        .eq("proyecto_id", proyectoId)
+        .eq("activo", true);
+      const userIds = (asignaciones ?? []).map((a) => a.user_id);
+      if (userIds.length === 0) return [];
+
+      const { data: usuarios } = await supabase
+        .from("usuarios_cliente")
+        .select("email")
+        .eq("cliente_id", clienteId!)
+        .in("user_id", userIds);
+      const emails = new Set(
+        (usuarios ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean),
+      );
+      return filas.filter((p) => p.email && emails.has(p.email.toLowerCase()));
     },
   });
+
 
   // Carga del acta existente
   useEffect(() => {
@@ -179,6 +258,15 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     () => new Map(personal.map((p) => [p.nif, nombrePersona(p)])),
     [personal],
   );
+
+  const toggleLibre = (nombre: string, checked: boolean) =>
+    setParticipantesLibres((prev) =>
+      checked
+        ? prev.includes(nombre)
+          ? prev
+          : [...prev, nombre]
+        : prev.filter((n) => n !== nombre),
+    );
 
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
     setter(actual ? `${actual} ${texto}` : texto);
@@ -410,36 +498,48 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           <div className="form-group">
             <span className="form-label">Asistentes</span>
             {esInterna ? (
-              <div
-                className="max-h-56 overflow-y-auto p-2"
-                style={{
-                  border: "var(--border-width-thin) solid var(--border-default)",
-                  borderRadius: "var(--radius-md)",
-                }}
-              >
-                {personal.length === 0 ? (
-                  <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                    No hay personal dado de alta.
-                  </span>
-                ) : (
-                  personal.map((p) => (
-                    <label key={p.nif} className="flex items-center gap-2 py-1">
-                      <input
-                        type="checkbox"
-                        checked={personalSeleccionado.includes(p.nif)}
-                        onChange={(e) =>
-                          setPersonalSeleccionado((prev) =>
-                            e.target.checked
-                              ? [...prev, p.nif]
-                              : prev.filter((n) => n !== p.nif),
-                          )
-                        }
-                      />
-                      <span style={{ fontSize: "var(--text-sm)" }}>{nombrePersona(p)}</span>
-                    </label>
-                  ))
-                )}
-              </div>
+              <PersonMultiSelect
+                opciones={personal.map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
+                seleccionados={personalSeleccionado}
+                onToggle={(nif, checked) =>
+                  setPersonalSeleccionado((prev) =>
+                    checked ? [...prev, nif] : prev.filter((n) => n !== nif),
+                  )
+                }
+                mensajeVacio={
+                  proyectoId
+                    ? "No hay personal asignado a este proyecto."
+                    : "Selecciona un proyecto para ver el personal."
+                }
+              />
+            ) : esPropiedad ? (
+              contactosPropiedad.length === 0 ? (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  Propiedad no asignada.
+                </span>
+              ) : (
+                <PersonMultiSelect
+                  opciones={contactosPropiedad.map((n) => ({ value: n, label: n }))}
+                  seleccionados={participantesLibres}
+                  onToggle={toggleLibre}
+                  mensajeVacio="Propiedad no asignada."
+                />
+              )
+            ) : esDf ? (
+              dfNombre ? (
+                <label className="flex items-center gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    checked={participantesLibres.includes(dfNombre)}
+                    onChange={(e) => toggleLibre(dfNombre, e.target.checked)}
+                  />
+                  <span style={{ fontSize: "var(--text-sm)" }}>¿Asiste {dfNombre}?</span>
+                </label>
+              ) : (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  Dirección facultativa no asignada.
+                </span>
+              )
             ) : (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -489,6 +589,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 </div>
               </div>
             )}
+
           </div>
 
           {esInterna && personalSeleccionado.length > 0 ? (
