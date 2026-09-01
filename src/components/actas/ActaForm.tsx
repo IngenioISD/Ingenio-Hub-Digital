@@ -278,7 +278,82 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
     setter(actual ? `${actual} ${texto}` : texto);
 
-  const guardar = async () => {
+  const hayDatos = Boolean(
+    asunto.trim() ||
+      lugar.trim() ||
+      notas.trim() ||
+      acciones.trim() ||
+      otrosAsistentes.trim() ||
+      tipoReunion ||
+      proyectoId ||
+      personalSeleccionado.length ||
+      participantesLibres.length ||
+      imagenesNuevas.length ||
+      firmaDataUrl,
+  );
+
+  const nombresParticipantes = () => [
+    ...personalSeleccionado.map((nif) => nombresPersonal.get(nif) ?? nif),
+    ...participantesLibres,
+  ];
+
+  const etiquetaTipo =
+    tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
+  const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
+
+  const limpiarCampos = () => {
+    if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
+    imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
+    setProyectoId("");
+    setFechaReunion(aDatetimeLocal(new Date().toISOString()));
+    setLugar("");
+    setAsunto("");
+    setTipoReunion("");
+    setTipoOtro("");
+    setNotas("");
+    setAcciones("");
+    setOtrosAsistentes("");
+    setPersonalSeleccionado([]);
+    setParticipantesLibres([]);
+    setNuevoParticipante("");
+    setImagenesNuevas([]);
+    setFirmaDataUrl(null);
+  };
+
+  const cancelar = () => {
+    if (hayDatos && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
+    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
+    else void navigate({ to: "/digital/apps/actas-reunion" });
+  };
+
+  const previsualizar = async () => {
+    setPrevisualizando(true);
+    try {
+      const blob = await blobPdfActa({
+        id: actaId ?? "borrador",
+        asunto: asunto.trim(),
+        lugar: lugar.trim(),
+        fecha_reunion: new Date(fechaReunion).toISOString(),
+        tipoReunionEtiqueta: etiquetaTipo,
+        proyectoNombre: nombreProyecto,
+        notas: notas.trim(),
+        acciones: acciones.trim() || null,
+        otros_asistentes: otrosAsistentes.trim() || null,
+        participantes: nombresParticipantes(),
+        empresaNombre: empresa?.nombre ?? "",
+        firmaPath: null,
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se ha podido generar la previsualización");
+    } finally {
+      setPrevisualizando(false);
+    }
+  };
+
+  const guardar = async (estado: "borrador" | "generada") => {
     if (!clienteId || !usuarioCliente) {
       toast.error("No se ha podido identificar tu empresa");
       return;
