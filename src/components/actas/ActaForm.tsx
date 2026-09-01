@@ -786,11 +786,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                   </button>
                 </div>
               ))}
-              {imagenesNuevas.map((file, i) => (
-                <div key={`${file.name}-${i}`} className="relative">
+              {imagenesNuevas.map((img, i) => (
+                <div key={`${img.file.name}-${i}`} className="relative">
                   <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
+                    src={img.preview}
+                    alt={img.file.name}
                     className="h-24 w-24 object-cover"
                     style={{ borderRadius: "var(--radius-md)" }}
                   />
@@ -798,7 +798,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                     type="button"
                     className="btn btn-danger btn-sm absolute -top-2 -right-2 !h-6 !w-6 !p-0"
                     aria-label="Quitar imagen"
-                    onClick={() => setImagenesNuevas((prev) => prev.filter((_, j) => j !== i))}
+                    onClick={() =>
+                      setImagenesNuevas((prev) => {
+                        const fuera = prev[i];
+                        if (fuera) URL.revokeObjectURL(fuera.preview);
+                        return prev.filter((_, j) => j !== i);
+                      })
+                    }
                   >
                     <X size={12} />
                   </button>
@@ -812,7 +818,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                   multiple
                   className="hidden"
                   onChange={(e) => {
-                    setImagenesNuevas((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+                    const nuevos = Array.from(e.target.files ?? []).map((file) => ({
+                      file,
+                      preview: URL.createObjectURL(file),
+                    }));
+                    setImagenesNuevas((prev) => [...prev, ...nuevos]);
                     e.target.value = "";
                   }}
                 />
@@ -846,23 +856,36 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             borderColor: "var(--brand-navy-deep)",
           }}
           disabled={guardando}
-          onClick={() => void guardar()}
+          onClick={() => void guardar("generada")}
         >
-          {guardando ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-          {actaId ? "Guardar cambios" : "Crear acta"}
+          {guardando ? <Loader2 className="animate-spin" size={16} /> : <FileCheck2 size={16} />}
+          Generar acta
         </button>
         <button
           type="button"
           className="btn btn-secondary"
-          onClick={() =>
-            actaId
-              ? void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } })
-              : void navigate({ to: "/digital/apps/actas-reunion" })
-          }
+          disabled={guardando}
+          onClick={() => void guardar("borrador")}
         >
-          <Trash2 size={16} /> Cancelar
+          <Save size={16} /> Guardar borrador
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={previsualizando}
+          onClick={() => void previsualizar()}
+        >
+          {previsualizando ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
+          {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={limpiarCampos}>
+          <Eraser size={16} /> Limpiar campos
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={cancelar}>
+          <X size={16} /> Cancelar
         </button>
       </div>
+
     </div>
   );
 }
