@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
 import { SignaturePad } from "@/components/signature-pad";
+import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
