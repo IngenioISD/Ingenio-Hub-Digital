@@ -25,6 +25,7 @@ type TipoReunion = { codigo: string; etiqueta: string };
 type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
 
 type ImagenExistente = { id: string; url: string; preview: string | null };
+type ImagenNueva = { file: File; preview: string };
 
 function nombrePersona(p: Persona) {
   return [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ");
@@ -34,6 +35,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { usuarioCliente } = useAuth();
+  const { data: empresa } = useEmpresa();
   const clienteId = usuarioCliente?.cliente_id;
 
   const [proyectoId, setProyectoId] = useState("");
@@ -48,11 +50,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [personalSeleccionado, setPersonalSeleccionado] = useState<string[]>([]);
   const [participantesLibres, setParticipantesLibres] = useState<string[]>([]);
   const [nuevoParticipante, setNuevoParticipante] = useState("");
-  const [imagenesNuevas, setImagenesNuevas] = useState<File[]>([]);
+  const [imagenesNuevas, setImagenesNuevas] = useState<ImagenNueva[]>([]);
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
   const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
+  const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
   const [guardando, setGuardando] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
 
   const { data: proyectos = [] } = useQuery<Proyecto[]>({
