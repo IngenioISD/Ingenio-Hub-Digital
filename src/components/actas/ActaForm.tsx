@@ -376,6 +376,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .maybeSingle();
 
       const payload = {
+        cliente_id: clienteId,
         proyecto_id: proyectoId,
         fecha_reunion: new Date(fechaReunion).toISOString(),
         lugar: lugar.trim(),
@@ -387,10 +388,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         otros_asistentes: otrosAsistentes.trim() || null,
       };
 
-      let id = actaId;
-      if (id) {
-        const { error } = await supabase.from("actas").update({ ...payload, estado }).eq("id", id);
+      let id: string;
+      if (actaId) {
+        const { data, error } = await supabase
+          .from("actas")
+          .update({ ...payload, estado })
+          .eq("id", actaId)
+          .eq("cliente_id", clienteId)
+          .select("id")
+          .single();
         if (error) throw error;
+        id = data.id;
       } else {
         if (!yo?.nif) {
           throw new Error(
@@ -401,15 +409,16 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .from("actas")
           .insert({
             ...payload,
-            cliente_id: clienteId,
             creado_por_nif: yo.nif,
             estado,
           })
           .select("id")
           .single();
         if (error) throw error;
+        if (!data?.id) throw new Error("Supabase no ha devuelto el identificador del acta");
         id = data.id;
       }
+
 
       // Participantes
       await supabase.from("acta_participantes").delete().eq("acta_id", id!);
