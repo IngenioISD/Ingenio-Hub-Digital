@@ -867,7 +867,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       <div className="mt-5 flex flex-nowrap gap-3 overflow-x-auto">
         <button
           type="button"
-          className="btn"
+          className="btn shrink-0"
           style={{
             backgroundColor: "var(--brand-navy-deep)",
             color: "var(--brand-lime)",
@@ -876,31 +876,39 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           disabled={guardando}
           onClick={() => void guardar("generada")}
         >
-          {guardando ? <Loader2 className="animate-spin" size={20} /> : <FileCheck2 size={20} />}
+          {guardando ? (
+            <Loader2 className="shrink-0 animate-spin" size={20} />
+          ) : (
+            <FileCheck2 className="shrink-0" size={20} />
+          )}
           Generar acta
         </button>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-secondary shrink-0"
           disabled={guardando}
           onClick={() => void guardar("borrador")}
         >
-          <Save size={20} /> Guardar borrador
+          <Save className="shrink-0" size={20} /> Guardar borrador
         </button>
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-secondary shrink-0"
           disabled={previsualizando}
           onClick={() => void previsualizar()}
         >
-          {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
+          {previsualizando ? (
+            <Loader2 className="shrink-0 animate-spin" size={20} />
+          ) : (
+            <Eye className="shrink-0" size={20} />
+          )}
           {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={limpiarCampos}>
-          <Eraser size={20} /> Limpiar campos
+        <button type="button" className="btn btn-secondary shrink-0" onClick={limpiarCampos}>
+          <Eraser className="shrink-0" size={20} /> Limpiar campos
         </button>
-        <button type="button" className="btn btn-secondary" onClick={cancelar}>
-          <X size={20} /> Cancelar
+        <button type="button" className="btn btn-secondary shrink-0" onClick={cancelar}>
+          <X className="shrink-0" size={20} /> Cancelar
         </button>
       </div>
 
