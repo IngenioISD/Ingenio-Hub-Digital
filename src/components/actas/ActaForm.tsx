@@ -618,7 +618,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             <label className="form-label" htmlFor="asunto">
               Asunto <span className="required">*</span>
             </label>
-            <div className="flex items-center gap-2">
+            <div className="form-input-voice">
               <input
                 id="asunto"
                 className="form-input"
@@ -864,7 +864,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      <div className="mt-5 flex flex-nowrap gap-3 overflow-x-auto">
         <button
           type="button"
           className="btn"

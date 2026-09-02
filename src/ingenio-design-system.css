@@ -973,6 +973,10 @@ p {
 .form-textarea-voice { position: relative; }
 .form-textarea-voice .form-textarea { padding-bottom: 40px; }
 
+.form-input-voice { position: relative; display: block; }
+.form-input-voice .form-input { padding-right: 44px; }
+.form-input-voice .btn-voice { top: 50%; transform: translateY(-50%); right: var(--space-2); }
+
 .btn-voice {
   position: absolute;
   bottom: var(--space-2);
