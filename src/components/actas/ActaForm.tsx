@@ -829,7 +829,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 </div>
               ))}
               <label className="btn btn-secondary cursor-pointer">
-                <ImagePlus size={16} /> Añadir fotos
+                <ImagePlus size={20} /> Añadir fotos
                 <input
                   type="file"
                   accept="image/*"
