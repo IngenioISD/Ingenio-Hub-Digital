@@ -829,7 +829,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 </div>
               ))}
               <label className="btn btn-secondary cursor-pointer">
-                <ImagePlus size={16} /> Añadir fotos
+                <ImagePlus size={20} /> Añadir fotos
                 <input
                   type="file"
                   accept="image/*"
@@ -876,7 +876,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           disabled={guardando}
           onClick={() => void guardar("generada")}
         >
-          {guardando ? <Loader2 className="animate-spin" size={16} /> : <FileCheck2 size={16} />}
+          {guardando ? <Loader2 className="animate-spin" size={20} /> : <FileCheck2 size={20} />}
           Generar acta
         </button>
         <button
@@ -885,7 +885,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           disabled={guardando}
           onClick={() => void guardar("borrador")}
         >
-          <Save size={16} /> Guardar borrador
+          <Save size={20} /> Guardar borrador
         </button>
         <button
           type="button"
@@ -893,14 +893,14 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           disabled={previsualizando}
           onClick={() => void previsualizar()}
         >
-          {previsualizando ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
+          {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
           {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
         </button>
         <button type="button" className="btn btn-secondary" onClick={limpiarCampos}>
-          <Eraser size={16} /> Limpiar campos
+          <Eraser size={20} /> Limpiar campos
         </button>
         <button type="button" className="btn btn-secondary" onClick={cancelar}>
-          <X size={16} /> Cancelar
+          <X size={20} /> Cancelar
         </button>
       </div>
 
