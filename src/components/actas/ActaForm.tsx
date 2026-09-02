@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eraser, Eye, FileCheck2, ImagePlus, Loader2, Save, X } from "lucide-react";
+import { Eraser, Eye, FileCheck2, ImagePlus, Loader2, MoreVertical, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
 import { SignaturePad } from "@/components/signature-pad";
 import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -864,7 +870,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-nowrap gap-3 overflow-x-auto">
+      {/* Escritorio */}
+      <div className="mt-5 hidden items-center gap-3 md:flex">
         <button
           type="button"
           className="btn shrink-0"
@@ -891,24 +898,80 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         >
           <Save className="shrink-0" size={20} /> Guardar borrador
         </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button type="button" className="btn btn-secondary shrink-0">
+              <MoreVertical className="shrink-0" size={20} /> Más acciones
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => void previsualizar()} disabled={previsualizando}>
+              {previsualizando ? (
+                <Loader2 className="shrink-0 animate-spin" size={16} />
+              ) : (
+                <Eye className="shrink-0" size={16} />
+              )}
+              {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={limpiarCampos}>
+              <Eraser className="shrink-0" size={16} /> Limpiar campos
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={cancelar}>
+              <X className="shrink-0" size={16} /> Cancelar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Móvil */}
+      <div className="bottom-bar md:hidden" style={{ justifyContent: "center" }}>
         <button
           type="button"
-          className="btn btn-secondary shrink-0"
+          className="bottom-bar-btn primary"
+          disabled={guardando}
+          onClick={() => void guardar("generada")}
+          aria-label="Generar acta"
+        >
+          {guardando ? <Loader2 className="animate-spin" size={20} /> : <FileCheck2 size={20} />}
+          <span className="bottom-bar-btn-label">Generar</span>
+        </button>
+        <button
+          type="button"
+          className="bottom-bar-btn secondary"
+          disabled={guardando}
+          onClick={() => void guardar("borrador")}
+          aria-label="Guardar borrador"
+        >
+          <Save size={20} />
+          <span className="bottom-bar-btn-label">Borrador</span>
+        </button>
+        <button
+          type="button"
+          className="bottom-bar-btn secondary"
           disabled={previsualizando}
           onClick={() => void previsualizar()}
+          aria-label="Previsualizar"
         >
-          {previsualizando ? (
-            <Loader2 className="shrink-0 animate-spin" size={20} />
-          ) : (
-            <Eye className="shrink-0" size={20} />
-          )}
-          {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
+          {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
+          <span className="bottom-bar-btn-label">Ver</span>
         </button>
-        <button type="button" className="btn btn-secondary shrink-0" onClick={limpiarCampos}>
-          <Eraser className="shrink-0" size={20} /> Limpiar campos
+        <button
+          type="button"
+          className="bottom-bar-btn secondary"
+          onClick={limpiarCampos}
+          aria-label="Limpiar campos"
+        >
+          <Eraser size={20} />
+          <span className="bottom-bar-btn-label">Limpiar</span>
         </button>
-        <button type="button" className="btn btn-secondary shrink-0" onClick={cancelar}>
-          <X className="shrink-0" size={20} /> Cancelar
+        <button
+          type="button"
+          className="bottom-bar-btn ghost"
+          onClick={cancelar}
+          aria-label="Cancelar"
+        >
+          <X size={20} />
+          <span className="bottom-bar-btn-label">Cancelar</span>
         </button>
       </div>
 
