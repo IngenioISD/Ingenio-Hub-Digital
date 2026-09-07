@@ -176,6 +176,8 @@ function Page() {
         proyectoCodigo,
         tipoEtiqueta: tipo?.etiqueta ?? acta.tipo_reunion,
         participantes,
+        creadoPorNombre: nombres.get(acta.creado_por_nif ?? "") ?? "",
+
         imagenes: urls,
         firma: await urlFirmada(BUCKET_FIRMAS, firmaFila?.firma_url),
         firmaPath: firmaFila?.firma_url ?? null,
