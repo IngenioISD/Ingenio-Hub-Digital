@@ -306,6 +306,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const etiquetaTipo =
     tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
   const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
+  const codigoProyecto = proyectos.find((p) => p.id === proyectoId)?.codigo_obra ?? "";
+  const urlsImagenes = () =>
+    [
+      ...imagenesExistentes.map((i) => i.preview),
+      ...imagenesNuevas.map((i) => i.preview),
+    ].filter(Boolean) as string[];
 
   const limpiarCampos = () => {
     if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
