@@ -389,20 +389,36 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     }
   }
 
-  // ---------- Firma ----------
-  if (datos.firmaPath) {
-    const url = await urlFirmada(BUCKET_FIRMAS, datos.firmaPath);
-    const img = url ? await comoJpeg(url) : null;
-    if (img) {
-      const alto = 22 + 90 + pad * 2 - 6;
-      const yy = tituloSeccion("Firma", abrirTarjeta(alto));
+  // ---------- Firma (sin tarjeta) ----------
+  if (datos.firmaDataUrlDirecta || datos.firmaPath) {
+    let directa: string | null = datos.firmaDataUrlDirecta ?? null;
+    let jpeg: string | null = null;
+    if (!directa && datos.firmaPath) {
+      const url = await urlFirmada(BUCKET_FIRMAS, datos.firmaPath);
+      const img = url ? await comoJpeg(url) : null;
+      jpeg = img?.dataUrl ?? null;
+    }
+    if (directa || jpeg) {
+      asegurar(22 + 90 + 20);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...NAVY);
+      doc.text("Firma", margen, y + 8);
+      const yImg = y + 22;
       try {
-        doc.addImage(img.dataUrl, "JPEG", margen + pad, yy, 200, 90);
+        if (directa) doc.addImage(directa, "PNG", margen, yImg, 200, 90);
+        else doc.addImage(jpeg!, "JPEG", margen, yImg, 200, 90);
       } catch {
         /* firma no legible */
       }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...TEXTO);
+      doc.text(datos.creadoPorNombre || "", margen, yImg + 90 + 12);
+      y = yImg + 90 + 20 + gap;
     }
   }
+
 
   // ---------- Marca de agua "BORRADOR" (última capa, en todas las páginas) ----------
   if (datos.estado === "borrador") {
