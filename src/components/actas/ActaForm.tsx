@@ -346,13 +346,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         asunto: asunto.trim(),
         lugar: lugar.trim(),
         fecha_reunion: new Date(fechaReunion).toISOString(),
+        tipoReunionCodigo: tipoReunion,
         tipoReunionEtiqueta: etiquetaTipo,
         proyectoNombre: nombreProyecto,
+        proyectoCodigo: codigoProyecto,
         notas: notas.trim(),
         acciones: acciones.trim() || null,
         otros_asistentes: otrosAsistentes.trim() || null,
         participantes: nombresParticipantes(),
         empresaNombre: empresa?.nombre ?? "",
+        estado: estadoActa,
+        imagenes: urlsImagenes(),
         firmaPath: null,
       });
       const url = URL.createObjectURL(blob);
