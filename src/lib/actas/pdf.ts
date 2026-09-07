@@ -116,10 +116,6 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   };
 
   // ---------- Cabecera ----------
-  const generada = datos.estado === "generada";
-  const badgeTexto = generada ? "GENERADA" : "BORRADOR";
-  const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
-  const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
   const tipoTexto = (datos.tipoReunionEtiqueta || datos.tipoReunionCodigo || "").toUpperCase();
   const tipoColor = colorTipo(datos.tipoReunionCodigo);
 
@@ -146,23 +142,13 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const pintarTituloYPastillas = (baseline: number) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-    const wEstado = anchoPastilla(badgeTexto);
-    const wTipo = tipoTexto ? anchoPastilla(tipoTexto) : 0;
-    const total = anchoTitulo + 10 + wEstado + (wTipo ? 6 + wTipo : 0);
-    const xTitulo = (anchoPag - total) / 2;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
     doc.setTextColor(...(ESTILO_CABECERA_OSCURO ? ([255, 255, 255] as [number, number, number]) : NAVY));
-    doc.text("Acta de Reunión", xTitulo, baseline);
+    doc.text("Acta de Reunión", anchoPag / 2, baseline, { align: "center" });
 
-    const yTop = baseline - 11;
-    let bx = xTitulo + anchoTitulo + 10;
-    pintarPastilla(badgeTexto, bx, yTop, wEstado, { bg: badgeBg, text: badgeFg });
     if (tipoTexto) {
-      bx += wEstado + 6;
-      pintarPastilla(tipoTexto, bx, yTop, wTipo, tipoColor);
+      const wTipo = anchoPastilla(tipoTexto);
+      const yTop = baseline + 12;
+      pintarPastilla(tipoTexto, (anchoPag - wTipo) / 2, yTop, wTipo, tipoColor);
     }
   };
 
@@ -172,14 +158,10 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.setFontSize(13);
     doc.setTextColor(...NAVY);
     for (const l of lineasAsunto) {
-      doc.text(l, anchoPag / 2, y, { align: "center" });
+      doc.text(l, margen, y);
       y += 16;
     }
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...GRIS);
-    doc.text(datos.empresaNombre || "", anchoPag / 2, y + 2, { align: "center" });
-    y += 22;
+    y += 8;
   };
 
   if (ESTILO_CABECERA_OSCURO) {
@@ -198,7 +180,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
     doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
 
-    pintarTituloYPastillas(52);
+    pintarTituloYPastillas(44);
 
     y = altoFranja + 24;
     pintarAsuntoYEmpresa();
@@ -216,7 +198,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     y += 56;
 
     pintarTituloYPastillas(y + 14);
-    y += 34;
+    y += 40;
     pintarAsuntoYEmpresa();
   }
 
@@ -306,7 +288,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       ? datos.participantes.flatMap((t) => lineasDe(`• ${t}`, anchoInterno))
       : ["—"];
     if (datos.otros_asistentes) {
-      lineas.push(...lineasDe(`Otros: ${datos.otros_asistentes}`, anchoInterno));
+      lineas.push(...lineasDe(`• Otros: ${datos.otros_asistentes}`, anchoInterno));
     }
     const alto = 22 + lineas.length * 13 + pad * 2 - 6;
     const yy = tituloSeccion("Asistentes", abrirTarjeta(alto));
@@ -399,12 +381,8 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       jpeg = img?.dataUrl ?? null;
     }
     if (directa || jpeg) {
-      asegurar(22 + 90 + 20);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(...NAVY);
-      doc.text("Firma", margen, y + 8);
-      const yImg = y + 22;
+      asegurar(90 + 14);
+      const yImg = y + 2;
       try {
         if (directa) doc.addImage(directa, "PNG", margen, yImg, 200, 90);
         else doc.addImage(jpeg!, "JPEG", margen, yImg, 200, 90);
@@ -414,8 +392,8 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
       doc.setTextColor(...TEXTO);
-      doc.text(datos.creadoPorNombre || "", margen, yImg + 90 + 12);
-      y = yImg + 90 + 20 + gap;
+      doc.text(datos.creadoPorNombre || "", margen, yImg + 90 + 4);
+      y = yImg + 90 + 14 + gap;
     }
   }
 

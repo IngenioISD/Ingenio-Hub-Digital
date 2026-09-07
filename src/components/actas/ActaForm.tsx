@@ -943,7 +943,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 style={{ borderRadius: "var(--radius-md)" }}
               />
             ) : null}
-            <SignaturePad onChange={setFirmaDataUrl} />
+            <div className="w-full md:w-1/2">
+              <SignaturePad onChange={setFirmaDataUrl} />
+            </div>
           </div>
         </div>
       </div>
