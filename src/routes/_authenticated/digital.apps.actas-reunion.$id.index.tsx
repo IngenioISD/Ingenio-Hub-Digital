@@ -213,11 +213,16 @@ function Page() {
           notas: data.acta.notas,
           acciones: data.acta.acciones,
           otros_asistentes: data.acta.otros_asistentes,
-          participantes: data.participantes.map((p) => p.nombre),
+          participantes: [
+            ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+            ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+          ],
           empresaNombre: empresa?.nombre ?? "",
           estado: "generada",
           imagenes: data.imagenes,
+          creadoPorNombre: data.creadoPorNombre,
           firmaPath: data.firmaPath,
+
         },
         usuarioCliente.cliente_id,
       );
