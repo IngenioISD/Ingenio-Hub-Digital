@@ -302,17 +302,17 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
 
   // ---------- Asistentes ----------
   {
-    const items = [
-      ...datos.participantes,
-      ...(datos.otros_asistentes ? [datos.otros_asistentes] : []),
-    ];
-    const lineas = items.length
-      ? items.flatMap((t) => lineasDe(`• ${t}`, anchoInterno))
+    const lineas = datos.participantes.length
+      ? datos.participantes.flatMap((t) => lineasDe(`• ${t}`, anchoInterno))
       : ["—"];
+    if (datos.otros_asistentes) {
+      lineas.push(...lineasDe(`Otros: ${datos.otros_asistentes}`, anchoInterno));
+    }
     const alto = 22 + lineas.length * 13 + pad * 2 - 6;
     const yy = tituloSeccion("Asistentes", abrirTarjeta(alto));
     pintarLineas(lineas, margen + pad, yy);
   }
+
 
   // ---------- Contenido ----------
   {
