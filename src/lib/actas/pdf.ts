@@ -20,6 +20,9 @@ export type DatosPdfActa = {
   estado: "borrador" | "generada";
   imagenes: string[];
   firmaPath: string | null;
+  /** Firma recién dibujada (dataURL PNG) todavía no subida a Storage. */
+  firmaDataUrlDirecta?: string;
+  creadoPorNombre: string;
 };
 
 /** Cambia a false para volver a la cabecera clara original. */
@@ -30,6 +33,21 @@ const LIMA: [number, number, number] = [179, 255, 0];
 const CARD_BG: [number, number, number] = [244, 246, 249];
 const GRIS: [number, number, number] = [110, 118, 129];
 const TEXTO: [number, number, number] = [40, 44, 50];
+
+type Par = { bg: [number, number, number]; text: [number, number, number] };
+
+/** Equivalente RGB de los tokens --tipo-reunion-*. */
+const COLORES_TIPO: Record<string, Par> = {
+  df: { bg: [238, 237, 254], text: [83, 74, 183] },
+  propiedad: { bg: [234, 243, 222], text: [59, 109, 17] },
+  interna: { bg: [230, 241, 251], text: [24, 95, 165] },
+  subcontrata: { bg: [250, 238, 218], text: [133, 79, 11] },
+  otra: { bg: [241, 239, 232], text: [95, 94, 90] },
+};
+
+function colorTipo(codigo: string): Par {
+  return COLORES_TIPO[(codigo ?? "").toLowerCase()] ?? COLORES_TIPO["otra"]!;
+}
 
 /** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
 function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
@@ -44,13 +62,14 @@ function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
     ctx.font = "bold 78px Helvetica, Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(0, 30, 56, 0.08)";
+    ctx.fillStyle = "rgba(230, 81, 0, 0.10)";
     ctx.fillText("BORRADOR", 0, 0);
     return canvas.toDataURL("image/png");
   } catch {
     return null;
   }
 }
+
 
 
 /** Carga una imagen (cualquier formato) y la devuelve como JPEG dataURL (jsPDF usa DCTDecode). */
