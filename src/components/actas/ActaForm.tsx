@@ -22,6 +22,7 @@ import {
   BUCKET_FIRMAS,
   BUCKET_IMAGENES,
   aDatetimeLocal,
+  comprimirImagen,
   dataUrlToBlob,
   urlFirmada,
 } from "@/lib/actas/actas";
