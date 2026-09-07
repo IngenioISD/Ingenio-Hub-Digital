@@ -337,11 +337,11 @@ function Page() {
       <div className="mt-5 flex max-w-4xl flex-col gap-4">
         <Seccion titulo="Datos generales">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Dato etiqueta="Asunto" valor={acta.asunto} />
-            <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
-            <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
+            <div className="sm:col-span-2">
+              <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
+            </div>
             <Dato etiqueta="Lugar" valor={acta.lugar} />
-            <Dato etiqueta="Tipo de reunión" valor={acta.tipo_otro_descripcion || data.tipoEtiqueta} />
+            <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
           </div>
         </Seccion>
 
