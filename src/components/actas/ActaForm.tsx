@@ -898,6 +898,14 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         >
           <Save className="shrink-0" size={20} /> Guardar borrador
         </button>
+        <button
+          type="button"
+          className="btn btn-secondary shrink-0"
+          disabled={guardando}
+          onClick={cancelar}
+        >
+          <X className="shrink-0" size={20} /> Cancelar
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button type="button" className="btn btn-secondary shrink-0">
@@ -915,9 +923,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={limpiarCampos}>
               <Eraser className="shrink-0" size={16} /> Limpiar campos
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={cancelar}>
-              <X className="shrink-0" size={16} /> Cancelar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
