@@ -77,3 +77,25 @@ export function aDatetimeLocal(valor: string | null | undefined): string {
     fecha.getHours(),
   )}:${pad(fecha.getMinutes())}`;
 }
+
+/** Comprime una imagen a JPEG (máx. 1200px de ancho, calidad 0.7) antes de subirla. */
+export async function comprimirImagen(file: File, maxAncho = 1200, calidad = 0.7): Promise<Blob> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const escala = Math.min(1, maxAncho / bitmap.width);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * escala);
+    canvas.height = Math.round(bitmap.height * escala);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", calidad),
+    );
+    return blob ?? file;
+  } catch {
+    return file;
+  }
+}
