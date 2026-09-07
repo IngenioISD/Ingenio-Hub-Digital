@@ -50,10 +50,12 @@ type Detalle = {
   proyectoCodigo: string;
   tipoEtiqueta: string;
   participantes: { nombre: string; origen: string }[];
+  creadoPorNombre: string;
   imagenes: string[];
   firma: string | null;
   firmaPath: string | null;
 };
+
 
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
@@ -125,6 +127,7 @@ function Page() {
       const nifs = (filas ?? [])
         .filter((f) => f.tipo_participante === "interna" && f.referencia_nif)
         .map((f) => f.referencia_nif as string);
+      if (acta.creado_por_nif) nifs.push(acta.creado_por_nif);
       const nombres = new Map<string, string>();
       if (nifs.length) {
         const { data: personas } = await supabase
@@ -136,14 +139,25 @@ function Page() {
         }
       }
 
+      const ORIGEN: Record<string, string> = {
+        interna: "Personal interno",
+        df: "Dirección facultativa",
+        propiedad: "Propiedad",
+        subcontrata: "Subcontrata",
+      };
+
       const participantes = (filas ?? []).map((f) =>
         f.tipo_participante === "interna"
           ? {
               nombre: nombres.get(f.referencia_nif ?? "") ?? f.referencia_nif ?? "—",
-              origen: "Personal interno",
+              origen: ORIGEN["interna"]!,
             }
-          : { nombre: f.nombre_libre ?? "—", origen: "Externo" },
+          : {
+              nombre: f.nombre_libre ?? "—",
+              origen: ORIGEN[f.tipo_participante ?? ""] ?? "Otro",
+            },
       );
+
 
       const { data: imagenes } = await supabase.from("acta_imagenes").select("url").eq("acta_id", id).order("orden");
       const urls = (await Promise.all((imagenes ?? []).map((img) => urlFirmada(BUCKET_IMAGENES, img.url)))).filter(
@@ -162,6 +176,8 @@ function Page() {
         proyectoCodigo,
         tipoEtiqueta: tipo?.etiqueta ?? acta.tipo_reunion,
         participantes,
+        creadoPorNombre: nombres.get(acta.creado_por_nif ?? "") ?? "",
+
         imagenes: urls,
         firma: await urlFirmada(BUCKET_FIRMAS, firmaFila?.firma_url),
         firmaPath: firmaFila?.firma_url ?? null,
@@ -197,11 +213,16 @@ function Page() {
           notas: data.acta.notas,
           acciones: data.acta.acciones,
           otros_asistentes: data.acta.otros_asistentes,
-          participantes: data.participantes.map((p) => p.nombre),
+          participantes: [
+            ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+            ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+          ],
           empresaNombre: empresa?.nombre ?? "",
           estado: "generada",
           imagenes: data.imagenes,
+          creadoPorNombre: data.creadoPorNombre,
           firmaPath: data.firmaPath,
+
         },
         usuarioCliente.cliente_id,
       );

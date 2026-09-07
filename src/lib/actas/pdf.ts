@@ -20,6 +20,9 @@ export type DatosPdfActa = {
   estado: "borrador" | "generada";
   imagenes: string[];
   firmaPath: string | null;
+  /** Firma recién dibujada (dataURL PNG) todavía no subida a Storage. */
+  firmaDataUrlDirecta?: string;
+  creadoPorNombre: string;
 };
 
 /** Cambia a false para volver a la cabecera clara original. */
@@ -30,6 +33,21 @@ const LIMA: [number, number, number] = [179, 255, 0];
 const CARD_BG: [number, number, number] = [244, 246, 249];
 const GRIS: [number, number, number] = [110, 118, 129];
 const TEXTO: [number, number, number] = [40, 44, 50];
+
+type Par = { bg: [number, number, number]; text: [number, number, number] };
+
+/** Equivalente RGB de los tokens --tipo-reunion-*. */
+const COLORES_TIPO: Record<string, Par> = {
+  df: { bg: [238, 237, 254], text: [83, 74, 183] },
+  propiedad: { bg: [234, 243, 222], text: [59, 109, 17] },
+  interna: { bg: [230, 241, 251], text: [24, 95, 165] },
+  subcontrata: { bg: [250, 238, 218], text: [133, 79, 11] },
+  otra: { bg: [241, 239, 232], text: [95, 94, 90] },
+};
+
+function colorTipo(codigo: string): Par {
+  return COLORES_TIPO[(codigo ?? "").toLowerCase()] ?? COLORES_TIPO["otra"]!;
+}
 
 /** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
 function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
@@ -44,13 +62,14 @@ function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
     ctx.font = "bold 78px Helvetica, Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(0, 30, 56, 0.08)";
+    ctx.fillStyle = "rgba(230, 81, 0, 0.10)";
     ctx.fillText("BORRADOR", 0, 0);
     return canvas.toDataURL("image/png");
   } catch {
     return null;
   }
 }
+
 
 
 /** Carga una imagen (cualquier formato) y la devuelve como JPEG dataURL (jsPDF usa DCTDecode). */
@@ -101,6 +120,67 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const badgeTexto = generada ? "GENERADA" : "BORRADOR";
   const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
   const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
+  const tipoTexto = (datos.tipoReunionEtiqueta || datos.tipoReunionCodigo || "").toUpperCase();
+  const tipoColor = colorTipo(datos.tipoReunionCodigo);
+
+  const anchoPastilla = (texto: string) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    return doc.getTextWidth(texto) + 14;
+  };
+  const pintarPastilla = (
+    texto: string,
+    x: number,
+    yTop: number,
+    w: number,
+    par: { bg: [number, number, number]; text: [number, number, number] },
+  ) => {
+    doc.setFillColor(...par.bg);
+    doc.roundedRect(x, yTop, w, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...par.text);
+    doc.text(texto, x + w / 2, yTop + 9.5, { align: "center" });
+  };
+
+  const pintarTituloYPastillas = (baseline: number) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    const wEstado = anchoPastilla(badgeTexto);
+    const wTipo = tipoTexto ? anchoPastilla(tipoTexto) : 0;
+    const total = anchoTitulo + 10 + wEstado + (wTipo ? 6 + wTipo : 0);
+    const xTitulo = (anchoPag - total) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...(ESTILO_CABECERA_OSCURO ? ([255, 255, 255] as [number, number, number]) : NAVY));
+    doc.text("Acta de Reunión", xTitulo, baseline);
+
+    const yTop = baseline - 11;
+    let bx = xTitulo + anchoTitulo + 10;
+    pintarPastilla(badgeTexto, bx, yTop, wEstado, { bg: badgeBg, text: badgeFg });
+    if (tipoTexto) {
+      bx += wEstado + 6;
+      pintarPastilla(tipoTexto, bx, yTop, wTipo, tipoColor);
+    }
+  };
+
+  const pintarAsuntoYEmpresa = () => {
+    const lineasAsunto = doc.splitTextToSize(datos.asunto || "—", ancho) as string[];
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...NAVY);
+    for (const l of lineasAsunto) {
+      doc.text(l, anchoPag / 2, y, { align: "center" });
+      y += 16;
+    }
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y + 2, { align: "center" });
+    y += 22;
+  };
 
   if (ESTILO_CABECERA_OSCURO) {
     const altoFranja = 80;
@@ -118,32 +198,10 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
     doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-    doc.setFontSize(7.5);
-    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+    pintarTituloYPastillas(52);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Acta de Reunión", xTitulo, 52);
-
-    const bx = xTitulo + anchoTitulo + 10;
-    doc.setFillColor(...badgeBg);
-    doc.roundedRect(bx, 41, anchoBadge, 14, 7, 7, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...badgeFg);
-    doc.text(badgeTexto, bx + anchoBadge / 2, 50.5, { align: "center" });
-
-    y = altoFranja + 20;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...GRIS);
-    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-    y += 22;
+    y = altoFranja + 24;
+    pintarAsuntoYEmpresa();
   } else {
     doc.setDrawColor(180, 188, 196);
     doc.setLineDashPattern([3, 3], 0);
@@ -157,33 +215,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
     y += 56;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-    doc.setFontSize(7.5);
-    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(...NAVY);
-    doc.text("Acta de Reunión", xTitulo, y + 14);
-
-    const bx = xTitulo + anchoTitulo + 10;
-    doc.setFillColor(...badgeBg);
-    doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...badgeFg);
-    doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
-    y += 30;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...GRIS);
-    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-    y += 22;
+    pintarTituloYPastillas(y + 14);
+    y += 34;
+    pintarAsuntoYEmpresa();
   }
+
 
   // ---------- Utilidades de tarjeta ----------
   /** Dibuja una tarjeta con altura conocida y devuelve la y interior inicial. */
@@ -233,12 +269,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   {
     const colW = (anchoInterno - 20) / 2;
     const pares: [string, string][] = [
-      ["Asunto", datos.asunto],
       ["Proyecto", `${datos.proyectoCodigo ? `${datos.proyectoCodigo} · ` : ""}${datos.proyectoNombre}`],
       ["Fecha", formatoFechaHora(datos.fecha_reunion)],
       ["Lugar", datos.lugar],
-      ["Tipo de reunión", datos.tipoReunionEtiqueta],
     ];
+
     const alturas: number[] = [];
     for (const [, valor] of pares) alturas.push(lineasDe(valor, colW).length * 13 + 12);
     let altoDatos = 0;
@@ -267,17 +302,17 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
 
   // ---------- Asistentes ----------
   {
-    const items = [
-      ...datos.participantes,
-      ...(datos.otros_asistentes ? [datos.otros_asistentes] : []),
-    ];
-    const lineas = items.length
-      ? items.flatMap((t) => lineasDe(`• ${t}`, anchoInterno))
+    const lineas = datos.participantes.length
+      ? datos.participantes.flatMap((t) => lineasDe(`• ${t}`, anchoInterno))
       : ["—"];
+    if (datos.otros_asistentes) {
+      lineas.push(...lineasDe(`Otros: ${datos.otros_asistentes}`, anchoInterno));
+    }
     const alto = 22 + lineas.length * 13 + pad * 2 - 6;
     const yy = tituloSeccion("Asistentes", abrirTarjeta(alto));
     pintarLineas(lineas, margen + pad, yy);
   }
+
 
   // ---------- Contenido ----------
   {
@@ -354,20 +389,36 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     }
   }
 
-  // ---------- Firma ----------
-  if (datos.firmaPath) {
-    const url = await urlFirmada(BUCKET_FIRMAS, datos.firmaPath);
-    const img = url ? await comoJpeg(url) : null;
-    if (img) {
-      const alto = 22 + 90 + pad * 2 - 6;
-      const yy = tituloSeccion("Firma", abrirTarjeta(alto));
+  // ---------- Firma (sin tarjeta) ----------
+  if (datos.firmaDataUrlDirecta || datos.firmaPath) {
+    const directa: string | null = datos.firmaDataUrlDirecta ?? null;
+    let jpeg: string | null = null;
+    if (!directa && datos.firmaPath) {
+      const url = await urlFirmada(BUCKET_FIRMAS, datos.firmaPath);
+      const img = url ? await comoJpeg(url) : null;
+      jpeg = img?.dataUrl ?? null;
+    }
+    if (directa || jpeg) {
+      asegurar(22 + 90 + 20);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...NAVY);
+      doc.text("Firma", margen, y + 8);
+      const yImg = y + 22;
       try {
-        doc.addImage(img.dataUrl, "JPEG", margen + pad, yy, 200, 90);
+        if (directa) doc.addImage(directa, "PNG", margen, yImg, 200, 90);
+        else doc.addImage(jpeg!, "JPEG", margen, yImg, 200, 90);
       } catch {
         /* firma no legible */
       }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...TEXTO);
+      doc.text(datos.creadoPorNombre || "", margen, yImg + 90 + 12);
+      y = yImg + 90 + 20 + gap;
     }
   }
+
 
   // ---------- Marca de agua "BORRADOR" (última capa, en todas las páginas) ----------
   if (datos.estado === "borrador") {

@@ -61,7 +61,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
   const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
+  const [firmaPathExistente, setFirmaPathExistente] = useState<string | null>(null);
+  const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
+
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
@@ -197,6 +200,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
+  // Nombre de la persona conectada (para actas nuevas: creador y firmante)
+  const { data: miNombre = "" } = useQuery<string>({
+    queryKey: ["actas", "mi-nombre", clienteId],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email ?? "";
+      if (!email) return "";
+      const { data } = await supabase
+        .from("personal")
+        .select("nombre, apellido_1, apellido_2")
+        .eq("cliente_id", clienteId!)
+        .eq("email", email)
+        .maybeSingle();
+      if (!data) return "";
+      return [data.nombre, data.apellido_1, data.apellido_2].filter(Boolean).join(" ");
+    },
+  });
+
 
   // Carga del acta existente
   useEffect(() => {
@@ -221,6 +243,20 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setAcciones(acta.acciones ?? "");
       setOtrosAsistentes(acta.otros_asistentes ?? "");
       setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
+
+      if (acta.creado_por_nif) {
+        const { data: creador } = await supabase
+          .from("personal")
+          .select("nombre, apellido_1, apellido_2")
+          .eq("nif", acta.creado_por_nif)
+          .maybeSingle();
+        if (creador && !cancelado) {
+          setCreadoPorNombre(
+            [creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" "),
+          );
+        }
+      }
+
 
       const { data: participantes } = await supabase
         .from("acta_participantes")
@@ -257,8 +293,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .eq("acta_id", actaId)
         .maybeSingle();
       if (firma?.firma_url && !cancelado) {
+        setFirmaPathExistente(firma.firma_url);
         setFirmaExistente(await urlFirmada(BUCKET_FIRMAS, firma.firma_url));
       }
+
 
       if (!cancelado) setCargado(true);
     })();
@@ -299,10 +337,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       firmaDataUrl,
   );
 
+  const nombreCreador = creadoPorNombre || miNombre;
+
+  const ORIGEN_TIPO: Record<string, string> = {
+    interna: "Personal interno",
+    df: "Dirección facultativa",
+    propiedad: "Propiedad",
+    subcontrata: "Subcontrata",
+  };
+
   const nombresParticipantes = () => [
-    ...personalSeleccionado.map((nif) => nombresPersonal.get(nif) ?? nif),
-    ...participantesLibres,
+    ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
+    ...personalSeleccionado.map(
+      (nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`,
+    ),
+    ...participantesLibres.map(
+      (nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`,
+    ),
   ];
+
 
   const etiquetaTipo =
     tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
@@ -358,7 +411,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         empresaNombre: empresa?.nombre ?? "",
         estado: estadoActa,
         imagenes: urlsImagenes(),
-        firmaPath: null,
+        creadoPorNombre: nombreCreador,
+        ...(firmaDataUrl
+          ? { firmaDataUrlDirecta: firmaDataUrl, firmaPath: null }
+          : { firmaPath: firmaPathExistente }),
+
       });
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -517,7 +574,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           empresaNombre: empresa?.nombre ?? "",
           estado: "generada",
           imagenes: urlsImagenes(),
+          creadoPorNombre: nombreCreador,
           firmaPath,
+
         });
         await supabase
           .from("actas")
