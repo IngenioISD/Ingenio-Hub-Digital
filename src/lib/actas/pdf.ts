@@ -391,7 +391,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
 
   // ---------- Firma (sin tarjeta) ----------
   if (datos.firmaDataUrlDirecta || datos.firmaPath) {
-    let directa: string | null = datos.firmaDataUrlDirecta ?? null;
+    const directa: string | null = datos.firmaDataUrlDirecta ?? null;
     let jpeg: string | null = null;
     if (!directa && datos.firmaPath) {
       const url = await urlFirmada(BUCKET_FIRMAS, datos.firmaPath);
