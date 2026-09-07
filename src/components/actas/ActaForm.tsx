@@ -411,7 +411,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         empresaNombre: empresa?.nombre ?? "",
         estado: estadoActa,
         imagenes: urlsImagenes(),
-        firmaPath: null,
+        creadoPorNombre: nombreCreador,
+        ...(firmaDataUrl
+          ? { firmaDataUrlDirecta: firmaDataUrl, firmaPath: null }
+          : { firmaPath: firmaPathExistente }),
+
       });
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
