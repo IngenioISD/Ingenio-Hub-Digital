@@ -98,9 +98,15 @@ function Page() {
       if (!acta) return null;
 
       let proyectoNombre = "—";
+      let proyectoCodigo = "";
       if (acta.proyecto_id) {
-        const { data: p } = await supabase.from("proyectos").select("nombre").eq("id", acta.proyecto_id).maybeSingle();
+        const { data: p } = await supabase
+          .from("proyectos")
+          .select("nombre, codigo_obra")
+          .eq("id", acta.proyecto_id)
+          .maybeSingle();
         proyectoNombre = p?.nombre ?? "—";
+        proyectoCodigo = p?.codigo_obra ?? "";
       }
 
       const { data: tipo } = await supabase
