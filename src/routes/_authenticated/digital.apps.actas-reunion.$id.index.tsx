@@ -127,6 +127,7 @@ function Page() {
       const nifs = (filas ?? [])
         .filter((f) => f.tipo_participante === "interna" && f.referencia_nif)
         .map((f) => f.referencia_nif as string);
+      if (acta.creado_por_nif) nifs.push(acta.creado_por_nif);
       const nombres = new Map<string, string>();
       if (nifs.length) {
         const { data: personas } = await supabase
@@ -138,14 +139,25 @@ function Page() {
         }
       }
 
+      const ORIGEN: Record<string, string> = {
+        interna: "Personal interno",
+        df: "Dirección facultativa",
+        propiedad: "Propiedad",
+        subcontrata: "Subcontrata",
+      };
+
       const participantes = (filas ?? []).map((f) =>
         f.tipo_participante === "interna"
           ? {
               nombre: nombres.get(f.referencia_nif ?? "") ?? f.referencia_nif ?? "—",
-              origen: "Personal interno",
+              origen: ORIGEN["interna"]!,
             }
-          : { nombre: f.nombre_libre ?? "—", origen: "Externo" },
+          : {
+              nombre: f.nombre_libre ?? "—",
+              origen: ORIGEN[f.tipo_participante ?? ""] ?? "Otro",
+            },
       );
+
 
       const { data: imagenes } = await supabase.from("acta_imagenes").select("url").eq("acta_id", id).order("orden");
       const urls = (await Promise.all((imagenes ?? []).map((img) => urlFirmada(BUCKET_IMAGENES, img.url)))).filter(
