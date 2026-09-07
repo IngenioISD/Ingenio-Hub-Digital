@@ -47,6 +47,7 @@ type Detalle = {
     proyecto_id: string | null;
   };
   proyectoNombre: string;
+  proyectoCodigo: string;
   tipoEtiqueta: string;
   participantes: { nombre: string; origen: string }[];
   imagenes: string[];
@@ -158,6 +159,7 @@ function Page() {
       return {
         acta,
         proyectoNombre,
+        proyectoCodigo,
         tipoEtiqueta: tipo?.etiqueta ?? acta.tipo_reunion,
         participantes,
         imagenes: urls,
@@ -188,13 +190,17 @@ function Page() {
           asunto: data.acta.asunto,
           lugar: data.acta.lugar,
           fecha_reunion: data.acta.fecha_reunion,
+          tipoReunionCodigo: data.acta.tipo_reunion,
           tipoReunionEtiqueta: data.tipoEtiqueta,
           proyectoNombre: data.proyectoNombre,
+          proyectoCodigo: data.proyectoCodigo,
           notas: data.acta.notas,
           acciones: data.acta.acciones,
           otros_asistentes: data.acta.otros_asistentes,
           participantes: data.participantes.map((p) => p.nombre),
           empresaNombre: empresa?.nombre ?? "",
+          estado: "generada",
+          imagenes: data.imagenes,
           firmaPath: data.firmaPath,
         },
         usuarioCliente.cliente_id,
