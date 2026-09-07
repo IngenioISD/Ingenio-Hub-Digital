@@ -61,7 +61,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
   const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
+  const [firmaPathExistente, setFirmaPathExistente] = useState<string | null>(null);
+  const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
+
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
