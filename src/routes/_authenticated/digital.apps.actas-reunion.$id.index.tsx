@@ -10,13 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useEmpresa } from "@/hooks/use-empresa";
 import { usePermisosActas } from "@/hooks/use-permisos-actas";
-import {
-  BUCKET_FIRMAS,
-  BUCKET_IMAGENES,
-  BUCKET_PDF,
-  formatoFechaHora,
-  urlFirmada,
-} from "@/lib/actas/actas";
+import { BUCKET_FIRMAS, BUCKET_IMAGENES, BUCKET_PDF, formatoFechaHora, urlFirmada } from "@/lib/actas/actas";
 import { generarPdfActa } from "@/lib/actas/pdf";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id/")({
@@ -105,11 +99,7 @@ function Page() {
 
       let proyectoNombre = "—";
       if (acta.proyecto_id) {
-        const { data: p } = await supabase
-          .from("proyectos")
-          .select("nombre")
-          .eq("id", acta.proyecto_id)
-          .maybeSingle();
+        const { data: p } = await supabase.from("proyectos").select("nombre").eq("id", acta.proyecto_id).maybeSingle();
         proyectoNombre = p?.nombre ?? "—";
       }
 
@@ -135,32 +125,23 @@ function Page() {
           .select("nif, nombre, apellido_1, apellido_2")
           .in("nif", nifs);
         for (const p of personas ?? []) {
-          nombres.set(
-            p.nif,
-            [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" "),
-          );
+          nombres.set(p.nif, [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" "));
         }
       }
 
       const participantes = (filas ?? []).map((f) =>
         f.tipo_participante === "interna"
           ? {
-              nombre: nombres.get(f.referencia_nif ?? "") ?? (f.referencia_nif ?? "—"),
+              nombre: nombres.get(f.referencia_nif ?? "") ?? f.referencia_nif ?? "—",
               origen: "Personal interno",
             }
           : { nombre: f.nombre_libre ?? "—", origen: "Externo" },
       );
 
-      const { data: imagenes } = await supabase
-        .from("acta_imagenes")
-        .select("url")
-        .eq("acta_id", id)
-        .order("orden");
-      const urls = (
-        await Promise.all(
-          (imagenes ?? []).map((img) => urlFirmada(BUCKET_IMAGENES, img.url)),
-        )
-      ).filter(Boolean) as string[];
+      const { data: imagenes } = await supabase.from("acta_imagenes").select("url").eq("acta_id", id).order("orden");
+      const urls = (await Promise.all((imagenes ?? []).map((img) => urlFirmada(BUCKET_IMAGENES, img.url)))).filter(
+        Boolean,
+      ) as string[];
 
       const { data: firmaFila } = await supabase
         .from("acta_firmas")
@@ -275,7 +256,7 @@ function Page() {
 
   return (
     <LayoutActas subtitulo={acta.asunto}>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex max-w-4xl flex-wrap items-center gap-2">
         <BadgeEstadoActa estado={acta.estado} />
         <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
         <div className="ml-auto flex flex-wrap gap-2">
@@ -299,11 +280,7 @@ function Page() {
                 disabled={generando}
                 onClick={() => void generar()}
               >
-                {generando ? (
-                  <Loader2 className="animate-spin" size={14} />
-                ) : (
-                  <FileCog size={14} />
-                )}
+                {generando ? <Loader2 className="animate-spin" size={14} /> : <FileCog size={14} />}
                 Generar PDF
               </button>
             </>
@@ -331,18 +308,13 @@ function Page() {
             <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
             <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
             <Dato etiqueta="Lugar" valor={acta.lugar} />
-            <Dato
-              etiqueta="Tipo de reunión"
-              valor={acta.tipo_otro_descripcion || data.tipoEtiqueta}
-            />
+            <Dato etiqueta="Tipo de reunión" valor={acta.tipo_otro_descripcion || data.tipoEtiqueta} />
           </div>
         </Seccion>
 
         <Seccion titulo="Asistentes">
           {data.participantes.length === 0 && !acta.otros_asistentes ? (
-            <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>
-              Sin asistentes registrados.
-            </p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>Sin asistentes registrados.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {data.participantes.map((p, i) => (
@@ -367,10 +339,7 @@ function Page() {
           </p>
           {acta.acciones ? (
             <>
-              <div
-                className="mt-4"
-                style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}
-              >
+              <div className="mt-4" style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
                 Acciones a tomar
               </div>
               <p className="whitespace-pre-wrap" style={{ fontSize: "var(--text-sm)" }}>
