@@ -97,49 +97,93 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   };
 
   // ---------- Cabecera ----------
-  doc.setDrawColor(180, 188, 196);
-  doc.setLineDashPattern([3, 3], 0);
-  doc.roundedRect(margen, y, 100, 40, 4, 4, "S");
-  doc.roundedRect(anchoPag - margen - 100, y, 100, 40, 4, 4, "S");
-  doc.setLineDashPattern([], 0);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRIS);
-  doc.text("LOGO CONSTRUCTORA", margen + 50, y + 23, { align: "center" });
-  doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
-  y += 56;
-
   const generada = datos.estado === "generada";
   const badgeTexto = generada ? "GENERADA" : "BORRADOR";
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-  doc.setFontSize(7.5);
-  const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-  const total = anchoTitulo + 10 + anchoBadge;
-  const xTitulo = (anchoPag - total) / 2;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...NAVY);
-  doc.text("Acta de Reunión", xTitulo, y + 14);
-
-  const bx = xTitulo + anchoTitulo + 10;
   const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
   const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
-  doc.setFillColor(...badgeBg);
-  doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...badgeFg);
-  doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
-  y += 30;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...GRIS);
-  doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-  y += 22;
+  if (ESTILO_CABECERA_OSCURO) {
+    const altoFranja = 80;
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, anchoPag, altoFranja, "F");
+
+    doc.setDrawColor(120, 140, 160);
+    doc.setLineDashPattern([3, 3], 0);
+    doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
+    doc.roundedRect(anchoPag - margen - 100, 20, 100, 40, 4, 4, "S");
+    doc.setLineDashPattern([], 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(200, 210, 220);
+    doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
+    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    doc.setFontSize(7.5);
+    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
+    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Acta de Reunión", xTitulo, 52);
+
+    const bx = xTitulo + anchoTitulo + 10;
+    doc.setFillColor(...badgeBg);
+    doc.roundedRect(bx, 41, anchoBadge, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...badgeFg);
+    doc.text(badgeTexto, bx + anchoBadge / 2, 50.5, { align: "center" });
+
+    y = altoFranja + 20;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
+    y += 22;
+  } else {
+    doc.setDrawColor(180, 188, 196);
+    doc.setLineDashPattern([3, 3], 0);
+    doc.roundedRect(margen, y, 100, 40, 4, 4, "S");
+    doc.roundedRect(anchoPag - margen - 100, y, 100, 40, 4, 4, "S");
+    doc.setLineDashPattern([], 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRIS);
+    doc.text("LOGO CONSTRUCTORA", margen + 50, y + 23, { align: "center" });
+    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
+    y += 56;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    doc.setFontSize(7.5);
+    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
+    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...NAVY);
+    doc.text("Acta de Reunión", xTitulo, y + 14);
+
+    const bx = xTitulo + anchoTitulo + 10;
+    doc.setFillColor(...badgeBg);
+    doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...badgeFg);
+    doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
+    y += 30;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
+    y += 22;
+  }
 
   // ---------- Utilidades de tarjeta ----------
   /** Dibuja una tarjeta con altura conocida y devuelve la y interior inicial. */
@@ -147,10 +191,15 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     asegurar(alto);
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margen, y, ancho, alto, 6, 6, "F");
+    if (ESTILO_CABECERA_OSCURO) {
+      doc.setFillColor(...LIMA);
+      doc.rect(margen, y + 6, 3, alto - 12, "F");
+    }
     const inicio = y + pad;
     y += alto + gap;
     return inicio;
   };
+
 
   const tituloSeccion = (texto: string, yy: number) => {
     doc.setFont("helvetica", "bold");
