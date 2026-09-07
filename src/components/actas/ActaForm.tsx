@@ -501,13 +501,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           asunto: payload.asunto,
           lugar: payload.lugar,
           fecha_reunion: payload.fecha_reunion,
+          tipoReunionCodigo: tipoReunion,
           tipoReunionEtiqueta: etiquetaTipo,
           proyectoNombre: nombreProyecto,
+          proyectoCodigo: codigoProyecto,
           notas: payload.notas,
           acciones: payload.acciones,
           otros_asistentes: payload.otros_asistentes,
           participantes: nombresParticipantes(),
           empresaNombre: empresa?.nombre ?? "",
+          estado: "generada",
+          imagenes: urlsImagenes(),
           firmaPath,
         });
         await supabase
