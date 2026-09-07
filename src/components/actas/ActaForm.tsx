@@ -22,6 +22,7 @@ import {
   BUCKET_FIRMAS,
   BUCKET_IMAGENES,
   aDatetimeLocal,
+  comprimirImagen,
   dataUrlToBlob,
   urlFirmada,
 } from "@/lib/actas/actas";
@@ -460,8 +461,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       // Imágenes nuevas — la primera carpeta debe ser el acta_id.
       let orden = imagenesExistentes.length;
       for (const { file } of imagenesNuevas) {
-        const path = `${id}/${crypto.randomUUID()}-${file.name}`;
-        const { error } = await supabase.storage.from(BUCKET_IMAGENES).upload(path, file);
+        const comprimida = await comprimirImagen(file);
+        const nombreBase = file.name.replace(/\.[^.]+$/, "");
+        const path = `${id}/${crypto.randomUUID()}-${nombreBase}.jpg`;
+        const { error } = await supabase.storage
+          .from(BUCKET_IMAGENES)
+          .upload(path, comprimida, { contentType: "image/jpeg" });
         if (error) throw error;
         const { error: errImg } = await supabase
           .from("acta_imagenes")

@@ -22,10 +22,36 @@ export type DatosPdfActa = {
   firmaPath: string | null;
 };
 
+/** Cambia a false para volver a la cabecera clara original. */
+const ESTILO_CABECERA_OSCURO = true;
+
 const NAVY: [number, number, number] = [0, 30, 56];
+const LIMA: [number, number, number] = [179, 255, 0];
 const CARD_BG: [number, number, number] = [244, 246, 249];
 const GRIS: [number, number, number] = [110, 118, 129];
 const TEXTO: [number, number, number] = [40, 44, 50];
+
+/** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
+function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(anchoPt);
+    canvas.height = Math.round(altoPt);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(-Math.PI / 4);
+    ctx.font = "bold 78px Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(0, 30, 56, 0.08)";
+    ctx.fillText("BORRADOR", 0, 0);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+}
+
 
 /** Carga una imagen (cualquier formato) y la devuelve como JPEG dataURL (jsPDF usa DCTDecode). */
 async function comoJpeg(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
@@ -71,49 +97,93 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   };
 
   // ---------- Cabecera ----------
-  doc.setDrawColor(180, 188, 196);
-  doc.setLineDashPattern([3, 3], 0);
-  doc.roundedRect(margen, y, 100, 40, 4, 4, "S");
-  doc.roundedRect(anchoPag - margen - 100, y, 100, 40, 4, 4, "S");
-  doc.setLineDashPattern([], 0);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  doc.setTextColor(...GRIS);
-  doc.text("LOGO CONSTRUCTORA", margen + 50, y + 23, { align: "center" });
-  doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
-  y += 56;
-
   const generada = datos.estado === "generada";
   const badgeTexto = generada ? "GENERADA" : "BORRADOR";
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-  doc.setFontSize(7.5);
-  const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-  const total = anchoTitulo + 10 + anchoBadge;
-  const xTitulo = (anchoPag - total) / 2;
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...NAVY);
-  doc.text("Acta de Reunión", xTitulo, y + 14);
-
-  const bx = xTitulo + anchoTitulo + 10;
   const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
   const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
-  doc.setFillColor(...badgeBg);
-  doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...badgeFg);
-  doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
-  y += 30;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...GRIS);
-  doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-  y += 22;
+  if (ESTILO_CABECERA_OSCURO) {
+    const altoFranja = 80;
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, anchoPag, altoFranja, "F");
+
+    doc.setDrawColor(120, 140, 160);
+    doc.setLineDashPattern([3, 3], 0);
+    doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
+    doc.roundedRect(anchoPag - margen - 100, 20, 100, 40, 4, 4, "S");
+    doc.setLineDashPattern([], 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(200, 210, 220);
+    doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
+    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    doc.setFontSize(7.5);
+    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
+    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Acta de Reunión", xTitulo, 52);
+
+    const bx = xTitulo + anchoTitulo + 10;
+    doc.setFillColor(...badgeBg);
+    doc.roundedRect(bx, 41, anchoBadge, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...badgeFg);
+    doc.text(badgeTexto, bx + anchoBadge / 2, 50.5, { align: "center" });
+
+    y = altoFranja + 20;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
+    y += 22;
+  } else {
+    doc.setDrawColor(180, 188, 196);
+    doc.setLineDashPattern([3, 3], 0);
+    doc.roundedRect(margen, y, 100, 40, 4, 4, "S");
+    doc.roundedRect(anchoPag - margen - 100, y, 100, 40, 4, 4, "S");
+    doc.setLineDashPattern([], 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRIS);
+    doc.text("LOGO CONSTRUCTORA", margen + 50, y + 23, { align: "center" });
+    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
+    y += 56;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    doc.setFontSize(7.5);
+    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
+    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...NAVY);
+    doc.text("Acta de Reunión", xTitulo, y + 14);
+
+    const bx = xTitulo + anchoTitulo + 10;
+    doc.setFillColor(...badgeBg);
+    doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...badgeFg);
+    doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
+    y += 30;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
+    y += 22;
+  }
 
   // ---------- Utilidades de tarjeta ----------
   /** Dibuja una tarjeta con altura conocida y devuelve la y interior inicial. */
@@ -121,10 +191,15 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     asegurar(alto);
     doc.setFillColor(...CARD_BG);
     doc.roundedRect(margen, y, ancho, alto, 6, 6, "F");
+    if (ESTILO_CABECERA_OSCURO) {
+      doc.setFillColor(...LIMA);
+      doc.rect(margen, y + 6, 3, alto - 12, "F");
+    }
     const inicio = y + pad;
     y += alto + gap;
     return inicio;
   };
+
 
   const tituloSeccion = (texto: string, yy: number) => {
     doc.setFont("helvetica", "bold");
@@ -290,6 +365,22 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
         doc.addImage(img.dataUrl, "JPEG", margen + pad, yy, 200, 90);
       } catch {
         /* firma no legible */
+      }
+    }
+  }
+
+  // ---------- Marca de agua "BORRADOR" (última capa, en todas las páginas) ----------
+  if (datos.estado === "borrador") {
+    const marca = marcaAguaBorrador(anchoPag, altoPag);
+    if (marca) {
+      const paginas = doc.getNumberOfPages();
+      for (let i = 1; i <= paginas; i += 1) {
+        doc.setPage(i);
+        try {
+          doc.addImage(marca, "PNG", 0, 0, anchoPag, altoPag);
+        } catch {
+          /* marca de agua no disponible */
+        }
       }
     }
   }
