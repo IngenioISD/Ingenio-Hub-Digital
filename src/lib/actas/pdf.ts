@@ -276,6 +276,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       let maxAlto = 0;
       for (let c = 0; c < fila.length; c += 1) {
         const par = fila[c];
+        if (!par) continue;
         const x = margen + pad + c * (colW + 20);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
