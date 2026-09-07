@@ -258,6 +258,17 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       ],
     ];
 
+    const anchoEtiqueta = (etiqueta: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      return doc.getTextWidth(etiqueta.toUpperCase());
+    };
+    const anchoLineas = (lineas: string[]) => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      return Math.max(...lineas.map((l) => doc.getTextWidth(l)), 0);
+    };
+
     const alturas: number[] = [];
     for (const fila of filas) {
       let maxFila = 0;
@@ -272,18 +283,46 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     let yy = tituloSeccion("Datos generales", abrirTarjeta(alto));
 
     for (const fila of filas) {
-      const anchoCampo = fila.length === 1 ? anchoInterno : colW;
       let maxAlto = 0;
-      for (let c = 0; c < fila.length; c += 1) {
-        const par = fila[c];
-        if (!par) continue;
-        const x = margen + pad + c * (colW + 20);
+      if (fila.length === 1) {
+        const par = fila[0]!;
+        const x = margen + pad;
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
         doc.setTextColor(...GRIS);
         doc.text(par[0].toUpperCase(), x, yy);
-        const fin = pintarLineas(lineasDe(par[1], anchoCampo), x, yy + 12);
-        maxAlto = Math.max(maxAlto, fin - yy + 4);
+        const fin = pintarLineas(lineasDe(par[1], anchoInterno), x, yy + 12);
+        maxAlto = fin - yy + 4;
+      } else {
+        const [izq, der] = fila;
+        // Calcula ancho necesario para la columna izquierda.
+        const lineasIzq = lineasDe(izq![1], colW);
+        const anchoIzqCalculado = Math.max(
+          anchoEtiqueta(izq![0]),
+          anchoLineas(lineasIzq),
+        );
+        const anchoIzq = Math.min(anchoIzqCalculado, 220);
+        const xDer = margen + pad + anchoIzq + 24;
+        const anchoDer = margen + ancho - pad - xDer;
+        // Si no cabe espacio razonable para la derecha, reparto fijo 50/50.
+        const usarFijo = anchoDer < 100;
+        const xIzq = margen + pad;
+        const anchoCampoIzq = usarFijo ? colW : Math.min(anchoIzqCalculado, 220);
+        const anchoCampoDer = usarFijo ? colW : anchoDer;
+        const xDerFinal = usarFijo ? margen + pad + colW + 20 : xDer;
+
+        for (let c = 0; c < fila.length; c += 1) {
+          const par = fila[c];
+          if (!par) continue;
+          const x = c === 0 ? xIzq : xDerFinal;
+          const anchoCampo = c === 0 ? anchoCampoIzq : anchoCampoDer;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.5);
+          doc.setTextColor(...GRIS);
+          doc.text(par[0].toUpperCase(), x, yy);
+          const fin = pintarLineas(lineasDe(par[1], anchoCampo), x, yy + 12);
+          maxAlto = Math.max(maxAlto, fin - yy + 4);
+        }
       }
       yy += maxAlto;
     }
