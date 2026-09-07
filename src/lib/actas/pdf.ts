@@ -369,6 +369,22 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     }
   }
 
+  // ---------- Marca de agua "BORRADOR" (última capa, en todas las páginas) ----------
+  if (datos.estado === "borrador") {
+    const marca = marcaAguaBorrador(anchoPag, altoPag);
+    if (marca) {
+      const paginas = doc.getNumberOfPages();
+      for (let i = 1; i <= paginas; i += 1) {
+        doc.setPage(i);
+        try {
+          doc.addImage(marca, "PNG", 0, 0, anchoPag, altoPag);
+        } catch {
+          /* marca de agua no disponible */
+        }
+      }
+    }
+  }
+
   return doc.output("blob");
 }
 
