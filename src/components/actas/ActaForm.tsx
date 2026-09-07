@@ -574,7 +574,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           empresaNombre: empresa?.nombre ?? "",
           estado: "generada",
           imagenes: urlsImagenes(),
+          creadoPorNombre: nombreCreador,
           firmaPath,
+
         });
         await supabase
           .from("actas")
