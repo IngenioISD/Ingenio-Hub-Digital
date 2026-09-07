@@ -99,11 +99,13 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   doc.text("Acta de Reunión", xTitulo, y + 14);
 
   const bx = xTitulo + anchoTitulo + 10;
-  doc.setFillColor(...(generada ? [230, 244, 236] : [255, 243, 224]));
+  const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
+  const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
+  doc.setFillColor(...badgeBg);
   doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  doc.setTextColor(...(generada ? [29, 106, 58] : [230, 81, 0]));
+  doc.setTextColor(...badgeFg);
   doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
   y += 30;
 
