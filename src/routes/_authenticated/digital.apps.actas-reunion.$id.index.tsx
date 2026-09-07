@@ -50,10 +50,12 @@ type Detalle = {
   proyectoCodigo: string;
   tipoEtiqueta: string;
   participantes: { nombre: string; origen: string }[];
+  creadoPorNombre: string;
   imagenes: string[];
   firma: string | null;
   firmaPath: string | null;
 };
+
 
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
