@@ -337,10 +337,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       firmaDataUrl,
   );
 
+  const nombreCreador = creadoPorNombre || miNombre;
+
+  const ORIGEN_TIPO: Record<string, string> = {
+    interna: "Personal interno",
+    df: "Dirección facultativa",
+    propiedad: "Propiedad",
+    subcontrata: "Subcontrata",
+  };
+
   const nombresParticipantes = () => [
-    ...personalSeleccionado.map((nif) => nombresPersonal.get(nif) ?? nif),
-    ...participantesLibres,
+    ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
+    ...personalSeleccionado.map(
+      (nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`,
+    ),
+    ...participantesLibres.map(
+      (nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`,
+    ),
   ];
+
 
   const etiquetaTipo =
     tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
