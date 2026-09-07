@@ -247,35 +247,41 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     return cur;
   };
 
-  // ---------- Datos generales (2 columnas) ----------
+  // ---------- Datos generales ----------
   {
     const colW = (anchoInterno - 20) / 2;
-    const pares: [string, string][] = [
-      ["Proyecto", `${datos.proyectoCodigo ? `${datos.proyectoCodigo} · ` : ""}${datos.proyectoNombre}`],
-      ["Fecha", formatoFechaHora(datos.fecha_reunion)],
-      ["Lugar", datos.lugar],
+    const filas: [string, string][][] = [
+      [["Proyecto", `${datos.proyectoCodigo ? `${datos.proyectoCodigo} · ` : ""}${datos.proyectoNombre}`]],
+      [
+        ["Lugar", datos.lugar],
+        ["Fecha", formatoFechaHora(datos.fecha_reunion)],
+      ],
     ];
 
     const alturas: number[] = [];
-    for (const [, valor] of pares) alturas.push(lineasDe(valor, colW).length * 13 + 12);
-    let altoDatos = 0;
-    for (let i = 0; i < alturas.length; i += 2) {
-      altoDatos += Math.max(alturas[i] ?? 0, alturas[i + 1] ?? 0);
+    for (const fila of filas) {
+      let maxFila = 0;
+      for (const [, valor] of fila) {
+        const anchoCampo = fila.length === 1 ? anchoInterno : colW;
+        maxFila = Math.max(maxFila, lineasDe(valor, anchoCampo).length * 13 + 12);
+      }
+      alturas.push(maxFila);
     }
+    const altoDatos = alturas.reduce((a, b) => a + b, 0);
     const alto = 22 + altoDatos + pad * 2 - 6;
     let yy = tituloSeccion("Datos generales", abrirTarjeta(alto));
 
-    for (let i = 0; i < pares.length; i += 2) {
+    for (const fila of filas) {
+      const anchoCampo = fila.length === 1 ? anchoInterno : colW;
       let maxAlto = 0;
-      for (let c = 0; c < 2; c += 1) {
-        const par = pares[i + c];
-        if (!par) continue;
+      for (let c = 0; c < fila.length; c += 1) {
+        const par = fila[c];
         const x = margen + pad + c * (colW + 20);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7.5);
         doc.setTextColor(...GRIS);
         doc.text(par[0].toUpperCase(), x, yy);
-        const fin = pintarLineas(lineasDe(par[1], colW), x, yy + 12);
+        const fin = pintarLineas(lineasDe(par[1], anchoCampo), x, yy + 12);
         maxAlto = Math.max(maxAlto, fin - yy + 4);
       }
       yy += maxAlto;
