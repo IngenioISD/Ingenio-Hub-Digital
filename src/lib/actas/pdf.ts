@@ -22,10 +22,36 @@ export type DatosPdfActa = {
   firmaPath: string | null;
 };
 
+/** Cambia a false para volver a la cabecera clara original. */
+const ESTILO_CABECERA_OSCURO = true;
+
 const NAVY: [number, number, number] = [0, 30, 56];
+const LIMA: [number, number, number] = [179, 255, 0];
 const CARD_BG: [number, number, number] = [244, 246, 249];
 const GRIS: [number, number, number] = [110, 118, 129];
 const TEXTO: [number, number, number] = [40, 44, 50];
+
+/** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
+function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(anchoPt);
+    canvas.height = Math.round(altoPt);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(-Math.PI / 4);
+    ctx.font = "bold 78px Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(0, 30, 56, 0.08)";
+    ctx.fillText("BORRADOR", 0, 0);
+    return canvas.toDataURL("image/png");
+  } catch {
+    return null;
+  }
+}
+
 
 /** Carga una imagen (cualquier formato) y la devuelve como JPEG dataURL (jsPDF usa DCTDecode). */
 async function comoJpeg(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
