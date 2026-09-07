@@ -244,6 +244,20 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setOtrosAsistentes(acta.otros_asistentes ?? "");
       setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
 
+      if (acta.creado_por_nif) {
+        const { data: creador } = await supabase
+          .from("personal")
+          .select("nombre, apellido_1, apellido_2")
+          .eq("nif", acta.creado_por_nif)
+          .maybeSingle();
+        if (creador && !cancelado) {
+          setCreadoPorNombre(
+            [creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" "),
+          );
+        }
+      }
+
+
       const { data: participantes } = await supabase
         .from("acta_participantes")
         .select("tipo_participante, referencia_nif, nombre_libre")
