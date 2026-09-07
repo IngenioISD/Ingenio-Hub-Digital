@@ -306,6 +306,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const etiquetaTipo =
     tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
   const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
+  const codigoProyecto = proyectos.find((p) => p.id === proyectoId)?.codigo_obra ?? "";
+  const urlsImagenes = () =>
+    [
+      ...imagenesExistentes.map((i) => i.preview),
+      ...imagenesNuevas.map((i) => i.preview),
+    ].filter(Boolean) as string[];
 
   const limpiarCampos = () => {
     if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
@@ -340,13 +346,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         asunto: asunto.trim(),
         lugar: lugar.trim(),
         fecha_reunion: new Date(fechaReunion).toISOString(),
+        tipoReunionCodigo: tipoReunion,
         tipoReunionEtiqueta: etiquetaTipo,
         proyectoNombre: nombreProyecto,
+        proyectoCodigo: codigoProyecto,
         notas: notas.trim(),
         acciones: acciones.trim() || null,
         otros_asistentes: otrosAsistentes.trim() || null,
         participantes: nombresParticipantes(),
         empresaNombre: empresa?.nombre ?? "",
+        estado: estadoActa,
+        imagenes: urlsImagenes(),
         firmaPath: null,
       });
       const url = URL.createObjectURL(blob);
@@ -491,13 +501,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           asunto: payload.asunto,
           lugar: payload.lugar,
           fecha_reunion: payload.fecha_reunion,
+          tipoReunionCodigo: tipoReunion,
           tipoReunionEtiqueta: etiquetaTipo,
           proyectoNombre: nombreProyecto,
+          proyectoCodigo: codigoProyecto,
           notas: payload.notas,
           acciones: payload.acciones,
           otros_asistentes: payload.otros_asistentes,
           participantes: nombresParticipantes(),
           empresaNombre: empresa?.nombre ?? "",
+          estado: "generada",
+          imagenes: urlsImagenes(),
           firmaPath,
         });
         await supabase
