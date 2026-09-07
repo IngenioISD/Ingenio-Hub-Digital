@@ -120,6 +120,67 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const badgeTexto = generada ? "GENERADA" : "BORRADOR";
   const badgeBg: [number, number, number] = generada ? [230, 244, 236] : [255, 243, 224];
   const badgeFg: [number, number, number] = generada ? [29, 106, 58] : [230, 81, 0];
+  const tipoTexto = (datos.tipoReunionEtiqueta || datos.tipoReunionCodigo || "").toUpperCase();
+  const tipoColor = colorTipo(datos.tipoReunionCodigo);
+
+  const anchoPastilla = (texto: string) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    return doc.getTextWidth(texto) + 14;
+  };
+  const pintarPastilla = (
+    texto: string,
+    x: number,
+    yTop: number,
+    w: number,
+    par: { bg: [number, number, number]; text: [number, number, number] },
+  ) => {
+    doc.setFillColor(...par.bg);
+    doc.roundedRect(x, yTop, w, 14, 7, 7, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...par.text);
+    doc.text(texto, x + w / 2, yTop + 9.5, { align: "center" });
+  };
+
+  const pintarTituloYPastillas = (baseline: number) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
+    const wEstado = anchoPastilla(badgeTexto);
+    const wTipo = tipoTexto ? anchoPastilla(tipoTexto) : 0;
+    const total = anchoTitulo + 10 + wEstado + (wTipo ? 6 + wTipo : 0);
+    const xTitulo = (anchoPag - total) / 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...(ESTILO_CABECERA_OSCURO ? ([255, 255, 255] as [number, number, number]) : NAVY));
+    doc.text("Acta de Reunión", xTitulo, baseline);
+
+    const yTop = baseline - 11;
+    let bx = xTitulo + anchoTitulo + 10;
+    pintarPastilla(badgeTexto, bx, yTop, wEstado, { bg: badgeBg, text: badgeFg });
+    if (tipoTexto) {
+      bx += wEstado + 6;
+      pintarPastilla(tipoTexto, bx, yTop, wTipo, tipoColor);
+    }
+  };
+
+  const pintarAsuntoYEmpresa = () => {
+    const lineasAsunto = doc.splitTextToSize(datos.asunto || "—", ancho) as string[];
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...NAVY);
+    for (const l of lineasAsunto) {
+      doc.text(l, anchoPag / 2, y, { align: "center" });
+      y += 16;
+    }
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...GRIS);
+    doc.text(datos.empresaNombre || "", anchoPag / 2, y + 2, { align: "center" });
+    y += 22;
+  };
 
   if (ESTILO_CABECERA_OSCURO) {
     const altoFranja = 80;
@@ -137,32 +198,10 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
     doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-    doc.setFontSize(7.5);
-    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
+    pintarTituloYPastillas(52);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Acta de Reunión", xTitulo, 52);
-
-    const bx = xTitulo + anchoTitulo + 10;
-    doc.setFillColor(...badgeBg);
-    doc.roundedRect(bx, 41, anchoBadge, 14, 7, 7, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...badgeFg);
-    doc.text(badgeTexto, bx + anchoBadge / 2, 50.5, { align: "center" });
-
-    y = altoFranja + 20;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...GRIS);
-    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-    y += 22;
+    y = altoFranja + 24;
+    pintarAsuntoYEmpresa();
   } else {
     doc.setDrawColor(180, 188, 196);
     doc.setLineDashPattern([3, 3], 0);
@@ -176,33 +215,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, y + 23, { align: "center" });
     y += 56;
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    const anchoTitulo = doc.getTextWidth("Acta de Reunión");
-    doc.setFontSize(7.5);
-    const anchoBadge = doc.getTextWidth(badgeTexto) + 14;
-    const xTitulo = (anchoPag - (anchoTitulo + 10 + anchoBadge)) / 2;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(...NAVY);
-    doc.text("Acta de Reunión", xTitulo, y + 14);
-
-    const bx = xTitulo + anchoTitulo + 10;
-    doc.setFillColor(...badgeBg);
-    doc.roundedRect(bx, y + 3, anchoBadge, 14, 7, 7, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...badgeFg);
-    doc.text(badgeTexto, bx + anchoBadge / 2, y + 12.5, { align: "center" });
-    y += 30;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...GRIS);
-    doc.text(datos.empresaNombre || "", anchoPag / 2, y, { align: "center" });
-    y += 22;
+    pintarTituloYPastillas(y + 14);
+    y += 34;
+    pintarAsuntoYEmpresa();
   }
+
 
   // ---------- Utilidades de tarjeta ----------
   /** Dibuja una tarjeta con altura conocida y devuelve la y interior inicial. */
