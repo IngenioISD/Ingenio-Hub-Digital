@@ -269,12 +269,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   {
     const colW = (anchoInterno - 20) / 2;
     const pares: [string, string][] = [
-      ["Asunto", datos.asunto],
       ["Proyecto", `${datos.proyectoCodigo ? `${datos.proyectoCodigo} · ` : ""}${datos.proyectoNombre}`],
       ["Fecha", formatoFechaHora(datos.fecha_reunion)],
       ["Lugar", datos.lugar],
-      ["Tipo de reunión", datos.tipoReunionEtiqueta],
     ];
+
     const alturas: number[] = [];
     for (const [, valor] of pares) alturas.push(lineasDe(valor, colW).length * 13 + 12);
     let altoDatos = 0;
