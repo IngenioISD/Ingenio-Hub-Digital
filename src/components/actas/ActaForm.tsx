@@ -293,8 +293,10 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .eq("acta_id", actaId)
         .maybeSingle();
       if (firma?.firma_url && !cancelado) {
+        setFirmaPathExistente(firma.firma_url);
         setFirmaExistente(await urlFirmada(BUCKET_FIRMAS, firma.firma_url));
       }
+
 
       if (!cancelado) setCargado(true);
     })();
