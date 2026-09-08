@@ -61,6 +61,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
   const [firmaPathExistente, setFirmaPathExistente] = useState<string | null>(null);
+  const [firmaUrlExistente, setFirmaUrlExistente] = useState<string | null>(null);
   const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
 
@@ -296,8 +297,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       if (firma?.firma_url && !cancelado) {
         setFirmaPathExistente(firma.firma_url);
         const urlFirma = await urlFirmada(BUCKET_FIRMAS, firma.firma_url);
-        if (urlFirma) signaturePadRef.current?.setFromImage(urlFirma);
-      }
+        if (urlFirma) setFirmaUrlExistente(urlFirma);
+      }      }
 
 
       if (!cancelado) setCargado(true);
