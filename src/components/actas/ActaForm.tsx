@@ -66,6 +66,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
 
   const signaturePadRef = useRef<SignaturePadHandle>(null);
+  const snapshotInicialRef = useRef<string>("");
 
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
@@ -298,6 +299,19 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     }
   }, [cargado, firmaUrlExistente]);
 
+  // Captura el snapshot inicial una vez los datos están listos.
+  useEffect(() => {
+    if (!actaId) {
+      snapshotInicialRef.current = snapshotActual();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (actaId && cargado && !snapshotInicialRef.current) {
+      snapshotInicialRef.current = snapshotActual();
+    }
+  }, [actaId, cargado]);
+
   const nombresPersonal = useMemo(() => new Map(personal.map((p) => [p.nif, nombrePersona(p)])), [personal]);
 
   const toggleLibre = (nombre: string, checked: boolean) =>
@@ -308,19 +322,26 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
     setter(actual ? `${actual} ${texto}` : texto);
 
-  const hayDatos = Boolean(
-    asunto.trim() ||
-    lugar.trim() ||
-    notas.trim() ||
-    acciones.trim() ||
-    otrosAsistentes.trim() ||
-    tipoReunion ||
-    proyectoId ||
-    personalSeleccionado.length ||
-    participantesLibres.length ||
-    imagenesNuevas.length ||
-    firmaDataUrl,
-  );
+  const snapshotActual = () =>
+    JSON.stringify({
+      proyectoId,
+      fechaReunion,
+      lugar,
+      asunto,
+      tipoReunion,
+      tipoOtro,
+      notas,
+      acciones,
+      otrosAsistentes,
+      personalSeleccionado,
+      participantesLibres,
+      imagenesExistentes: imagenesExistentes.map((i) => i.id),
+      numImagenesNuevas: imagenesNuevas.length,
+      firmaPathExistente,
+      tieneFirmaNueva: !!firmaDataUrl,
+    });
+
+  const hayCambios = () => snapshotActual() !== snapshotInicialRef.current;
 
   const nombreCreador = creadoPorNombre || miNombre;
 
@@ -344,7 +365,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     [...imagenesExistentes.map((i) => i.preview), ...imagenesNuevas.map((i) => i.preview)].filter(Boolean) as string[];
 
   const limpiarCampos = () => {
-    if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
+    if (hayCambios() && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
     imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
     setProyectoId("");
     setFechaReunion(aDatetimeLocal(new Date().toISOString()));
@@ -363,7 +384,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   };
 
   const cancelar = () => {
-    if (hayDatos && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
+    if (hayCambios() && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
     if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
     else void navigate({ to: "/digital/apps/actas-reunion" });
   };
