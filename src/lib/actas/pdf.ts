@@ -17,6 +17,8 @@ export type DatosPdfActa = {
   otros_asistentes: string | null;
   participantes: string[];
   empresaNombre: string;
+  /** Logo de la constructora (JPEG en Storage público). Si falta, se usa el marcador. */
+  logoClienteUrl?: string | null;
   estado: "borrador" | "generada";
   imagenes: string[];
   firmaPath: string | null;
@@ -48,6 +50,10 @@ const COLORES_TIPO: Record<string, Par> = {
 function colorTipo(codigo: string): Par {
   return COLORES_TIPO[(codigo ?? "").toLowerCase()] ?? COLORES_TIPO["otra"]!;
 }
+
+/** Logo fijo de Ingenio ISD (JPEG con fondo navy, va directo sobre la franja). */
+const LOGO_INGENIO_URL =
+  "https://odzmnfuatigntblqutvf.supabase.co/storage/v1/object/public/ingenio-isd-logos/ingenio.jpg";
 
 /** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
 function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
@@ -104,6 +110,30 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const pad = 16;
   const gap = 14;
   let y = margen;
+
+  // Logos de cabecera (precargados para mantener proporciones al dibujar).
+  const [logoIngenio, logoCliente] = await Promise.all([
+    comoJpeg(LOGO_INGENIO_URL),
+    datos.logoClienteUrl ? comoJpeg(datos.logoClienteUrl) : Promise.resolve(null),
+  ]);
+
+  /** Dibuja una imagen ajustada proporcionalmente dentro de un hueco, centrada. */
+  const pintarImagenAjustada = (
+    img: { dataUrl: string; w: number; h: number },
+    x: number,
+    yTop: number,
+    wMax: number,
+    hMax: number,
+  ) => {
+    const escala = Math.min(wMax / img.w, hMax / img.h);
+    const w = img.w * escala;
+    const h = img.h * escala;
+    try {
+      doc.addImage(img.dataUrl, "JPEG", x + (wMax - w) / 2, yTop + (hMax - h) / 2, w, h);
+    } catch {
+      /* logo no legible */
+    }
+  };
 
   const nuevaPagina = () => {
     doc.addPage();
@@ -167,16 +197,26 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.setFillColor(...NAVY);
     doc.rect(0, 0, anchoPag, altoFranja, "F");
 
-    doc.setDrawColor(120, 140, 160);
-    doc.setLineDashPattern([3, 3], 0);
-    doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
-    doc.roundedRect(anchoPag - margen - 100, 20, 100, 40, 4, 4, "S");
-    doc.setLineDashPattern([], 0);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(200, 210, 220);
-    doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
-    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
+    // Logo constructora: recuadro blanco redondeado + logo; marcador si no hay logo.
+    if (logoCliente) {
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(margen, 20, 100, 40, 4, 4, "F");
+      pintarImagenAjustada(logoCliente, margen + 4, 24, 92, 32);
+    } else {
+      doc.setDrawColor(120, 140, 160);
+      doc.setLineDashPattern([3, 3], 0);
+      doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
+      doc.setLineDashPattern([], 0);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(200, 210, 220);
+      doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
+    }
+
+    // Logo Ingenio ISD: JPEG con fondo navy, directo sobre la franja.
+    if (logoIngenio) {
+      pintarImagenAjustada(logoIngenio, anchoPag - margen - 100, 20, 100, 40);
+    }
 
     pintarTituloYPastillas(44);
 
