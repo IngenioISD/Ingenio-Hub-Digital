@@ -939,16 +939,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           {/* Firma */}
           <div className="form-group">
             <span className="form-label">Firma</span>
-            {firmaExistente && !firmaDataUrl ? (
-              <img
-                src={firmaExistente}
-                alt="Firma registrada"
-                className="h-24 w-auto"
-                style={{ borderRadius: "var(--radius-md)" }}
-              />
-            ) : null}
             <div className="w-full md:w-1/2">
-              <SignaturePad onChange={setFirmaDataUrl} />
+              <SignaturePad ref={signaturePadRef} onChange={setFirmaDataUrl} />
             </div>
           </div>
         </div>
