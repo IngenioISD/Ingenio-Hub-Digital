@@ -340,39 +340,41 @@ function Page() {
         <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
         <div className="ml-auto flex flex-wrap gap-2">
           {puedeEditar ? (
-            <>
-              <Link
-                to="/digital/apps/actas-reunion/$id/edit"
-                params={{ id: acta.id }}
-                className="btn btn-secondary btn-sm"
-              >
-                <Pencil size={14} /> Editar
-              </Link>
-              <button
-                type="button"
-                className="btn btn-sm"
-                style={{
-                  backgroundColor: "var(--brand-navy-deep)",
-                  color: "var(--brand-lime)",
-                  borderColor: "var(--brand-navy-deep)",
-                }}
-                disabled={generando}
-                onClick={() => void generar()}
-              >
-                {generando ? <Loader2 className="animate-spin" size={14} /> : <FileCog size={14} />}
-                Generar PDF
-              </button>
-            </>
+            <Link
+              to="/digital/apps/actas-reunion/$id/edit"
+              params={{ id: acta.id }}
+              className="btn btn-secondary btn-sm"
+            >
+              <Pencil size={14} /> Editar
+            </Link>
           ) : null}
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            disabled={previsualizando}
-            onClick={() => void previsualizar()}
-          >
-            {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
-            Previsualizar
-          </button>
+          {puedeEditar && acta.estado === "borrador" ? (
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{
+                backgroundColor: "var(--brand-navy-deep)",
+                color: "var(--brand-lime)",
+                borderColor: "var(--brand-navy-deep)",
+              }}
+              disabled={generando}
+              onClick={() => void generar()}
+            >
+              {generando ? <Loader2 className="animate-spin" size={14} /> : <FileCog size={14} />}
+              Generar PDF
+            </button>
+          ) : null}
+          {acta.estado === "borrador" ? (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={previsualizando}
+              onClick={() => void previsualizar()}
+            >
+              {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
+              Previsualizar
+            </button>
+          ) : null}
           {urlPdf ? (
             <a className="btn btn-secondary btn-sm" href={urlPdf} target="_blank" rel="noreferrer">
               <Download size={14} /> Descargar
