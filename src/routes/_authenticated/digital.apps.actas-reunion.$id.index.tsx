@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileCog, Loader2, Pencil, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Eye, FileCog, Loader2, Pencil, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { LayoutActas } from "@/components/actas/LayoutActas";
@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEmpresa } from "@/hooks/use-empresa";
 import { usePermisosActas } from "@/hooks/use-permisos-actas";
 import { BUCKET_FIRMAS, BUCKET_IMAGENES, BUCKET_PDF, formatoFechaHora, urlFirmada } from "@/lib/actas/actas";
-import { generarPdfActa } from "@/lib/actas/pdf";
+import { blobPdfActa, generarPdfActa } from "@/lib/actas/pdf";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id/")({
   component: Page,
@@ -92,6 +92,7 @@ function Page() {
   const { data: empresa } = useEmpresa();
   const { puedeEditar, puedeEliminar } = usePermisosActas();
   const [generando, setGenerando] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
   const [urlPdf, setUrlPdf] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<Detalle | null>({
@@ -240,6 +241,42 @@ function Page() {
     }
   };
 
+  const previsualizar = async () => {
+    if (!data) return;
+    setPrevisualizando(true);
+    try {
+      const blob = await blobPdfActa({
+        id: data.acta.id,
+        asunto: data.acta.asunto,
+        lugar: data.acta.lugar,
+        fecha_reunion: data.acta.fecha_reunion,
+        tipoReunionCodigo: data.acta.tipo_reunion,
+        tipoReunionEtiqueta: data.tipoEtiqueta,
+        proyectoNombre: data.proyectoNombre,
+        proyectoCodigo: data.proyectoCodigo,
+        notas: data.acta.notas,
+        acciones: data.acta.acciones,
+        otros_asistentes: data.acta.otros_asistentes,
+        participantes: [
+          ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+          ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+        ],
+        empresaNombre: empresa?.nombre ?? "",
+        estado: data.acta.estado as "borrador" | "generada",
+        imagenes: data.imagenes,
+        creadoPorNombre: data.creadoPorNombre,
+        firmaPath: data.firmaPath,
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se ha podido generar la previsualización");
+    } finally {
+      setPrevisualizando(false);
+    }
+  };
+
   const eliminar = async () => {
     if (!confirm("¿Seguro que quieres eliminar este acta?")) return;
     const { error } = await supabase.from("actas").delete().eq("id", id);
@@ -288,7 +325,16 @@ function Page() {
   const { acta } = data;
 
   return (
-    <LayoutActas subtitulo={acta.asunto}>
+    <>
+      <Link
+        to="/digital/apps/actas-reunion"
+        className="mb-3 inline-flex items-center gap-1.5"
+        style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}
+      >
+        <ArrowLeft size={13} />
+        Listado de actas
+      </Link>
+      <LayoutActas subtitulo={acta.asunto}>
       <div className="flex max-w-4xl flex-wrap items-center gap-2">
         <BadgeEstadoActa estado={acta.estado} />
         <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
@@ -318,6 +364,15 @@ function Page() {
               </button>
             </>
           ) : null}
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            disabled={previsualizando}
+            onClick={() => void previsualizar()}
+          >
+            {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
+            Previsualizar
+          </button>
           {urlPdf ? (
             <a className="btn btn-secondary btn-sm" href={urlPdf} target="_blank" rel="noreferrer">
               <Download size={14} /> Descargar
@@ -411,5 +466,6 @@ function Page() {
         ) : null}
       </div>
     </LayoutActas>
+    </>
   );
 }
