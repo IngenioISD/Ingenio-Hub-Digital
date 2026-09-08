@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileCog, Loader2, Pencil, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Eye, FileCog, Loader2, Pencil, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { LayoutActas } from "@/components/actas/LayoutActas";
@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEmpresa } from "@/hooks/use-empresa";
 import { usePermisosActas } from "@/hooks/use-permisos-actas";
 import { BUCKET_FIRMAS, BUCKET_IMAGENES, BUCKET_PDF, formatoFechaHora, urlFirmada } from "@/lib/actas/actas";
-import { generarPdfActa } from "@/lib/actas/pdf";
+import { blobPdfActa, generarPdfActa } from "@/lib/actas/pdf";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id/")({
   component: Page,
