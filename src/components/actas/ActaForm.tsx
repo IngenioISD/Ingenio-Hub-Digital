@@ -21,6 +21,7 @@ import { blobPdfActa, generarPdfActa } from "@/lib/actas/pdf";
 import {
   BUCKET_FIRMAS,
   BUCKET_IMAGENES,
+  BUCKET_PDF,
   aDatetimeLocal,
   comprimirImagen,
   dataUrlToBlob,
@@ -64,6 +65,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [firmaUrlExistente, setFirmaUrlExistente] = useState<string | null>(null);
   const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
+  const [pdfUrlExistente, setPdfUrlExistente] = useState<string | null>(null);
 
   const signaturePadRef = useRef<SignaturePadHandle>(null);
   const snapshotInicialRef = useRef<string>("");
@@ -231,6 +233,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setAcciones(acta.acciones ?? "");
       setOtrosAsistentes(acta.otros_asistentes ?? "");
       setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
+      setPdfUrlExistente(acta.pdf_url ?? null);
 
       if (acta.creado_por_nif) {
         const { data: creador } = await supabase
@@ -434,6 +437,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
     setGuardando(true);
     try {
+      // Si se pasa de generada a borrador, eliminamos el PDF viejo para evitar
+      // que la pantalla de detalle ofrezca descargar una versión desactualizada.
+      const pasaDeGeneradaABorrador = actaId && estadoActa === "generada" && estado === "borrador";
+      if (pasaDeGeneradaABorrador && pdfUrlExistente) {
+        await supabase.storage.from(BUCKET_PDF).remove([pdfUrlExistente]);
+      }
+
       // NIF del creador (actas.creado_por_nif es obligatorio)
       const { data: userData } = await supabase.auth.getUser();
       const email = userData.user?.email ?? "";
@@ -461,7 +471,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       if (actaId) {
         const { data, error } = await supabase
           .from("actas")
-          .update({ ...payload, estado })
+          .update({
+            ...payload,
+            estado,
+            ...(pasaDeGeneradaABorrador ? { pdf_url: null, nombre_pdf: null } : {}),
+          })
           .eq("id", actaId)
           .eq("cliente_id", clienteId)
           .select("id")
