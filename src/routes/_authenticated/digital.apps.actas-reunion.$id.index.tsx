@@ -337,7 +337,9 @@ function Page() {
       <div className="mt-5 flex max-w-4xl flex-col gap-4">
         <Seccion titulo="Datos generales">
           <div className="flex flex-wrap gap-x-10 gap-y-4">
-            <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
+            <div className="w-full">
+              <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
+            </div>
             <Dato etiqueta="Lugar" valor={acta.lugar} />
             <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
           </div>
