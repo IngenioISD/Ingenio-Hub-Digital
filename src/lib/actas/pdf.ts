@@ -70,8 +70,6 @@ function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
   }
 }
 
-
-
 /** Carga una imagen (cualquier formato) y la devuelve como JPEG dataURL (jsPDF usa DCTDecode). */
 async function comoJpeg(url: string): Promise<{ dataUrl: string; w: number; h: number } | null> {
   try {
@@ -153,7 +151,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   };
 
   const pintarAsuntoYEmpresa = () => {
-    const lineasAsunto = doc.splitTextToSize(datos.asunto || "—", ancho) as string[];
+    const lineasAsunto = doc.splitTextToSize(`Asunto: ${datos.asunto || "—"}`, ancho) as string[];
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(...NAVY);
@@ -202,7 +200,6 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     pintarAsuntoYEmpresa();
   }
 
-
   // ---------- Utilidades de tarjeta ----------
   /** Dibuja una tarjeta con altura conocida y devuelve la y interior inicial. */
   const abrirTarjeta = (alto: number) => {
@@ -217,7 +214,6 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     y += alto + gap;
     return inicio;
   };
-
 
   const tituloSeccion = (texto: string, yy: number) => {
     doc.setFont("helvetica", "bold");
@@ -297,10 +293,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
         const [izq, der] = fila;
         // Calcula ancho necesario para la columna izquierda.
         const lineasIzq = lineasDe(izq![1], colW);
-        const anchoIzqCalculado = Math.max(
-          anchoEtiqueta(izq![0]),
-          anchoLineas(lineasIzq),
-        );
+        const anchoIzqCalculado = Math.max(anchoEtiqueta(izq![0]), anchoLineas(lineasIzq));
         const anchoIzq = Math.min(anchoIzqCalculado, 220);
         const xDer = margen + pad + anchoIzq + 24;
         const anchoDer = margen + ancho - pad - xDer;
@@ -341,7 +334,6 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     pintarLineas(lineas, margen + pad, yy);
   }
 
-
   // ---------- Contenido ----------
   {
     const lNotas = lineasDe(datos.notas, anchoInterno);
@@ -366,9 +358,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
 
   // ---------- Imágenes ----------
   if (datos.imagenes.length > 0) {
-    const imgs = (await Promise.all(datos.imagenes.map((u) => comoJpeg(u)))).filter(
-      Boolean,
-    ) as { dataUrl: string; w: number; h: number }[];
+    const imgs = (await Promise.all(datos.imagenes.map((u) => comoJpeg(u)))).filter(Boolean) as {
+      dataUrl: string;
+      w: number;
+      h: number;
+    }[];
 
     if (imgs.length) {
       const lado = 130;
@@ -442,7 +436,6 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
       y = yImg + 90 + 14 + gap;
     }
   }
-
 
   // ---------- Marca de agua "BORRADOR" (última capa, en todas las páginas) ----------
   if (datos.estado === "borrador") {
