@@ -290,6 +290,14 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     };
   }, [actaId]);
 
+  // Cargar la firma dentro del SignaturePad solo cuando el componente ya
+  // está montado de verdad (cargado === true), para que la ref no sea null.
+  useEffect(() => {
+    if (cargado && firmaUrlExistente) {
+      signaturePadRef.current?.setFromImage(firmaUrlExistente);
+    }
+  }, [cargado, firmaUrlExistente]);
+
   const nombresPersonal = useMemo(() => new Map(personal.map((p) => [p.nif, nombrePersona(p)])), [personal]);
 
   const toggleLibre = (nombre: string, checked: boolean) =>
