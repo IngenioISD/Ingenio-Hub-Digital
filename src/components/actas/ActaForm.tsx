@@ -296,7 +296,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       if (firma?.firma_url && !cancelado) {
         setFirmaPathExistente(firma.firma_url);
         const urlFirma = await urlFirmada(BUCKET_FIRMAS, firma.firma_url);
-        setFirmaExistente(urlFirma);
         if (urlFirma) signaturePadRef.current?.setFromImage(urlFirma);
       }
 
