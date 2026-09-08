@@ -471,7 +471,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       if (actaId) {
         const { data, error } = await supabase
           .from("actas")
-          .update({ ...payload, estado })
+          .update({
+            ...payload,
+            estado,
+            ...(pasaDeGeneradaABorrador ? { pdf_url: null, nombre_pdf: null } : {}),
+          })
           .eq("id", actaId)
           .eq("cliente_id", clienteId)
           .select("id")
