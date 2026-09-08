@@ -21,6 +21,7 @@ import { blobPdfActa, generarPdfActa } from "@/lib/actas/pdf";
 import {
   BUCKET_FIRMAS,
   BUCKET_IMAGENES,
+  BUCKET_PDF,
   aDatetimeLocal,
   comprimirImagen,
   dataUrlToBlob,
