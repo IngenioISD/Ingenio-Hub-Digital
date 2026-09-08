@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eraser, Eye, FileCheck2, ImagePlus, Loader2, MoreVertical, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
-import { SignaturePad } from "@/components/signature-pad";
+import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
 import {
   DropdownMenu,
@@ -60,10 +60,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [imagenesNuevas, setImagenesNuevas] = useState<ImagenNueva[]>([]);
   const [imagenesExistentes, setImagenesExistentes] = useState<ImagenExistente[]>([]);
   const [firmaDataUrl, setFirmaDataUrl] = useState<string | null>(null);
-  const [firmaExistente, setFirmaExistente] = useState<string | null>(null);
   const [firmaPathExistente, setFirmaPathExistente] = useState<string | null>(null);
   const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
+
+  const signaturePadRef = useRef<SignaturePadHandle>(null);
 
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
@@ -294,7 +295,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .maybeSingle();
       if (firma?.firma_url && !cancelado) {
         setFirmaPathExistente(firma.firma_url);
-        setFirmaExistente(await urlFirmada(BUCKET_FIRMAS, firma.firma_url));
+        const urlFirma = await urlFirmada(BUCKET_FIRMAS, firma.firma_url);
+        if (urlFirma) signaturePadRef.current?.setFromImage(urlFirma);
       }
 
 
@@ -935,16 +937,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           {/* Firma */}
           <div className="form-group">
             <span className="form-label">Firma</span>
-            {firmaExistente && !firmaDataUrl ? (
-              <img
-                src={firmaExistente}
-                alt="Firma registrada"
-                className="h-24 w-auto"
-                style={{ borderRadius: "var(--radius-md)" }}
-              />
-            ) : null}
             <div className="w-full md:w-1/2">
-              <SignaturePad onChange={setFirmaDataUrl} />
+              <SignaturePad ref={signaturePadRef} onChange={setFirmaDataUrl} />
             </div>
           </div>
         </div>
