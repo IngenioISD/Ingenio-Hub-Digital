@@ -437,6 +437,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
     setGuardando(true);
     try {
+      // Si se pasa de generada a borrador, eliminamos el PDF viejo para evitar
+      // que la pantalla de detalle ofrezca descargar una versión desactualizada.
+      const pasaDeGeneradaABorrador = actaId && estadoActa === "generada" && estado === "borrador";
+      if (pasaDeGeneradaABorrador && pdfUrlExistente) {
+        await supabase.storage.from(BUCKET_PDF).remove([pdfUrlExistente]);
+      }
+
       // NIF del creador (actas.creado_por_nif es obligatorio)
       const { data: userData } = await supabase.auth.getUser();
       const email = userData.user?.email ?? "";
