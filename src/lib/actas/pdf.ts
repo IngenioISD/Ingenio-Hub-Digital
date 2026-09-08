@@ -17,6 +17,8 @@ export type DatosPdfActa = {
   otros_asistentes: string | null;
   participantes: string[];
   empresaNombre: string;
+  /** Logo de la constructora (JPEG en Storage público). Si falta, se usa el marcador. */
+  logoClienteUrl?: string | null;
   estado: "borrador" | "generada";
   imagenes: string[];
   firmaPath: string | null;
