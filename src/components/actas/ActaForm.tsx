@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eraser, Eye, FileCheck2, ImagePlus, Loader2, MoreVertical, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { MicButton } from "@/components/mic-button";
-import { SignaturePad } from "@/components/signature-pad";
+import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
 import {
   DropdownMenu,
