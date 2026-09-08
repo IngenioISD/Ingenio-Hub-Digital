@@ -197,16 +197,26 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
     doc.setFillColor(...NAVY);
     doc.rect(0, 0, anchoPag, altoFranja, "F");
 
-    doc.setDrawColor(120, 140, 160);
-    doc.setLineDashPattern([3, 3], 0);
-    doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
-    doc.roundedRect(anchoPag - margen - 100, 20, 100, 40, 4, 4, "S");
-    doc.setLineDashPattern([], 0);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(200, 210, 220);
-    doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
-    doc.text("LOGO INGENIO ISD", anchoPag - margen - 50, 43, { align: "center" });
+    // Logo constructora: recuadro blanco redondeado + logo; marcador si no hay logo.
+    if (logoCliente) {
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(margen, 20, 100, 40, 4, 4, "F");
+      pintarImagenAjustada(logoCliente, margen + 4, 24, 92, 32);
+    } else {
+      doc.setDrawColor(120, 140, 160);
+      doc.setLineDashPattern([3, 3], 0);
+      doc.roundedRect(margen, 20, 100, 40, 4, 4, "S");
+      doc.setLineDashPattern([], 0);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(200, 210, 220);
+      doc.text("LOGO CONSTRUCTORA", margen + 50, 43, { align: "center" });
+    }
+
+    // Logo Ingenio ISD: JPEG con fondo navy, directo sobre la franja.
+    if (logoIngenio) {
+      pintarImagenAjustada(logoIngenio, anchoPag - margen - 100, 20, 100, 40);
+    }
 
     pintarTituloYPastillas(44);
 
