@@ -325,7 +325,16 @@ function Page() {
   const { acta } = data;
 
   return (
-    <LayoutActas subtitulo={acta.asunto}>
+    <>
+      <Link
+        to="/digital/apps/actas-reunion"
+        className="mb-3 inline-flex items-center gap-1.5"
+        style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}
+      >
+        <ArrowLeft size={13} />
+        Listado de actas
+      </Link>
+      <LayoutActas subtitulo={acta.asunto}>
       <div className="flex max-w-4xl flex-wrap items-center gap-2">
         <BadgeEstadoActa estado={acta.estado} />
         <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
