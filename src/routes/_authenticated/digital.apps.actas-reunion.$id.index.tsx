@@ -77,7 +77,7 @@ function Seccion({ titulo, children }: { titulo: string; children: React.ReactNo
 
 function Dato({ etiqueta, valor }: { etiqueta: string; valor: React.ReactNode }) {
   return (
-    <div>
+    <div className="shrink-0">
       <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>{etiqueta}</div>
       <div style={{ fontSize: "var(--text-sm)", color: "var(--text-primary)" }}>{valor}</div>
     </div>
@@ -336,10 +336,8 @@ function Page() {
 
       <div className="mt-5 flex max-w-4xl flex-col gap-4">
         <Seccion titulo="Datos generales">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
-            </div>
+          <div className="flex flex-wrap gap-x-10 gap-y-4">
+            <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
             <Dato etiqueta="Lugar" valor={acta.lugar} />
             <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
           </div>
