@@ -111,6 +111,30 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const gap = 14;
   let y = margen;
 
+  // Logos de cabecera (precargados para mantener proporciones al dibujar).
+  const [logoIngenio, logoCliente] = await Promise.all([
+    comoJpeg(LOGO_INGENIO_URL),
+    datos.logoClienteUrl ? comoJpeg(datos.logoClienteUrl) : Promise.resolve(null),
+  ]);
+
+  /** Dibuja una imagen ajustada proporcionalmente dentro de un hueco, centrada. */
+  const pintarImagenAjustada = (
+    img: { dataUrl: string; w: number; h: number },
+    x: number,
+    yTop: number,
+    wMax: number,
+    hMax: number,
+  ) => {
+    const escala = Math.min(wMax / img.w, hMax / img.h);
+    const w = img.w * escala;
+    const h = img.h * escala;
+    try {
+      doc.addImage(img.dataUrl, "JPEG", x + (wMax - w) / 2, yTop + (hMax - h) / 2, w, h);
+    } catch {
+      /* logo no legible */
+    }
+  };
+
   const nuevaPagina = () => {
     doc.addPage();
     y = margen;
