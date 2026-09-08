@@ -65,6 +65,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
 
+  const signaturePadRef = useRef<SignaturePadHandle>(null);
+
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
