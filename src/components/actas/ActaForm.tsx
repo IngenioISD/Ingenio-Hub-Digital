@@ -65,6 +65,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [firmaUrlExistente, setFirmaUrlExistente] = useState<string | null>(null);
   const [creadoPorNombre, setCreadoPorNombre] = useState("");
   const [estadoActa, setEstadoActa] = useState<"borrador" | "generada">("borrador");
+  const [pdfUrlExistente, setPdfUrlExistente] = useState<string | null>(null);
 
   const signaturePadRef = useRef<SignaturePadHandle>(null);
   const snapshotInicialRef = useRef<string>("");
