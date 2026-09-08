@@ -92,6 +92,7 @@ function Page() {
   const { data: empresa } = useEmpresa();
   const { puedeEditar, puedeEliminar } = usePermisosActas();
   const [generando, setGenerando] = useState(false);
+  const [previsualizando, setPrevisualizando] = useState(false);
   const [urlPdf, setUrlPdf] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<Detalle | null>({
@@ -237,6 +238,42 @@ function Page() {
       toast.error(e instanceof Error ? e.message : "No se ha podido generar el PDF");
     } finally {
       setGenerando(false);
+    }
+  };
+
+  const previsualizar = async () => {
+    if (!data) return;
+    setPrevisualizando(true);
+    try {
+      const blob = await blobPdfActa({
+        id: data.acta.id,
+        asunto: data.acta.asunto,
+        lugar: data.acta.lugar,
+        fecha_reunion: data.acta.fecha_reunion,
+        tipoReunionCodigo: data.acta.tipo_reunion,
+        tipoReunionEtiqueta: data.tipoEtiqueta,
+        proyectoNombre: data.proyectoNombre,
+        proyectoCodigo: data.proyectoCodigo,
+        notas: data.acta.notas,
+        acciones: data.acta.acciones,
+        otros_asistentes: data.acta.otros_asistentes,
+        participantes: [
+          ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+          ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+        ],
+        empresaNombre: empresa?.nombre ?? "",
+        estado: data.acta.estado as "borrador" | "generada",
+        imagenes: data.imagenes,
+        creadoPorNombre: data.creadoPorNombre,
+        firmaPath: data.firmaPath,
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se ha podido generar la previsualización");
+    } finally {
+      setPrevisualizando(false);
     }
   };
 
