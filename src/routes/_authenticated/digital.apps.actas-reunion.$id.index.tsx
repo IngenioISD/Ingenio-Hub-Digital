@@ -364,6 +364,15 @@ function Page() {
               </button>
             </>
           ) : null}
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            disabled={previsualizando}
+            onClick={() => void previsualizar()}
+          >
+            {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
+            Previsualizar
+          </button>
           {urlPdf ? (
             <a className="btn btn-secondary btn-sm" href={urlPdf} target="_blank" rel="noreferrer">
               <Download size={14} /> Descargar
@@ -457,5 +466,6 @@ function Page() {
         ) : null}
       </div>
     </LayoutActas>
+    </>
   );
 }
