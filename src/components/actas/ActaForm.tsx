@@ -84,11 +84,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .eq("activo", true);
         ids = (data ?? []).map((f) => f.proyecto_id);
       }
-      let q = supabase
-        .from("proyectos")
-        .select("id, nombre, codigo_obra")
-        .eq("cliente_id", clienteId!)
-        .order("nombre");
+      let q = supabase.from("proyectos").select("id, nombre, codigo_obra").eq("cliente_id", clienteId!).order("nombre");
       if (ids) q = q.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
       const { data } = await q;
       return (data ?? []) as Proyecto[];
@@ -139,11 +135,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .eq("id", proyectoSel!.df_id!)
         .maybeSingle();
       if (!data) return null;
-      const nombre = [
-        data.persona_contacto_nombre,
-        data.persona_contacto_apellido_1,
-        data.persona_contacto_apellido_2,
-      ]
+      const nombre = [data.persona_contacto_nombre, data.persona_contacto_apellido_1, data.persona_contacto_apellido_2]
         .filter(Boolean)
         .join(" ");
       return nombre || null;
@@ -195,9 +187,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         .select("email")
         .eq("cliente_id", clienteId!)
         .in("user_id", userIds);
-      const emails = new Set(
-        (usuarios ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean),
-      );
+      const emails = new Set((usuarios ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean));
       return filas.filter((p) => p.email && emails.has(p.email.toLowerCase()));
     },
   });
@@ -221,18 +211,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
-
   // Carga del acta existente
   useEffect(() => {
     if (!actaId) return;
     let cancelado = false;
 
     void (async () => {
-      const { data: acta } = await supabase
-        .from("actas")
-        .select("*")
-        .eq("id", actaId)
-        .maybeSingle();
+      const { data: acta } = await supabase.from("actas").select("*").eq("id", actaId).maybeSingle();
       if (!acta || cancelado) return;
 
       setProyectoId(acta.proyecto_id ?? "");
@@ -253,12 +238,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .eq("nif", acta.creado_por_nif)
           .maybeSingle();
         if (creador && !cancelado) {
-          setCreadoPorNombre(
-            [creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" "),
-          );
+          setCreadoPorNombre([creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" "));
         }
       }
-
 
       const { data: participantes } = await supabase
         .from("acta_participantes")
@@ -298,8 +280,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         setFirmaPathExistente(firma.firma_url);
         const urlFirma = await urlFirmada(BUCKET_FIRMAS, firma.firma_url);
         if (urlFirma) setFirmaUrlExistente(urlFirma);
-      }      }
-
+      }
 
       if (!cancelado) setCargado(true);
     })();
@@ -309,18 +290,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     };
   }, [actaId]);
 
-  const nombresPersonal = useMemo(
-    () => new Map(personal.map((p) => [p.nif, nombrePersona(p)])),
-    [personal],
-  );
+  const nombresPersonal = useMemo(() => new Map(personal.map((p) => [p.nif, nombrePersona(p)])), [personal]);
 
   const toggleLibre = (nombre: string, checked: boolean) =>
     setParticipantesLibres((prev) =>
-      checked
-        ? prev.includes(nombre)
-          ? prev
-          : [...prev, nombre]
-        : prev.filter((n) => n !== nombre),
+      checked ? (prev.includes(nombre) ? prev : [...prev, nombre]) : prev.filter((n) => n !== nombre),
     );
 
   const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
@@ -328,16 +302,16 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const hayDatos = Boolean(
     asunto.trim() ||
-      lugar.trim() ||
-      notas.trim() ||
-      acciones.trim() ||
-      otrosAsistentes.trim() ||
-      tipoReunion ||
-      proyectoId ||
-      personalSeleccionado.length ||
-      participantesLibres.length ||
-      imagenesNuevas.length ||
-      firmaDataUrl,
+    lugar.trim() ||
+    notas.trim() ||
+    acciones.trim() ||
+    otrosAsistentes.trim() ||
+    tipoReunion ||
+    proyectoId ||
+    personalSeleccionado.length ||
+    participantesLibres.length ||
+    imagenesNuevas.length ||
+    firmaDataUrl,
   );
 
   const nombreCreador = creadoPorNombre || miNombre;
@@ -351,24 +325,15 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const nombresParticipantes = () => [
     ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
-    ...personalSeleccionado.map(
-      (nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`,
-    ),
-    ...participantesLibres.map(
-      (nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`,
-    ),
+    ...personalSeleccionado.map((nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`),
+    ...participantesLibres.map((nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`),
   ];
 
-
-  const etiquetaTipo =
-    tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
+  const etiquetaTipo = tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
   const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
   const codigoProyecto = proyectos.find((p) => p.id === proyectoId)?.codigo_obra ?? "";
   const urlsImagenes = () =>
-    [
-      ...imagenesExistentes.map((i) => i.preview),
-      ...imagenesNuevas.map((i) => i.preview),
-    ].filter(Boolean) as string[];
+    [...imagenesExistentes.map((i) => i.preview), ...imagenesNuevas.map((i) => i.preview)].filter(Boolean) as string[];
 
   const limpiarCampos = () => {
     if (hayDatos && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
@@ -415,10 +380,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         estado: estadoActa,
         imagenes: urlsImagenes(),
         creadoPorNombre: nombreCreador,
-        ...(firmaDataUrl
-          ? { firmaDataUrlDirecta: firmaDataUrl, firmaPath: null }
-          : { firmaPath: firmaPathExistente }),
-
+        ...(firmaDataUrl ? { firmaDataUrlDirecta: firmaDataUrl, firmaPath: null } : { firmaPath: firmaPathExistente }),
       });
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -496,7 +458,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         id = data.id;
       }
 
-
       // Participantes
       await supabase.from("acta_participantes").delete().eq("acta_id", id);
       const filas = [
@@ -528,9 +489,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .from(BUCKET_IMAGENES)
           .upload(path, comprimida, { contentType: "image/jpeg" });
         if (error) throw error;
-        const { error: errImg } = await supabase
-          .from("acta_imagenes")
-          .insert({ acta_id: id, url: path, orden });
+        const { error: errImg } = await supabase.from("acta_imagenes").insert({ acta_id: id, url: path, orden });
         if (errImg) throw errImg;
         orden += 1;
       }
@@ -539,24 +498,16 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       let firmaPath: string | null = null;
       if (firmaDataUrl) {
         firmaPath = `${id}/firma.png`;
-        const { error } = await supabase.storage
-          .from(BUCKET_FIRMAS)
-          .upload(firmaPath, dataUrlToBlob(firmaDataUrl), {
-            upsert: true,
-            contentType: "image/png",
-          });
+        const { error } = await supabase.storage.from(BUCKET_FIRMAS).upload(firmaPath, dataUrlToBlob(firmaDataUrl), {
+          upsert: true,
+          contentType: "image/png",
+        });
         if (error) throw error;
         await supabase.from("acta_firmas").delete().eq("acta_id", id);
-        const { error: errFirma } = await supabase
-          .from("acta_firmas")
-          .insert({ acta_id: id, firma_url: firmaPath });
+        const { error: errFirma } = await supabase.from("acta_firmas").insert({ acta_id: id, firma_url: firmaPath });
         if (errFirma) throw errFirma;
       } else {
-        const { data: firma } = await supabase
-          .from("acta_firmas")
-          .select("firma_url")
-          .eq("acta_id", id)
-          .maybeSingle();
+        const { data: firma } = await supabase.from("acta_firmas").select("firma_url").eq("acta_id", id).maybeSingle();
         firmaPath = firma?.firma_url ?? null;
       }
 
@@ -579,12 +530,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           imagenes: urlsImagenes(),
           creadoPorNombre: nombreCreador,
           firmaPath,
-
         });
-        await supabase
-          .from("actas")
-          .update({ pdf_url: path, nombre_pdf: nombre })
-          .eq("id", id);
+        await supabase.from("actas").update({ pdf_url: path, nombre_pdf: nombre }).eq("id", id);
       }
 
       imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
@@ -706,12 +653,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
               Asunto <span className="required">*</span>
             </label>
             <div className="form-input-voice">
-              <input
-                id="asunto"
-                className="form-input"
-                value={asunto}
-                onChange={(e) => setAsunto(e.target.value)}
-              />
+              <input id="asunto" className="form-input" value={asunto} onChange={(e) => setAsunto(e.target.value)} />
               <MicButton onResult={anadirTexto(setAsunto, asunto)} title="Dictar asunto" />
             </div>
           </div>
@@ -724,9 +666,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 opciones={personal.map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
                 seleccionados={personalSeleccionado}
                 onToggle={(nif, checked) =>
-                  setPersonalSeleccionado((prev) =>
-                    checked ? [...prev, nif] : prev.filter((n) => n !== nif),
-                  )
+                  setPersonalSeleccionado((prev) => (checked ? [...prev, nif] : prev.filter((n) => n !== nif)))
                 }
                 mensajeVacio={
                   proyectoId
@@ -736,9 +676,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
               />
             ) : esPropiedad ? (
               contactosPropiedad.length === 0 ? (
-                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Propiedad no asignada.
-                </span>
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Propiedad no asignada.</span>
               ) : (
                 <PersonMultiSelect
                   opciones={contactosPropiedad.map((n) => ({ value: n, label: n }))}
@@ -800,9 +738,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                       <button
                         type="button"
                         aria-label={`Quitar ${nombre}`}
-                        onClick={() =>
-                          setParticipantesLibres((prev) => prev.filter((_, j) => j !== i))
-                        }
+                        onClick={() => setParticipantesLibres((prev) => prev.filter((_, j) => j !== i))}
                       >
                         <X size={12} />
                       </button>
@@ -811,7 +747,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 </div>
               </div>
             )}
-
           </div>
 
           {esInterna && personalSeleccionado.length > 0 ? (
@@ -842,12 +777,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
               Notas <span className="required">*</span>
             </label>
             <div className="form-textarea-voice">
-              <textarea
-                id="notas"
-                className="form-textarea"
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-              />
+              <textarea id="notas" className="form-textarea" value={notas} onChange={(e) => setNotas(e.target.value)} />
               <MicButton onResult={anadirTexto(setNotas, notas)} title="Dictar notas" />
             </div>
           </div>
@@ -973,12 +903,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         >
           <Save className="shrink-0" size={20} /> Guardar borrador
         </button>
-        <button
-          type="button"
-          className="btn btn-secondary shrink-0"
-          disabled={guardando}
-          onClick={cancelar}
-        >
+        <button type="button" className="btn btn-secondary shrink-0" disabled={guardando} onClick={cancelar}>
           <X className="shrink-0" size={20} /> Cancelar
         </button>
         <DropdownMenu>
@@ -1035,26 +960,15 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
           <span className="bottom-bar-btn-label">Ver</span>
         </button>
-        <button
-          type="button"
-          className="bottom-bar-btn secondary"
-          onClick={limpiarCampos}
-          aria-label="Limpiar campos"
-        >
+        <button type="button" className="bottom-bar-btn secondary" onClick={limpiarCampos} aria-label="Limpiar campos">
           <Eraser size={20} />
           <span className="bottom-bar-btn-label">Limpiar</span>
         </button>
-        <button
-          type="button"
-          className="bottom-bar-btn ghost"
-          onClick={cancelar}
-          aria-label="Cancelar"
-        >
+        <button type="button" className="bottom-bar-btn ghost" onClick={cancelar} aria-label="Cancelar">
           <X size={20} />
           <span className="bottom-bar-btn-label">Cancelar</span>
         </button>
       </div>
-
     </div>
   );
 }
