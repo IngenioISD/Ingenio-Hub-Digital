@@ -233,6 +233,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setAcciones(acta.acciones ?? "");
       setOtrosAsistentes(acta.otros_asistentes ?? "");
       setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
+      setPdfUrlExistente(acta.pdf_url ?? null);
 
       if (acta.creado_por_nif) {
         const { data: creador } = await supabase
