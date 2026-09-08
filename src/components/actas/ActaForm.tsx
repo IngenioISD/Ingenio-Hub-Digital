@@ -942,14 +942,16 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => void previsualizar()} disabled={previsualizando}>
-              {previsualizando ? (
-                <Loader2 className="shrink-0 animate-spin" size={16} />
-              ) : (
-                <Eye className="shrink-0" size={16} />
-              )}
-              {estadoActa === "generada" ? "Previsualizar acta" : "Previsualizar borrador"}
-            </DropdownMenuItem>
+            {estadoActa === "borrador" ? (
+              <DropdownMenuItem onSelect={() => void previsualizar()} disabled={previsualizando}>
+                {previsualizando ? (
+                  <Loader2 className="shrink-0 animate-spin" size={16} />
+                ) : (
+                  <Eye className="shrink-0" size={16} />
+                )}
+                Previsualizar borrador
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem onSelect={limpiarCampos}>
               <Eraser className="shrink-0" size={16} /> Limpiar campos
             </DropdownMenuItem>
@@ -979,16 +981,18 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           <Save size={20} />
           <span className="bottom-bar-btn-label">Borrador</span>
         </button>
-        <button
-          type="button"
-          className="bottom-bar-btn secondary"
-          disabled={previsualizando}
-          onClick={() => void previsualizar()}
-          aria-label="Previsualizar"
-        >
-          {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
-          <span className="bottom-bar-btn-label">Ver</span>
-        </button>
+        {estadoActa === "borrador" ? (
+          <button
+            type="button"
+            className="bottom-bar-btn secondary"
+            disabled={previsualizando}
+            onClick={() => void previsualizar()}
+            aria-label="Previsualizar"
+          >
+            {previsualizando ? <Loader2 className="animate-spin" size={20} /> : <Eye size={20} />}
+            <span className="bottom-bar-btn-label">Ver</span>
+          </button>
+        ) : null}
         <button type="button" className="bottom-bar-btn secondary" onClick={limpiarCampos} aria-label="Limpiar campos">
           <Eraser size={20} />
           <span className="bottom-bar-btn-label">Limpiar</span>
