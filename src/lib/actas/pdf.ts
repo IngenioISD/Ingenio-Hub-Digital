@@ -100,6 +100,66 @@ async function comoJpeg(url: string): Promise<{ dataUrl: string; w: number; h: n
   }
 }
 
+/**
+ * El archivo corporativo de Ingenio incluye bastante lienzo navy alrededor.
+ * Recorta únicamente ese margen para que la marca ocupe de verdad su hueco
+ * en la cabecera, conservando intactas sus proporciones.
+ */
+async function cargarLogoIngenio(): Promise<{ dataUrl: string; w: number; h: number } | null> {
+  try {
+    const res = await fetch(LOGO_INGENIO_URL, { cache: "no-store" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const bitmap = await createImageBitmap(blob);
+    const origen = document.createElement("canvas");
+    origen.width = bitmap.width;
+    origen.height = bitmap.height;
+    const origenCtx = origen.getContext("2d", { willReadFrequently: true });
+    if (!origenCtx) return null;
+    origenCtx.drawImage(bitmap, 0, 0);
+
+    const pixeles = origenCtx.getImageData(0, 0, origen.width, origen.height);
+    let minX = origen.width;
+    let minY = origen.height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let py = 0; py < origen.height; py += 1) {
+      for (let px = 0; px < origen.width; px += 1) {
+        const i = (py * origen.width + px) * 4;
+        const r = pixeles.data[i] ?? 0;
+        const g = pixeles.data[i + 1] ?? 0;
+        const b = pixeles.data[i + 2] ?? 0;
+        // Detecta los píxeles claros/lima del logo frente al fondo navy.
+        if (r + g + b > 285 || (g > 110 && g > r * 1.35 && g > b * 1.15)) {
+          minX = Math.min(minX, px);
+          minY = Math.min(minY, py);
+          maxX = Math.max(maxX, px);
+          maxY = Math.max(maxY, py);
+        }
+      }
+    }
+
+    if (maxX < minX || maxY < minY) return comoJpeg(LOGO_INGENIO_URL);
+
+    const margenPx = Math.max(8, Math.round(Math.min(bitmap.width, bitmap.height) * 0.02));
+    const sx = Math.max(0, minX - margenPx);
+    const sy = Math.max(0, minY - margenPx);
+    const sw = Math.min(bitmap.width - sx, maxX - minX + 1 + margenPx * 2);
+    const sh = Math.min(bitmap.height - sy, maxY - minY + 1 + margenPx * 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = sw;
+    canvas.height = sh;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(origen, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    return { dataUrl: canvas.toDataURL("image/jpeg", 0.92), w: sw, h: sh };
+  } catch {
+    return null;
+  }
+}
+
 /** Construye el PDF del acta en memoria y devuelve el Blob (no guarda nada). */
 export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -113,7 +173,7 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
 
   // Logos de cabecera (precargados para mantener proporciones al dibujar).
   const [logoIngenio, logoCliente] = await Promise.all([
-    comoJpeg(LOGO_INGENIO_URL),
+    cargarLogoIngenio(),
     datos.logoClienteUrl ? comoJpeg(datos.logoClienteUrl) : Promise.resolve(null),
   ]);
 
