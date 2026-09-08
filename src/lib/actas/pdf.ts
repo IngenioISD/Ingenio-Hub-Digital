@@ -51,6 +51,10 @@ function colorTipo(codigo: string): Par {
   return COLORES_TIPO[(codigo ?? "").toLowerCase()] ?? COLORES_TIPO["otra"]!;
 }
 
+/** Logo fijo de Ingenio ISD (JPEG con fondo navy, va directo sobre la franja). */
+const LOGO_INGENIO_URL =
+  "https://odzmnfuatigntblqutvf.supabase.co/storage/v1/object/public/ingenio-isd-logos/ingenio.jpg";
+
 /** Marca de agua diagonal "BORRADOR" como PNG transparente del tamaño de una A4. */
 function marcaAguaBorrador(anchoPt: number, altoPt: number): string | null {
   try {
