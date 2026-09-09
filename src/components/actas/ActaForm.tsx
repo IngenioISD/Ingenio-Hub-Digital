@@ -738,7 +738,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Propiedad no asignada.</span>
               ) : (
                 <PersonMultiSelect
-                  opciones={contactosPropiedad.map((n) => ({ value: n, label: n }))}
+                  opciones={contactosPropiedad.map((c) => ({ value: c.nombre, label: etiquetaContactoPropiedad(c) }))}
                   seleccionados={participantesLibres}
                   onToggle={toggleLibre}
                   mensajeVacio="Propiedad no asignada."
