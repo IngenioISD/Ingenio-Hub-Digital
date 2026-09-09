@@ -405,8 +405,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const urlsImagenes = () =>
     [...imagenesExistentes.map((i) => i.preview), ...imagenesNuevas.map((i) => i.preview)].filter(Boolean) as string[];
 
-  const limpiarCampos = () => {
-    if (hayCambios() && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
+  const ejecutarLimpiar = () => {
     imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
     setProyectoId("");
     setFechaReunion(aDatetimeLocal(new Date().toISOString()));
@@ -422,12 +421,34 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     setNuevoParticipante("");
     setImagenesNuevas([]);
     setFirmaDataUrl(null);
+    snapshotInicialRef.current = snapshotActual();
+  };
+
+  const limpiarCampos = () => {
+    if (hayCambios()) {
+      setConfirmando("limpiar");
+      return;
+    }
+    ejecutarLimpiar();
+  };
+
+  const ejecutarCancelar = () => {
+    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
+    else void navigate({ to: "/digital/apps/actas-reunion" });
   };
 
   const cancelar = () => {
-    if (hayCambios() && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
-    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
-    else void navigate({ to: "/digital/apps/actas-reunion" });
+    if (hayCambios()) {
+      setConfirmando("cancelar");
+      return;
+    }
+    ejecutarCancelar();
+  };
+
+  const ejecutarConfirmado = () => {
+    if (confirmando === "cancelar") ejecutarCancelar();
+    if (confirmando === "limpiar") ejecutarLimpiar();
+    setConfirmando(null);
   };
 
   const previsualizar = async () => {
