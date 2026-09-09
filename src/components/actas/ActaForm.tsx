@@ -1077,6 +1077,33 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           <span className="bottom-bar-btn-label">Cancelar</span>
         </button>
       </div>
+
+      <AlertDialog open={!!confirmando} onOpenChange={(open) => !open && setConfirmando(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmando === "cancelar" ? "¿Salir sin guardar?" : "¿Vaciar el formulario?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmando === "cancelar"
+                ? "Tienes cambios sin guardar. Si sales ahora, se perderán."
+                : "Se borrarán todos los campos rellenados. Esta acción no se puede deshacer."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <button type="button" className="btn btn-secondary">
+                Cancelar
+              </button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <button type="button" className="btn btn-danger" onClick={ejecutarConfirmado}>
+                {confirmando === "cancelar" ? "Salir sin guardar" : "Vaciar"}
+              </button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
