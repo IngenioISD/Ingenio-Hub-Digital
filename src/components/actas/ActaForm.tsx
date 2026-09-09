@@ -31,12 +31,17 @@ import {
 type Proyecto = { id: string; nombre: string; codigo_obra: string | null };
 type TipoReunion = { codigo: string; etiqueta: string };
 type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
+type ContactoPropiedad = { nombre: string; departamento: string | null };
 
 type ImagenExistente = { id: string; url: string; preview: string | null };
 type ImagenNueva = { file: File; preview: string };
 
 function nombrePersona(p: Persona) {
   return [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ");
+}
+
+function etiquetaContactoPropiedad(c: ContactoPropiedad) {
+  return c.departamento ? `${c.nombre} (${c.departamento})` : c.nombre;
 }
 
 export function ActaForm({ actaId }: { actaId?: string }) {
