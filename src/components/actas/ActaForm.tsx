@@ -89,6 +89,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
+  const [confirmando, setConfirmando] = useState<null | "cancelar" | "limpiar">(null);
 
   const { data: proyectos = [] } = useQuery<Proyecto[]>({
     queryKey: ["actas", "proyectos", clienteId, usuarioCliente?.acceso_total_proyectos],
