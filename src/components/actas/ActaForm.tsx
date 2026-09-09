@@ -366,7 +366,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const nombresParticipantes = () => [
     ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
     ...personalSeleccionado.map((nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`),
-    ...participantesLibres.map((nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`),
+    ...participantesLibres.map((nombre) => {
+      if (esPropiedad) {
+        const c = contactosPropiedad.find((c) => c.nombre === nombre);
+        return c?.departamento ? `${nombre} (${c.departamento})` : nombre;
+      }
+      return `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`;
+    }),
   ];
 
   const etiquetaTipo = tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
