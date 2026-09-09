@@ -151,18 +151,21 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   // Contactos de la Propiedad del proyecto
-  const { data: contactosPropiedad = [] } = useQuery<string[]>({
+  const { data: contactosPropiedad = [] } = useQuery<ContactoPropiedad[]>({
     queryKey: ["actas", "propiedad-contactos", proyectoSel?.propiedad_id],
     enabled: esPropiedad && !!proyectoSel?.propiedad_id,
     queryFn: async () => {
       const { data } = await supabase
         .from("propiedad_contactos")
-        .select("nombre, apellido_1, apellido_2")
+        .select("nombre, apellido_1, apellido_2, departamento")
         .eq("propiedad_id", proyectoSel!.propiedad_id!)
         .order("apellido_1");
       return (data ?? [])
-        .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
-        .filter((n) => n.length > 0);
+        .map((c) => ({
+          nombre: [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "),
+          departamento: c.departamento ?? null,
+        }))
+        .filter((c) => c.nombre.length > 0);
     },
   });
 
