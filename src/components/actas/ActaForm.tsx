@@ -74,6 +74,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const signaturePadRef = useRef<SignaturePadHandle>(null);
   const snapshotInicialRef = useRef<string>("");
+  const primerCambioTipoRef = useRef(true);
 
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
