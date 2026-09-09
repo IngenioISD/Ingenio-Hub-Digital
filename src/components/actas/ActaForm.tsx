@@ -31,12 +31,17 @@ import {
 type Proyecto = { id: string; nombre: string; codigo_obra: string | null };
 type TipoReunion = { codigo: string; etiqueta: string };
 type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
+type ContactoPropiedad = { nombre: string; departamento: string | null };
 
 type ImagenExistente = { id: string; url: string; preview: string | null };
 type ImagenNueva = { file: File; preview: string };
 
 function nombrePersona(p: Persona) {
   return [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ");
+}
+
+function etiquetaContactoPropiedad(c: ContactoPropiedad) {
+  return c.departamento ? `${c.nombre} (${c.departamento})` : c.nombre;
 }
 
 export function ActaForm({ actaId }: { actaId?: string }) {
@@ -146,18 +151,21 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   // Contactos de la Propiedad del proyecto
-  const { data: contactosPropiedad = [] } = useQuery<string[]>({
+  const { data: contactosPropiedad = [] } = useQuery<ContactoPropiedad[]>({
     queryKey: ["actas", "propiedad-contactos", proyectoSel?.propiedad_id],
     enabled: esPropiedad && !!proyectoSel?.propiedad_id,
     queryFn: async () => {
       const { data } = await supabase
         .from("propiedad_contactos")
-        .select("nombre, apellido_1, apellido_2")
+        .select("nombre, apellido_1, apellido_2, departamento")
         .eq("propiedad_id", proyectoSel!.propiedad_id!)
         .order("apellido_1");
       return (data ?? [])
-        .map((c) => [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "))
-        .filter((n) => n.length > 0);
+        .map((c) => ({
+          nombre: [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "),
+          departamento: c.departamento ?? null,
+        }))
+        .filter((c) => c.nombre.length > 0);
     },
   });
 
@@ -358,7 +366,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const nombresParticipantes = () => [
     ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
     ...personalSeleccionado.map((nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`),
-    ...participantesLibres.map((nombre) => `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`),
+    ...participantesLibres.map((nombre) => {
+      if (esPropiedad) {
+        const c = contactosPropiedad.find((c) => c.nombre === nombre);
+        return c?.departamento ? `${nombre} (${c.departamento})` : nombre;
+      }
+      return `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`;
+    }),
   ];
 
   const etiquetaTipo = tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
@@ -724,7 +738,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>Propiedad no asignada.</span>
               ) : (
                 <PersonMultiSelect
-                  opciones={contactosPropiedad.map((n) => ({ value: n, label: n }))}
+                  opciones={contactosPropiedad.map((c) => ({ value: c.nombre, label: etiquetaContactoPropiedad(c) }))}
                   seleccionados={participantesLibres}
                   onToggle={toggleLibre}
                   mensajeVacio="Propiedad no asignada."
