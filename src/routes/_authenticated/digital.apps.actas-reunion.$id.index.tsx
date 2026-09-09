@@ -56,7 +56,6 @@ type Detalle = {
   firmaPath: string | null;
 };
 
-
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section
@@ -159,7 +158,6 @@ function Page() {
             },
       );
 
-
       const { data: imagenes } = await supabase.from("acta_imagenes").select("url").eq("acta_id", id).order("orden");
       const urls = (await Promise.all((imagenes ?? []).map((img) => urlFirmada(BUCKET_IMAGENES, img.url)))).filter(
         Boolean,
@@ -224,7 +222,6 @@ function Page() {
           imagenes: data.imagenes,
           creadoPorNombre: data.creadoPorNombre,
           firmaPath: data.firmaPath,
-
         },
         usuarioCliente.cliente_id,
       );
@@ -337,139 +334,139 @@ function Page() {
         Listado de actas
       </Link>
       <LayoutActas subtitulo={acta.asunto}>
-      <div className="flex max-w-4xl flex-wrap items-center gap-2">
-        <BadgeEstadoActa estado={acta.estado} />
-        <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
-        <div className="ml-auto flex flex-wrap gap-2">
-          {puedeEditar ? (
-            <Link
-              to="/digital/apps/actas-reunion/$id/edit"
-              params={{ id: acta.id }}
-              className="btn btn-secondary btn-sm"
-            >
-              <Pencil size={14} /> Editar
-            </Link>
-          ) : null}
-          {puedeEditar && acta.estado === "borrador" ? (
-            <button
-              type="button"
-              className="btn btn-sm"
-              style={{
-                backgroundColor: "var(--brand-navy-deep)",
-                color: "var(--brand-lime)",
-                borderColor: "var(--brand-navy-deep)",
-              }}
-              disabled={generando}
-              onClick={() => void generar()}
-            >
-              {generando ? <Loader2 className="animate-spin" size={14} /> : <FileCog size={14} />}
-              Generar PDF
+        <div className="flex max-w-4xl flex-wrap items-center gap-2">
+          <BadgeEstadoActa estado={acta.estado} />
+          <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
+          <div className="ml-auto flex flex-wrap gap-2">
+            {puedeEditar ? (
+              <Link
+                to="/digital/apps/actas-reunion/$id/edit"
+                params={{ id: acta.id }}
+                className="btn btn-secondary btn-sm"
+              >
+                <Pencil size={14} /> Editar
+              </Link>
+            ) : null}
+            {puedeEditar && acta.estado === "borrador" ? (
+              <button
+                type="button"
+                className="btn btn-sm"
+                style={{
+                  backgroundColor: "var(--brand-navy-deep)",
+                  color: "var(--brand-lime)",
+                  borderColor: "var(--brand-navy-deep)",
+                }}
+                disabled={generando}
+                onClick={() => void generar()}
+              >
+                {generando ? <Loader2 className="animate-spin" size={14} /> : <FileCog size={14} />}
+                Generar Acta
+              </button>
+            ) : null}
+            {acta.estado === "borrador" ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                disabled={previsualizando}
+                onClick={() => void previsualizar()}
+              >
+                {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
+                Previsualizar
+              </button>
+            ) : null}
+            {urlPdf ? (
+              <a className="btn btn-secondary btn-sm" href={urlPdf} target="_blank" rel="noreferrer">
+                <Download size={14} /> Descargar
+              </a>
+            ) : null}
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => void compartir()}>
+              <Share2 size={14} /> Compartir
             </button>
+            {puedeEliminar ? (
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => void eliminar()}>
+                <Trash2 size={14} /> Eliminar
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-5 flex max-w-4xl flex-col gap-4">
+          <Seccion titulo="Datos generales">
+            <div className="flex flex-wrap gap-x-10 gap-y-4">
+              <div className="w-full">
+                <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
+              </div>
+              <Dato etiqueta="Lugar" valor={acta.lugar} />
+              <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
+            </div>
+          </Seccion>
+
+          <Seccion titulo="Asistentes">
+            {data.participantes.length === 0 && !acta.otros_asistentes ? (
+              <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>Sin asistentes registrados.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {data.participantes.map((p, i) => (
+                  <li key={`${p.nombre}-${i}`} className="flex items-center gap-2">
+                    <span style={{ fontSize: "var(--text-sm)" }}>{p.nombre}</span>
+                    <span className="badge badge-neutral">{p.origen}</span>
+                  </li>
+                ))}
+                {acta.otros_asistentes ? (
+                  <li style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+                    Otros: {acta.otros_asistentes}
+                  </li>
+                ) : null}
+              </ul>
+            )}
+          </Seccion>
+
+          <Seccion titulo="Contenido">
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>Notas</div>
+            <p className="whitespace-pre-wrap" style={{ fontSize: "var(--text-sm)" }}>
+              {acta.notas}
+            </p>
+            {acta.acciones ? (
+              <>
+                <div className="mt-4" style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
+                  Acciones a tomar
+                </div>
+                <p className="whitespace-pre-wrap" style={{ fontSize: "var(--text-sm)" }}>
+                  {acta.acciones}
+                </p>
+              </>
+            ) : null}
+          </Seccion>
+
+          {data.imagenes.length > 0 ? (
+            <Seccion titulo="Imágenes">
+              <div className="flex flex-wrap gap-3">
+                {data.imagenes.map((url) => (
+                  <a key={url} href={url} target="_blank" rel="noreferrer">
+                    <img
+                      src={url}
+                      alt="Imagen del acta"
+                      className="h-28 w-28 object-cover"
+                      style={{ borderRadius: "var(--radius-md)" }}
+                    />
+                  </a>
+                ))}
+              </div>
+            </Seccion>
           ) : null}
-          {acta.estado === "borrador" ? (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              disabled={previsualizando}
-              onClick={() => void previsualizar()}
-            >
-              {previsualizando ? <Loader2 className="animate-spin" size={14} /> : <Eye size={14} />}
-              Previsualizar
-            </button>
-          ) : null}
-          {urlPdf ? (
-            <a className="btn btn-secondary btn-sm" href={urlPdf} target="_blank" rel="noreferrer">
-              <Download size={14} /> Descargar
-            </a>
-          ) : null}
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => void compartir()}>
-            <Share2 size={14} /> Compartir
-          </button>
-          {puedeEliminar ? (
-            <button type="button" className="btn btn-danger btn-sm" onClick={() => void eliminar()}>
-              <Trash2 size={14} /> Eliminar
-            </button>
+
+          {data.firma ? (
+            <Seccion titulo="Firma">
+              <img
+                src={data.firma}
+                alt="Firma del acta"
+                className="h-28 w-auto"
+                style={{ borderRadius: "var(--radius-md)" }}
+              />
+            </Seccion>
           ) : null}
         </div>
-      </div>
-
-      <div className="mt-5 flex max-w-4xl flex-col gap-4">
-        <Seccion titulo="Datos generales">
-          <div className="flex flex-wrap gap-x-10 gap-y-4">
-            <div className="w-full">
-              <Dato etiqueta="Proyecto" valor={data.proyectoNombre} />
-            </div>
-            <Dato etiqueta="Lugar" valor={acta.lugar} />
-            <Dato etiqueta="Fecha" valor={formatoFechaHora(acta.fecha_reunion)} />
-          </div>
-        </Seccion>
-
-        <Seccion titulo="Asistentes">
-          {data.participantes.length === 0 && !acta.otros_asistentes ? (
-            <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>Sin asistentes registrados.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {data.participantes.map((p, i) => (
-                <li key={`${p.nombre}-${i}`} className="flex items-center gap-2">
-                  <span style={{ fontSize: "var(--text-sm)" }}>{p.nombre}</span>
-                  <span className="badge badge-neutral">{p.origen}</span>
-                </li>
-              ))}
-              {acta.otros_asistentes ? (
-                <li style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                  Otros: {acta.otros_asistentes}
-                </li>
-              ) : null}
-            </ul>
-          )}
-        </Seccion>
-
-        <Seccion titulo="Contenido">
-          <div style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>Notas</div>
-          <p className="whitespace-pre-wrap" style={{ fontSize: "var(--text-sm)" }}>
-            {acta.notas}
-          </p>
-          {acta.acciones ? (
-            <>
-              <div className="mt-4" style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                Acciones a tomar
-              </div>
-              <p className="whitespace-pre-wrap" style={{ fontSize: "var(--text-sm)" }}>
-                {acta.acciones}
-              </p>
-            </>
-          ) : null}
-        </Seccion>
-
-        {data.imagenes.length > 0 ? (
-          <Seccion titulo="Imágenes">
-            <div className="flex flex-wrap gap-3">
-              {data.imagenes.map((url) => (
-                <a key={url} href={url} target="_blank" rel="noreferrer">
-                  <img
-                    src={url}
-                    alt="Imagen del acta"
-                    className="h-28 w-28 object-cover"
-                    style={{ borderRadius: "var(--radius-md)" }}
-                  />
-                </a>
-              ))}
-            </div>
-          </Seccion>
-        ) : null}
-
-        {data.firma ? (
-          <Seccion titulo="Firma">
-            <img
-              src={data.firma}
-              alt="Firma del acta"
-              className="h-28 w-auto"
-              style={{ borderRadius: "var(--radius-md)" }}
-            />
-          </Seccion>
-        ) : null}
-      </div>
-    </LayoutActas>
+      </LayoutActas>
     </>
   );
 }
