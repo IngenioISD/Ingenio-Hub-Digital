@@ -74,6 +74,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const signaturePadRef = useRef<SignaturePadHandle>(null);
   const snapshotInicialRef = useRef<string>("");
+  const primerCambioTipoRef = useRef(true);
 
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
@@ -322,6 +323,18 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       snapshotInicialRef.current = snapshotActual();
     }
   }, [actaId, cargado]);
+
+  // Al cambiar realmente el tipo de reunión, limpiar asistentes vinculados
+  // al tipo anterior para evitar que se etiqueten con el tipo nuevo.
+  useEffect(() => {
+    if (!cargado) return;
+    if (primerCambioTipoRef.current) {
+      primerCambioTipoRef.current = false;
+      return;
+    }
+    setPersonalSeleccionado([]);
+    setParticipantesLibres([]);
+  }, [tipoReunion, cargado]);
 
   const nombresPersonal = useMemo(() => new Map(personal.map((p) => [p.nif, nombrePersona(p)])), [personal]);
 
