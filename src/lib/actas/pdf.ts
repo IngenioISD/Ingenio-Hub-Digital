@@ -391,8 +391,11 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
         maxAlto = fin - yy + 4;
       } else {
         const [izq, der] = fila;
-        // Calcula ancho necesario para la columna izquierda.
+        // Calcula las líneas una vez con un ancho generoso (colW) para evitar
+        // saltos de línea por redondeo entre getTextWidth y splitTextToSize
+        // cuando se vuelve a partir el texto con el ancho final ajustado.
         const lineasIzq = lineasDe(izq![1], colW);
+        const lineasDer = lineasDe(der![1], colW);
         const anchoIzqCalculado = Math.max(anchoEtiqueta(izq![0]), anchoLineas(lineasIzq));
         const anchoIzq = Math.min(anchoIzqCalculado, 220);
         const xDer = margen + pad + anchoIzq + 24;
@@ -413,7 +416,8 @@ export async function blobPdfActa(datos: DatosPdfActa): Promise<Blob> {
           doc.setFontSize(7.5);
           doc.setTextColor(...GRIS);
           doc.text(par[0].toUpperCase(), x, yy);
-          const fin = pintarLineas(lineasDe(par[1], anchoCampo), x, yy + 12);
+          const lineas = c === 0 ? lineasIzq : lineasDer;
+          const fin = pintarLineas(lineas, x, yy + 12);
           maxAlto = Math.max(maxAlto, fin - yy + 4);
         }
       }
