@@ -8,6 +8,16 @@ import { MicButton } from "@/components/mic-button";
 import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -79,6 +89,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [guardando, setGuardando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [cargado, setCargado] = useState(!actaId);
+  const [confirmando, setConfirmando] = useState<null | "cancelar" | "limpiar">(null);
 
   const { data: proyectos = [] } = useQuery<Proyecto[]>({
     queryKey: ["actas", "proyectos", clienteId, usuarioCliente?.acceso_total_proyectos],
@@ -394,8 +405,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const urlsImagenes = () =>
     [...imagenesExistentes.map((i) => i.preview), ...imagenesNuevas.map((i) => i.preview)].filter(Boolean) as string[];
 
-  const limpiarCampos = () => {
-    if (hayCambios() && !window.confirm("¿Vaciar todos los campos del formulario?")) return;
+  const ejecutarLimpiar = () => {
     imagenesNuevas.forEach((i) => URL.revokeObjectURL(i.preview));
     setProyectoId("");
     setFechaReunion(aDatetimeLocal(new Date().toISOString()));
@@ -411,12 +421,34 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     setNuevoParticipante("");
     setImagenesNuevas([]);
     setFirmaDataUrl(null);
+    snapshotInicialRef.current = snapshotActual();
+  };
+
+  const limpiarCampos = () => {
+    if (hayCambios()) {
+      setConfirmando("limpiar");
+      return;
+    }
+    ejecutarLimpiar();
+  };
+
+  const ejecutarCancelar = () => {
+    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
+    else void navigate({ to: "/digital/apps/actas-reunion" });
   };
 
   const cancelar = () => {
-    if (hayCambios() && !window.confirm("Saldrás sin guardar los cambios. ¿Continuar?")) return;
-    if (actaId) void navigate({ to: "/digital/apps/actas-reunion/$id", params: { id: actaId } });
-    else void navigate({ to: "/digital/apps/actas-reunion" });
+    if (hayCambios()) {
+      setConfirmando("cancelar");
+      return;
+    }
+    ejecutarCancelar();
+  };
+
+  const ejecutarConfirmado = () => {
+    if (confirmando === "cancelar") ejecutarCancelar();
+    if (confirmando === "limpiar") ejecutarLimpiar();
+    setConfirmando(null);
   };
 
   const previsualizar = async () => {
@@ -1045,6 +1077,33 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           <span className="bottom-bar-btn-label">Cancelar</span>
         </button>
       </div>
+
+      <AlertDialog open={!!confirmando} onOpenChange={(open) => !open && setConfirmando(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmando === "cancelar" ? "¿Salir sin guardar?" : "¿Vaciar el formulario?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmando === "cancelar"
+                ? "Tienes cambios sin guardar. Si sales ahora, se perderán."
+                : "Se borrarán todos los campos rellenados. Esta acción no se puede deshacer."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <button type="button" className="btn btn-secondary">
+                Cancelar
+              </button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <button type="button" className="btn btn-danger" onClick={ejecutarConfirmado}>
+                {confirmando === "cancelar" ? "Salir sin guardar" : "Vaciar"}
+              </button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
