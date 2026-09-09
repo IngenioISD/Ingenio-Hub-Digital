@@ -8,6 +8,16 @@ import { MicButton } from "@/components/mic-button";
 import { SignaturePad, type SignaturePadHandle } from "@/components/signature-pad";
 import { PersonMultiSelect } from "@/components/actas/PersonMultiSelect";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
