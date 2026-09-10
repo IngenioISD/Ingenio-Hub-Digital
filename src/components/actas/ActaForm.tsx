@@ -381,7 +381,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const hayCambios = () => snapshotActual() !== snapshotInicialRef.current;
 
-  const nombreCreador = creadoPorNombre || miNombre;
+  const nombreCreador = creadoPorNombre || miPersonal?.nombre || "";
 
   const ORIGEN_TIPO: Record<string, string> = {
     interna: "Personal interno",
@@ -770,7 +770,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             <span className="form-label">Asistentes</span>
             {esInterna ? (
               <PersonMultiSelect
-                opciones={personal.map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
+                opciones={personal
+                  .filter((p) => p.nif !== miPersonal?.nif)
+                  .map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
                 seleccionados={personalSeleccionado}
                 onToggle={(nif, checked) =>
                   setPersonalSeleccionado((prev) => (checked ? [...prev, nif] : prev.filter((n) => n !== nif)))
