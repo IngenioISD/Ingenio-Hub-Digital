@@ -241,7 +241,7 @@ function Page() {
                   <td>{formatoFechaHora(acta.fecha_reunion)}</td>
                   <td>{acta.lugar}</td>
                   <td>
-                    <BadgeTipoReunion codigo={acta.tipo_reunion} />
+                    <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
                   </td>
                   <td>
                     <BadgeEstadoActa estado={acta.estado} />
