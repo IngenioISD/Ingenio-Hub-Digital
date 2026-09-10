@@ -215,22 +215,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
-  // Nombre de la persona conectada (para actas nuevas: creador y firmante)
-  const { data: miNombre = "" } = useQuery<string>({
-    queryKey: ["actas", "mi-nombre", clienteId],
+  // Datos de la persona conectada (para actas nuevas: creador y firmante)
+  const { data: miPersonal } = useQuery<{ nombre: string; nif: string | null } | null>({
+    queryKey: ["actas", "mi-personal", clienteId],
     enabled: !!clienteId,
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       const email = userData.user?.email ?? "";
-      if (!email) return "";
+      if (!email) return null;
       const { data } = await supabase
         .from("personal")
-        .select("nombre, apellido_1, apellido_2")
+        .select("nif, nombre, apellido_1, apellido_2")
         .eq("cliente_id", clienteId!)
         .eq("email", email)
         .maybeSingle();
-      if (!data) return "";
-      return [data.nombre, data.apellido_1, data.apellido_2].filter(Boolean).join(" ");
+      if (!data) return null;
+      return {
+        nif: data.nif ?? null,
+        nombre: [data.nombre, data.apellido_1, data.apellido_2].filter(Boolean).join(" "),
+      };
     },
   });
 
@@ -378,7 +381,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
   const hayCambios = () => snapshotActual() !== snapshotInicialRef.current;
 
-  const nombreCreador = creadoPorNombre || miNombre;
+  const nombreCreador = creadoPorNombre || miPersonal?.nombre || "";
 
   const ORIGEN_TIPO: Record<string, string> = {
     interna: "Personal interno",
@@ -767,7 +770,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
             <span className="form-label">Asistentes</span>
             {esInterna ? (
               <PersonMultiSelect
-                opciones={personal.map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
+                opciones={personal
+                  .filter((p) => p.nif !== miPersonal?.nif)
+                  .map((p) => ({ value: p.nif, label: nombrePersona(p) }))}
                 seleccionados={personalSeleccionado}
                 onToggle={(nif, checked) =>
                   setPersonalSeleccionado((prev) => (checked ? [...prev, nif] : prev.filter((n) => n !== nif)))
