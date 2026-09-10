@@ -414,14 +414,24 @@ function Page() {
           </Seccion>
 
           <Seccion titulo="Asistentes">
-            {data.participantes.length === 0 && !acta.otros_asistentes ? (
+            {data.participantes.length === 0 && !acta.otros_asistentes && !data.creadoPorNombre ? (
               <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>Sin asistentes registrados.</p>
             ) : (
               <ul className="flex flex-col gap-2">
+                {data.creadoPorNombre ? (
+                  <li className="flex items-center gap-2">
+                    <span style={{ fontSize: "var(--text-sm)" }}>{data.creadoPorNombre}</span>
+                    {acta.tipo_reunion !== "interna" ? (
+                      <span className="badge badge-neutral">Constructora</span>
+                    ) : null}
+                  </li>
+                ) : null}
                 {data.participantes.map((p, i) => (
                   <li key={`${p.nombre}-${i}`} className="flex items-center gap-2">
                     <span style={{ fontSize: "var(--text-sm)" }}>{p.nombre}</span>
-                    <span className="badge badge-neutral">{p.origen}</span>
+                    {acta.tipo_reunion !== "interna" ? (
+                      <span className="badge badge-neutral">{p.origen}</span>
+                    ) : null}
                   </li>
                 ))}
                 {acta.otros_asistentes ? (
