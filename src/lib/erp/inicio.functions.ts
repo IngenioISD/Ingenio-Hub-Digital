@@ -35,7 +35,7 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
 
     const { data: usuario } = await supabase
       .from("usuarios_cliente")
-      .select("cliente_id")
+      .select("cliente_id, acceso_total_proyectos")
       .eq("user_id", userId)
       .eq("activo", true)
       .maybeSingle();
@@ -43,11 +43,27 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
     const clienteId = usuario?.cliente_id;
     if (!clienteId) return [];
 
-    const { data: proyectos, error } = await supabase
+    const accesoTotal = usuario?.acceso_total_proyectos === true;
+
+    let proyectoIds: string[] | null = null;
+    if (!accesoTotal) {
+      const { data: asignaciones } = await supabase
+        .from("usuario_proyectos")
+        .select("proyecto_id")
+        .eq("user_id", userId)
+        .eq("activo", true);
+      proyectoIds = (asignaciones ?? []).map((a) => a.proyecto_id);
+      if (proyectoIds.length === 0) return [];
+    }
+
+    let consulta = supabase
       .from("proyectos")
       .select("id, nombre, estado, provincia, tipo_obra, propiedad_id")
       .eq("cliente_id", clienteId)
       .eq("activo", true);
+    if (proyectoIds) consulta = consulta.in("id", proyectoIds);
+
+    const { data: proyectos, error } = await consulta;
     if (error) throw error;
 
     const { data: configs } = await supabase
