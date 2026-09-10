@@ -212,10 +212,16 @@ function Page() {
           notas: data.acta.notas,
           acciones: data.acta.acciones,
           otros_asistentes: data.acta.otros_asistentes,
-          participantes: [
-            ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
-            ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
-          ],
+          participantes:
+            data.acta.tipo_reunion === "interna"
+              ? [
+                  ...(data.creadoPorNombre ? [data.creadoPorNombre] : []),
+                  ...data.participantes.map((p) => p.nombre),
+                ]
+              : [
+                  ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+                  ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+                ],
           empresaNombre: empresa?.nombre ?? "",
           logoClienteUrl: empresa?.logo_url ?? null,
           estado: "generada",
@@ -255,10 +261,16 @@ function Page() {
         notas: data.acta.notas,
         acciones: data.acta.acciones,
         otros_asistentes: data.acta.otros_asistentes,
-        participantes: [
-          ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
-          ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
-        ],
+        participantes:
+          data.acta.tipo_reunion === "interna"
+            ? [
+                ...(data.creadoPorNombre ? [data.creadoPorNombre] : []),
+                ...data.participantes.map((p) => p.nombre),
+              ]
+            : [
+                ...(data.creadoPorNombre ? [`${data.creadoPorNombre} (Constructora)`] : []),
+                ...data.participantes.map((p) => `${p.nombre} (${p.origen})`),
+              ],
         empresaNombre: empresa?.nombre ?? "",
         logoClienteUrl: empresa?.logo_url ?? null,
         estado: data.acta.estado as "borrador" | "generada",

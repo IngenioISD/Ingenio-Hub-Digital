@@ -390,17 +390,26 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     subcontrata: "Subcontrata",
   };
 
-  const nombresParticipantes = () => [
-    ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
-    ...personalSeleccionado.map((nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`),
-    ...participantesLibres.map((nombre) => {
-      if (esPropiedad) {
-        const c = contactosPropiedad.find((c) => c.nombre === nombre);
-        return c?.departamento ? `${nombre} (${c.departamento})` : nombre;
-      }
-      return `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`;
-    }),
-  ];
+  const nombresParticipantes = () => {
+    if (tipoReunion === "interna") {
+      return [
+        ...(nombreCreador ? [nombreCreador] : []),
+        ...personalSeleccionado.map((nif) => nombresPersonal.get(nif) ?? nif),
+        ...participantesLibres,
+      ];
+    }
+    return [
+      ...(nombreCreador ? [`${nombreCreador} (Constructora)`] : []),
+      ...personalSeleccionado.map((nif) => `${nombresPersonal.get(nif) ?? nif} (${ORIGEN_TIPO["interna"]})`),
+      ...participantesLibres.map((nombre) => {
+        if (esPropiedad) {
+          const c = contactosPropiedad.find((c) => c.nombre === nombre);
+          return c?.departamento ? `${nombre} (${c.departamento})` : nombre;
+        }
+        return `${nombre} (${ORIGEN_TIPO[tipoReunion] ?? "Otro"})`;
+      }),
+    ];
+  };
 
   const etiquetaTipo = tipos.find((t) => t.codigo === tipoReunion)?.etiqueta ?? (esOtra ? tipoOtro : tipoReunion);
   const nombreProyecto = proyectos.find((p) => p.id === proyectoId)?.nombre ?? "";
