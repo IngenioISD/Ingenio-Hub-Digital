@@ -197,7 +197,7 @@ function Page() {
                 {acta.proyectoNombre} · {formatoFechaHora(acta.fecha_reunion)}
               </div>
               <div className="mt-2">
-                <BadgeTipoReunion codigo={acta.tipo_reunion} />
+                <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
               </div>
             </Link>
           ))}
