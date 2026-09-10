@@ -37,6 +37,7 @@ type ActaLista = {
   lugar: string;
   fecha_reunion: string;
   tipo_reunion: string;
+  tipoEtiqueta: string;
   estado: string;
   proyecto_id: string | null;
   proyectoNombre: string;
@@ -91,9 +92,16 @@ function Page() {
         for (const p of proyectos ?? []) nombres.set(p.id, p.nombre);
       }
 
+      const { data: tipos } = await supabase
+        .from("catalogo")
+        .select("codigo, etiqueta")
+        .eq("categoria", "tipo_reunion");
+      const etiquetasTipo = new Map((tipos ?? []).map((t) => [t.codigo, t.etiqueta]));
+
       return (filas ?? []).map((f) => ({
         ...f,
         proyectoNombre: f.proyecto_id ? (nombres.get(f.proyecto_id) ?? "—") : "—",
+        tipoEtiqueta: etiquetasTipo.get(f.tipo_reunion) ?? f.tipo_reunion,
       })) as ActaLista[];
     },
   });
@@ -189,7 +197,7 @@ function Page() {
                 {acta.proyectoNombre} · {formatoFechaHora(acta.fecha_reunion)}
               </div>
               <div className="mt-2">
-                <BadgeTipoReunion codigo={acta.tipo_reunion} />
+                <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
               </div>
             </Link>
           ))}
@@ -233,7 +241,7 @@ function Page() {
                   <td>{formatoFechaHora(acta.fecha_reunion)}</td>
                   <td>{acta.lugar}</td>
                   <td>
-                    <BadgeTipoReunion codigo={acta.tipo_reunion} />
+                    <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
                   </td>
                   <td>
                     <BadgeEstadoActa estado={acta.estado} />
