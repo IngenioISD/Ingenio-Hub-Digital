@@ -92,9 +92,16 @@ function Page() {
         for (const p of proyectos ?? []) nombres.set(p.id, p.nombre);
       }
 
+      const { data: tipos } = await supabase
+        .from("catalogo")
+        .select("codigo, etiqueta")
+        .eq("categoria", "tipo_reunion");
+      const etiquetasTipo = new Map((tipos ?? []).map((t) => [t.codigo, t.etiqueta]));
+
       return (filas ?? []).map((f) => ({
         ...f,
         proyectoNombre: f.proyecto_id ? (nombres.get(f.proyecto_id) ?? "—") : "—",
+        tipoEtiqueta: etiquetasTipo.get(f.tipo_reunion) ?? f.tipo_reunion,
       })) as ActaLista[];
     },
   });
