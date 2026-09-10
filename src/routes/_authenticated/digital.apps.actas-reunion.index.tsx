@@ -37,6 +37,7 @@ type ActaLista = {
   lugar: string;
   fecha_reunion: string;
   tipo_reunion: string;
+  tipoEtiqueta: string;
   estado: string;
   proyecto_id: string | null;
   proyectoNombre: string;
