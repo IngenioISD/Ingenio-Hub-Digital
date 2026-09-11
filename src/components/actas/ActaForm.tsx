@@ -189,6 +189,22 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
+  // Subcontratas asignadas al proyecto
+  const { data: contactosSubcontrata = [] } = useQuery<{ id: string; nombre: string }[]>({
+    queryKey: ["actas", "subcontratas-proyecto", proyectoId],
+    enabled: esSubcontrata && !!proyectoId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proyecto_proveedores")
+        .select("proveedor_id, proveedor_subcontrata(nombre_legal)")
+        .eq("proyecto_id", proyectoId)
+        .eq("activo", true);
+      return (data ?? [])
+        .map((r: any) => ({ id: r.proveedor_id as string, nombre: r.proveedor_subcontrata?.nombre_legal ?? "—" }))
+        .filter((s) => s.nombre !== "—");
+    },
+  });
+
   const accesoTotal = usuarioCliente?.acceso_total_proyectos === true;
 
   const { data: personal = [] } = useQuery<Persona[]>({
