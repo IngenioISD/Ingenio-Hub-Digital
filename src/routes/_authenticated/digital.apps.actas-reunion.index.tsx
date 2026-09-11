@@ -37,6 +37,7 @@ type ActaLista = {
   lugar: string;
   fecha_reunion: string;
   tipo_reunion: string;
+  tipo_otro_descripcion: string | null;
   tipoEtiqueta: string;
   estado: string;
   proyecto_id: string | null;
@@ -73,7 +74,7 @@ function Page() {
 
       let consulta = supabase
         .from("actas")
-        .select("id, asunto, lugar, fecha_reunion, tipo_reunion, estado, proyecto_id")
+        .select("id, asunto, lugar, fecha_reunion, tipo_reunion, tipo_otro_descripcion, estado, proyecto_id")
         .eq("cliente_id", usuarioCliente!.cliente_id)
         .order("fecha_reunion", { ascending: false });
       if (proyectoIds) {
@@ -197,7 +198,14 @@ function Page() {
                 {acta.proyectoNombre} · {formatoFechaHora(acta.fecha_reunion)}
               </div>
               <div className="mt-2">
-                <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
+                <BadgeTipoReunion
+                  codigo={acta.tipo_reunion}
+                  etiqueta={
+                    (acta.tipo_reunion === "otra" || acta.tipo_reunion === "otro") && acta.tipo_otro_descripcion
+                      ? `Otra (${acta.tipo_otro_descripcion})`
+                      : acta.tipoEtiqueta
+                  }
+                />
               </div>
             </Link>
           ))}
@@ -241,7 +249,14 @@ function Page() {
                   <td>{formatoFechaHora(acta.fecha_reunion)}</td>
                   <td>{acta.lugar}</td>
                   <td>
-                    <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={acta.tipoEtiqueta} />
+                    <BadgeTipoReunion
+                      codigo={acta.tipo_reunion}
+                      etiqueta={
+                        (acta.tipo_reunion === "otra" || acta.tipo_reunion === "otro") && acta.tipo_otro_descripcion
+                          ? `Otra (${acta.tipo_otro_descripcion})`
+                          : acta.tipoEtiqueta
+                      }
+                    />
                   </td>
                   <td>
                     <BadgeEstadoActa estado={acta.estado} />
