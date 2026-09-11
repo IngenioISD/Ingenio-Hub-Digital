@@ -1,10 +1,18 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Plus } from "lucide-react";
 
 import { LayoutActas } from "@/components/actas/LayoutActas";
 import { BadgeEstadoActa, BadgeTipoReunion } from "@/components/actas/BadgesActa";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosActas } from "@/hooks/use-permisos-actas";
@@ -44,7 +52,15 @@ type ActaLista = {
   proyectoNombre: string;
 };
 
+type TipoReunion = {
+  codigo: string;
+  etiqueta: string;
+};
+
 type Filtro = "todas" | "generada" | "borrador";
+
+type SortKey = "asunto" | "proyecto" | "fecha" | "lugar" | "tipo" | "estado";
+type SortDirection = "asc" | "desc" | null;
 
 const FILTROS: { valor: Filtro; etiqueta: string }[] = [
   { valor: "todas", etiqueta: "Todas" },
@@ -52,13 +68,30 @@ const FILTROS: { valor: Filtro; etiqueta: string }[] = [
   { valor: "borrador", etiqueta: "Borradores" },
 ];
 
+const TODOS_LOS_TIPOS = "__todos__";
+
+const COLUMNAS: { key: SortKey; label: string }[] = [
+  { key: "asunto", label: "Asunto" },
+  { key: "proyecto", label: "Proyecto" },
+  { key: "fecha", label: "Fecha" },
+  { key: "lugar", label: "Lugar" },
+  { key: "tipo", label: "Tipo" },
+  { key: "estado", label: "Estado" },
+];
+
 function Page() {
   const { usuarioCliente } = useAuth();
   const { puedeEditar } = usePermisosActas();
   const isMobile = useIsMobile();
   const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [filtroTipo, setFiltroTipo] = useState<string>(TODOS_LOS_TIPOS);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDirection>(null);
 
-  const { data: actas = [], isLoading } = useQuery<ActaLista[]>({
+  const { data: { actas = [], tipos = [] } = {}, isLoading } = useQuery<{
+    actas: ActaLista[];
+    tipos: TipoReunion[];
+  }>({
     queryKey: ["actas", "listado", usuarioCliente?.cliente_id],
     enabled: !!usuarioCliente?.cliente_id,
     queryFn: async () => {
@@ -78,7 +111,7 @@ function Page() {
         .eq("cliente_id", usuarioCliente!.cliente_id)
         .order("fecha_reunion", { ascending: false });
       if (proyectoIds) {
-        if (proyectoIds.length === 0) return [];
+        if (proyectoIds.length === 0) return { actas: [], tipos: [] };
         consulta = consulta.in("proyecto_id", proyectoIds);
       }
 
@@ -93,24 +126,71 @@ function Page() {
         for (const p of proyectos ?? []) nombres.set(p.id, p.nombre);
       }
 
-      const { data: tipos } = await supabase
+      const { data: tiposRows } = await supabase
         .from("catalogo")
         .select("codigo, etiqueta")
-        .eq("categoria", "tipo_reunion");
-      const etiquetasTipo = new Map((tipos ?? []).map((t) => [t.codigo, t.etiqueta]));
+        .eq("categoria", "tipo_reunion")
+        .order("orden", { ascending: true });
+      const etiquetasTipo = new Map((tiposRows ?? []).map((t) => [t.codigo, t.etiqueta]));
 
-      return (filas ?? []).map((f) => ({
+      const actasLista = (filas ?? []).map((f) => ({
         ...f,
         proyectoNombre: f.proyecto_id ? (nombres.get(f.proyecto_id) ?? "—") : "—",
         tipoEtiqueta: etiquetasTipo.get(f.tipo_reunion) ?? f.tipo_reunion,
       })) as ActaLista[];
+
+      return {
+        actas: actasLista,
+        tipos: (tiposRows ?? []) as TipoReunion[],
+      };
     },
   });
 
-  const visibles = useMemo(
-    () => (filtro === "todas" ? actas : actas.filter((a) => a.estado === filtro)),
-    [actas, filtro],
-  );
+  const visibles = useMemo(() => {
+    let rows = filtro === "todas" ? actas : actas.filter((a) => a.estado === filtro);
+    if (filtroTipo !== TODOS_LOS_TIPOS) {
+      rows = rows.filter((a) => a.tipo_reunion === filtroTipo);
+    }
+    if (sortKey && sortDir) {
+      rows = [...rows].sort((a, b) => {
+        let result = 0;
+        switch (sortKey) {
+          case "asunto":
+            result = a.asunto.localeCompare(b.asunto, "es");
+            break;
+          case "proyecto":
+            result = a.proyectoNombre.localeCompare(b.proyectoNombre, "es");
+            break;
+          case "fecha":
+            result = new Date(a.fecha_reunion).getTime() - new Date(b.fecha_reunion).getTime();
+            break;
+          case "lugar":
+            result = a.lugar.localeCompare(b.lugar, "es");
+            break;
+          case "tipo":
+            result = a.tipoEtiqueta.localeCompare(b.tipoEtiqueta, "es");
+            break;
+          case "estado":
+            result = a.estado.localeCompare(b.estado, "es");
+            break;
+        }
+        return sortDir === "asc" ? result : -result;
+      });
+    }
+    return rows;
+  }, [actas, filtro, filtroTipo, sortKey, sortDir]);
+
+  function handleSort(key: SortKey) {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+      setSortDir(null);
+    }
+  }
 
   return (
     <LayoutActas subtitulo="Listado de actas">
@@ -144,19 +224,35 @@ function Page() {
           })}
         </div>
 
-        {puedeEditar ? (
-          <Link
-            to="/digital/apps/actas-reunion/new"
-            className="btn"
-            style={{
-              backgroundColor: "var(--brand-navy-deep)",
-              color: "var(--brand-lime)",
-              borderColor: "var(--brand-navy-deep)",
-            }}
-          >
-            <Plus size={16} /> Nueva acta
-          </Link>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+            <SelectTrigger className="w-44 bg-(--bg-surface)">
+              <SelectValue placeholder="Todos los tipos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={TODOS_LOS_TIPOS}>Todos los tipos</SelectItem>
+              {tipos.map((t) => (
+                <SelectItem key={t.codigo} value={t.codigo}>
+                  {t.etiqueta}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {puedeEditar ? (
+            <Link
+              to="/digital/apps/actas-reunion/new"
+              className="btn"
+              style={{
+                backgroundColor: "var(--brand-navy-deep)",
+                color: "var(--brand-lime)",
+                borderColor: "var(--brand-navy-deep)",
+              }}
+            >
+              <Plus size={16} /> Nueva acta
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       {isLoading ? (
@@ -222,20 +318,34 @@ function Page() {
           <table className="table w-full">
             <thead>
               <tr>
-                <th>Asunto</th>
-                <th>Proyecto</th>
-                <th>Fecha</th>
-                <th>Lugar</th>
-                <th>Tipo</th>
-                <th>Estado</th>
+                {COLUMNAS.map(({ key, label }) => {
+                  const active = sortKey === key;
+                  const Icon = active
+                    ? sortDir === "asc"
+                      ? ArrowUp
+                      : ArrowDown
+                    : ArrowUpDown;
+                  return (
+                    <th
+                      key={key}
+                      aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="h-auto w-full justify-start gap-1 p-0 text-xs font-semibold"
+                        onClick={() => handleSort(key)}
+                      >
+                        {label}
+                        <Icon className="size-3.5" aria-hidden="true" />
+                      </Button>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {visibles.map((acta, i) => (
-                <tr
-                  key={acta.id}
-                  style={i % 2 ? { backgroundColor: "var(--bg-muted)" } : undefined}
-                >
+              {visibles.map((acta) => (
+                <tr key={acta.id}>
                   <td>
                     <Link
                       to="/digital/apps/actas-reunion/$id"
