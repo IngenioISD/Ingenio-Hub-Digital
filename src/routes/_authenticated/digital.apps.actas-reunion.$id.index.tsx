@@ -45,6 +45,7 @@ type Detalle = {
     pdf_url: string | null;
     nombre_pdf: string | null;
     proyecto_id: string | null;
+    creado_por_id: string | null;
   };
   proyectoNombre: string;
   proyectoCodigo: string;
@@ -89,7 +90,6 @@ function Page() {
   const queryClient = useQueryClient();
   const { usuarioCliente } = useAuth();
   const { data: empresa } = useEmpresa();
-  const { puedeEditar, puedeEliminar } = usePermisosActas();
   const [generando, setGenerando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [urlPdf, setUrlPdf] = useState<string | null>(null);
@@ -196,6 +196,8 @@ function Page() {
 
     },
   });
+
+  const { puedeEditar, puedeEliminar } = usePermisosActas(data?.acta.creado_por_id);
 
   useEffect(() => {
     let activo = true;
