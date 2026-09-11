@@ -112,8 +112,9 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   useEffect(() => {
-    if (proyectos.length === 1 && proyectoId !== proyectos[0].id) {
-      setProyectoId(proyectos[0].id);
+    const unico = proyectos[0];
+    if (proyectos.length === 1 && unico && proyectoId !== unico.id) {
+      setProyectoId(unico.id);
     }
   }, [proyectos, proyectoId]);
 
@@ -699,7 +700,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 onChange={(e) => setProyectoId(e.target.value)}
                 disabled={proyectos.length === 1}
               >
-                {proyectos.length === 1 ? (
+                {proyectos.length === 1 && proyectos[0] ? (
                   <option value={proyectos[0].id}>
                     {proyectos[0].codigo_obra ? `${proyectos[0].codigo_obra} · ` : ""}
                     {proyectos[0].nombre}
