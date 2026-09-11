@@ -135,6 +135,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const esInterna = tipoReunion === "interna";
   const esDf = tipoReunion === "df";
   const esPropiedad = tipoReunion === "propiedad";
+  const esSubcontrata = tipoReunion === "subcontrata";
   const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
 
   // Proyecto seleccionado (para conocer su propiedad y su dirección facultativa)
