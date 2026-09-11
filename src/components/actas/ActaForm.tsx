@@ -111,6 +111,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
+  useEffect(() => {
+    if (proyectos.length === 1 && proyectoId !== proyectos[0].id) {
+      setProyectoId(proyectos[0].id);
+    }
+  }, [proyectos, proyectoId]);
+
   const { data: tipos = [] } = useQuery<TipoReunion[]>({
     queryKey: ["actas", "tipos-reunion"],
     staleTime: 10 * 60 * 1000,
@@ -691,14 +697,24 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 className="form-select"
                 value={proyectoId}
                 onChange={(e) => setProyectoId(e.target.value)}
+                disabled={proyectos.length === 1}
               >
-                <option value="">Selecciona un proyecto</option>
-                {proyectos.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.codigo_obra ? `${p.codigo_obra} · ` : ""}
-                    {p.nombre}
+                {proyectos.length === 1 ? (
+                  <option value={proyectos[0].id}>
+                    {proyectos[0].codigo_obra ? `${proyectos[0].codigo_obra} · ` : ""}
+                    {proyectos[0].nombre}
                   </option>
-                ))}
+                ) : (
+                  <>
+                    <option value="">Selecciona un proyecto</option>
+                    {proyectos.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.codigo_obra ? `${p.codigo_obra} · ` : ""}
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </>
+                )}
               </select>
             </div>
 
