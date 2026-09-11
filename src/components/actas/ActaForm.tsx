@@ -605,7 +605,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .from("actas")
           .insert({
             ...payload,
-            creado_por_nif: yo.nif,
             creado_por_id: yo.id,
             estado,
           })
@@ -666,7 +665,6 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         const { error: errFirma } = await supabase.from("acta_firmas").insert({
           acta_id: id,
           firma_url: firmaPath,
-          usuario_nif: yo?.nif ?? null,
           usuario_id: yo?.id ?? null,
         });
         if (errFirma) throw errFirma;
