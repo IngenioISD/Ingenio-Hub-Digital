@@ -348,7 +348,14 @@ function Page() {
       <LayoutActas subtitulo={acta.asunto}>
         <div className="flex max-w-4xl flex-wrap items-center gap-2">
           <BadgeEstadoActa estado={acta.estado} />
-          <BadgeTipoReunion codigo={acta.tipo_reunion} etiqueta={data.tipoEtiqueta} />
+          <BadgeTipoReunion
+            codigo={acta.tipo_reunion}
+            etiqueta={
+              (acta.tipo_reunion === "otra" || acta.tipo_reunion === "otro") && acta.tipo_otro_descripcion
+                ? `Otra (${acta.tipo_otro_descripcion})`
+                : data.tipoEtiqueta
+            }
+          />
           <div className="ml-auto flex flex-wrap gap-2">
             {puedeEditar ? (
               <Link
