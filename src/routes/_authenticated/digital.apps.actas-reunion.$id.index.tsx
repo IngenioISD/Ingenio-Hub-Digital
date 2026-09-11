@@ -90,7 +90,6 @@ function Page() {
   const queryClient = useQueryClient();
   const { usuarioCliente } = useAuth();
   const { data: empresa } = useEmpresa();
-  const { puedeEditar, puedeEliminar } = usePermisosActas(data?.acta.creado_por_id);
   const [generando, setGenerando] = useState(false);
   const [previsualizando, setPrevisualizando] = useState(false);
   const [urlPdf, setUrlPdf] = useState<string | null>(null);
