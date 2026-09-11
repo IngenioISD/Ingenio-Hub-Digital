@@ -64,16 +64,20 @@ export async function resolvePostLoginPath(claims: IngenioClaims): Promise<strin
   if (claims.portal === "digital") return "/digital/inicio";
 
   if (claims.acceso_total_proyectos === false) {
-    // TODO: verificar nombre exacto de la tabla/columna de asignación de proyecto
-    // único, pendiente de confirmar con Supabase (usamos usuario_proyectos).
-    const { data } = await supabase
-      .from("usuario_proyectos")
-      .select("proyecto_id")
-      .eq("activo", true)
-      .limit(2);
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
 
-    if (data && data.length === 1 && data[0]?.proyecto_id) {
-      return `/proyecto/${data[0].proyecto_id}/inicio`;
+    if (userId) {
+      const { data } = await supabase
+        .from("usuario_proyectos")
+        .select("proyecto_id")
+        .eq("user_id", userId)
+        .eq("activo", true)
+        .limit(2);
+
+      if (data && data.length === 1 && data[0]?.proyecto_id) {
+        return `/proyecto/${data[0].proyecto_id}/inicio`;
+      }
     }
   }
 
