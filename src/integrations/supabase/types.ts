@@ -63,18 +63,21 @@ export type Database = {
           acta_id: string
           firma_url: string
           id: string
+          usuario_id: string | null
           usuario_nif: string | null
         }
         Insert: {
           acta_id: string
           firma_url: string
           id?: string
+          usuario_id?: string | null
           usuario_nif?: string | null
         }
         Update: {
           acta_id?: string
           firma_url?: string
           id?: string
+          usuario_id?: string | null
           usuario_nif?: string | null
         }
         Relationships: [
@@ -83,6 +86,13 @@ export type Database = {
             columns: ["acta_id"]
             isOneToOne: false
             referencedRelation: "actas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acta_firmas_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
             referencedColumns: ["id"]
           },
           {
@@ -162,6 +172,7 @@ export type Database = {
           asunto: string
           cliente_id: string
           creado_en: string | null
+          creado_por_id: string | null
           creado_por_nif: string
           email_enviado_en: string | null
           estado: string
@@ -183,6 +194,7 @@ export type Database = {
           asunto: string
           cliente_id: string
           creado_en?: string | null
+          creado_por_id?: string | null
           creado_por_nif: string
           email_enviado_en?: string | null
           estado?: string
@@ -204,6 +216,7 @@ export type Database = {
           asunto?: string
           cliente_id?: string
           creado_en?: string | null
+          creado_por_id?: string | null
           creado_por_nif?: string
           email_enviado_en?: string | null
           estado?: string
@@ -225,6 +238,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actas_creado_por_id_fkey"
+            columns: ["creado_por_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
             referencedColumns: ["id"]
           },
           {
@@ -1727,6 +1747,7 @@ export type Database = {
           apellido_2: string | null
           cliente_id: string
           email: string
+          id: string
           nif: string
           nombre: string
           telefono: string | null
@@ -1737,6 +1758,7 @@ export type Database = {
           apellido_2?: string | null
           cliente_id: string
           email: string
+          id?: string
           nif: string
           nombre: string
           telefono?: string | null
@@ -1747,6 +1769,7 @@ export type Database = {
           apellido_2?: string | null
           cliente_id?: string
           email?: string
+          id?: string
           nif?: string
           nombre?: string
           telefono?: string | null
