@@ -197,6 +197,8 @@ function Page() {
     },
   });
 
+  const { puedeEditar, puedeEliminar } = usePermisosActas(data?.acta.creado_por_id);
+
   useEffect(() => {
     let activo = true;
     void (async () => {
