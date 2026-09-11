@@ -561,10 +561,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const email = userData.user?.email ?? "";
       const { data: yo } = await supabase
         .from("personal")
-        .select("nif")
+        .select("id, nif")
         .eq("cliente_id", clienteId)
         .eq("email", email)
         .maybeSingle();
+
 
       const payload = {
         cliente_id: clienteId,
@@ -595,7 +596,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         if (error) throw error;
         id = data.id;
       } else {
-        if (!yo?.nif) {
+        if (!yo?.id) {
           throw new Error(
             "Tu usuario no está dado de alta en la ficha de personal de la empresa (necesario para firmar el acta).",
           );
@@ -605,10 +606,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           .insert({
             ...payload,
             creado_por_nif: yo.nif,
+            creado_por_id: yo.id,
             estado,
           })
           .select("id")
           .single();
+
         if (error) throw error;
         if (!data?.id) throw new Error("Supabase no ha devuelto el identificador del acta");
         id = data.id;
@@ -660,8 +663,14 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         });
         if (error) throw error;
         await supabase.from("acta_firmas").delete().eq("acta_id", id);
-        const { error: errFirma } = await supabase.from("acta_firmas").insert({ acta_id: id, firma_url: firmaPath });
+        const { error: errFirma } = await supabase.from("acta_firmas").insert({
+          acta_id: id,
+          firma_url: firmaPath,
+          usuario_nif: yo?.nif ?? null,
+          usuario_id: yo?.id ?? null,
+        });
         if (errFirma) throw errFirma;
+
       } else {
         const { data: firma } = await supabase.from("acta_firmas").select("firma_url").eq("acta_id", id).maybeSingle();
         firmaPath = firma?.firma_url ?? null;
