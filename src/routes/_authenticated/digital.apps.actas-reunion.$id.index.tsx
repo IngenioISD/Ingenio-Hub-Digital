@@ -127,7 +127,6 @@ function Page() {
       const nifs = (filas ?? [])
         .filter((f) => f.tipo_participante === "interna" && f.referencia_nif)
         .map((f) => f.referencia_nif as string);
-      if (acta.creado_por_nif) nifs.push(acta.creado_por_nif);
       const nombres = new Map<string, string>();
       if (nifs.length) {
         const { data: personas } = await supabase
@@ -138,6 +137,19 @@ function Page() {
           nombres.set(p.nif, [p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" "));
         }
       }
+
+      let creadoPorNombre = "";
+      if (acta.creado_por_id) {
+        const { data: creador } = await supabase
+          .from("personal")
+          .select("nombre, apellido_1, apellido_2")
+          .eq("id", acta.creado_por_id)
+          .maybeSingle();
+        if (creador) {
+          creadoPorNombre = [creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" ");
+        }
+      }
+
 
       const ORIGEN: Record<string, string> = {
         interna: "Personal interno",
@@ -175,12 +187,13 @@ function Page() {
         proyectoCodigo,
         tipoEtiqueta: tipo?.etiqueta ?? acta.tipo_reunion,
         participantes,
-        creadoPorNombre: nombres.get(acta.creado_por_nif ?? "") ?? "",
+        creadoPorNombre,
 
         imagenes: urls,
         firma: await urlFirmada(BUCKET_FIRMAS, firmaFila?.firma_url),
         firmaPath: firmaFila?.firma_url ?? null,
       } as Detalle;
+
     },
   });
 
