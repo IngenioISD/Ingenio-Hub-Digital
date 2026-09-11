@@ -173,7 +173,7 @@ export type Database = {
           cliente_id: string
           creado_en: string | null
           creado_por_id: string | null
-          creado_por_nif: string
+          creado_por_nif: string | null
           email_enviado_en: string | null
           estado: string
           fecha_reunion: string
@@ -195,7 +195,7 @@ export type Database = {
           cliente_id: string
           creado_en?: string | null
           creado_por_id?: string | null
-          creado_por_nif: string
+          creado_por_nif?: string | null
           email_enviado_en?: string | null
           estado?: string
           fecha_reunion: string
@@ -217,7 +217,7 @@ export type Database = {
           cliente_id?: string
           creado_en?: string | null
           creado_por_id?: string | null
-          creado_por_nif?: string
+          creado_por_nif?: string | null
           email_enviado_en?: string | null
           estado?: string
           fecha_reunion?: string
