@@ -135,6 +135,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const esInterna = tipoReunion === "interna";
   const esDf = tipoReunion === "df";
   const esPropiedad = tipoReunion === "propiedad";
+  const esSubcontrata = tipoReunion === "subcontrata";
   const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
 
   // Proyecto seleccionado (para conocer su propiedad y su dirección facultativa)
@@ -185,6 +186,22 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           departamento: c.departamento ?? null,
         }))
         .filter((c) => c.nombre.length > 0);
+    },
+  });
+
+  // Subcontratas asignadas al proyecto
+  const { data: contactosSubcontrata = [] } = useQuery<{ id: string; nombre: string }[]>({
+    queryKey: ["actas", "subcontratas-proyecto", proyectoId],
+    enabled: esSubcontrata && !!proyectoId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("proyecto_proveedores")
+        .select("proveedor_id, proveedor_subcontrata(nombre_legal)")
+        .eq("proyecto_id", proyectoId)
+        .eq("activo", true);
+      return (data ?? [])
+        .map((r: any) => ({ id: r.proveedor_id as string, nombre: r.proveedor_subcontrata?.nombre_legal ?? "—" }))
+        .filter((s) => s.nombre !== "—");
     },
   });
 
@@ -834,6 +851,19 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                 <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
                   Dirección facultativa no asignada.
                 </span>
+              )
+            ) : esSubcontrata ? (
+              contactosSubcontrata.length === 0 ? (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  No hay subcontratas asignadas a este proyecto.
+                </span>
+              ) : (
+                <PersonMultiSelect
+                  opciones={contactosSubcontrata.map((s) => ({ value: s.nombre, label: s.nombre }))}
+                  seleccionados={participantesLibres}
+                  onToggle={toggleLibre}
+                  mensajeVacio="No hay subcontratas asignadas a este proyecto."
+                />
               )
             ) : (
               <div className="flex flex-col gap-2">
