@@ -381,8 +381,25 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       checked ? (prev.includes(nombre) ? prev : [...prev, nombre]) : prev.filter((n) => n !== nombre),
     );
 
-  const anadirTexto = (setter: (v: string) => void, actual: string) => (texto: string) =>
-    setter(actual ? `${actual} ${texto}` : texto);
+  function procesarPuntuacionDictado(texto: string): string {
+    // Sustituye "punto" dicho como palabra suelta por un punto real.
+    let resultado = texto.replace(/\s*\bpunto\b\s*/gi, ". ");
+    // Capitaliza la letra que sigue a cada punto insertado dentro del propio fragmento dictado.
+    resultado = resultado.replace(/\.\s+([a-záéíóúñü])/gi, (_match, letra: string) => `. ${letra.toUpperCase()}`);
+    return resultado.trim();
+  }
+
+  const anadirTexto = (setter: (v: string) => void, actual: string) => (textoDictado: string) => {
+    const texto = procesarPuntuacionDictado(textoDictado);
+    if (!texto) return;
+    const actualTrim = actual.trimEnd();
+    const esInicioDeFrase = actualTrim === "" || /[.!?]$/.test(actualTrim);
+    const textoFinal = esInicioDeFrase
+      ? texto.charAt(0).toUpperCase() + texto.slice(1)
+      : texto;
+    setter(actualTrim ? `${actualTrim} ${textoFinal}` : textoFinal);
+  };
+
 
   const snapshotActual = () =>
     JSON.stringify({
