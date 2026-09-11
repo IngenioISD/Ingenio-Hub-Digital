@@ -852,6 +852,19 @@ export function ActaForm({ actaId }: { actaId?: string }) {
                   Dirección facultativa no asignada.
                 </span>
               )
+            ) : esSubcontrata ? (
+              contactosSubcontrata.length === 0 ? (
+                <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
+                  No hay subcontratas asignadas a este proyecto.
+                </span>
+              ) : (
+                <PersonMultiSelect
+                  opciones={contactosSubcontrata.map((s) => ({ value: s.nombre, label: s.nombre }))}
+                  seleccionados={participantesLibres}
+                  onToggle={toggleLibre}
+                  mensajeVacio="No hay subcontratas asignadas a este proyecto."
+                />
+              )
             ) : (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
