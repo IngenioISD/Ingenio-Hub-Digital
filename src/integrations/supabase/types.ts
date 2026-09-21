@@ -64,21 +64,18 @@ export type Database = {
           firma_url: string
           id: string
           usuario_id: string | null
-          usuario_nif: string | null
         }
         Insert: {
           acta_id: string
           firma_url: string
           id?: string
           usuario_id?: string | null
-          usuario_nif?: string | null
         }
         Update: {
           acta_id?: string
           firma_url?: string
           id?: string
           usuario_id?: string | null
-          usuario_nif?: string | null
         }
         Relationships: [
           {
@@ -94,13 +91,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "personal"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "acta_firmas_usuario_nif_fkey"
-            columns: ["usuario_nif"]
-            isOneToOne: false
-            referencedRelation: "personal"
-            referencedColumns: ["nif"]
           },
         ]
       }
@@ -173,7 +163,6 @@ export type Database = {
           cliente_id: string
           creado_en: string | null
           creado_por_id: string | null
-          creado_por_nif: string | null
           email_enviado_en: string | null
           estado: string
           fecha_reunion: string
@@ -195,7 +184,6 @@ export type Database = {
           cliente_id: string
           creado_en?: string | null
           creado_por_id?: string | null
-          creado_por_nif?: string | null
           email_enviado_en?: string | null
           estado?: string
           fecha_reunion: string
@@ -217,7 +205,6 @@ export type Database = {
           cliente_id?: string
           creado_en?: string | null
           creado_por_id?: string | null
-          creado_por_nif?: string | null
           email_enviado_en?: string | null
           estado?: string
           fecha_reunion?: string
@@ -246,13 +233,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "personal"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "actas_creado_por_nif_fkey"
-            columns: ["creado_por_nif"]
-            isOneToOne: false
-            referencedRelation: "personal"
-            referencedColumns: ["nif"]
           },
           {
             foreignKeyName: "actas_proyecto_id_fkey"
@@ -471,7 +451,7 @@ export type Database = {
       albaranes_lineas: {
         Row: {
           albaran_id: string
-          cantidad: number
+          cantidad: number | null
           cliente_id: string
           descripcion: string
           id: string
@@ -483,7 +463,7 @@ export type Database = {
         }
         Insert: {
           albaran_id: string
-          cantidad: number
+          cantidad?: number | null
           cliente_id: string
           descripcion: string
           id?: string
@@ -495,7 +475,7 @@ export type Database = {
         }
         Update: {
           albaran_id?: string
-          cantidad?: number
+          cantidad?: number | null
           cliente_id?: string
           descripcion?: string
           id?: string
@@ -857,6 +837,45 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cliente_direccion_facultativa: {
+        Row: {
+          activo: boolean
+          cliente_id: string
+          creado_en: string | null
+          direccion_facultativa_id: string
+          id: string
+        }
+        Insert: {
+          activo?: boolean
+          cliente_id: string
+          creado_en?: string | null
+          direccion_facultativa_id: string
+          id?: string
+        }
+        Update: {
+          activo?: boolean
+          cliente_id?: string
+          creado_en?: string | null
+          direccion_facultativa_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_direccion_facultativa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_direccion_facultativa_direccion_facultativa_id_fkey"
+            columns: ["direccion_facultativa_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa"
             referencedColumns: ["id"]
           },
         ]
@@ -1506,6 +1525,71 @@ export type Database = {
           },
         ]
       }
+      direccion_facultativa: {
+        Row: {
+          creado_en: string | null
+          id: string
+          nif: string
+          nombre_comercial: string | null
+          nombre_legal: string
+        }
+        Insert: {
+          creado_en?: string | null
+          id?: string
+          nif: string
+          nombre_comercial?: string | null
+          nombre_legal: string
+        }
+        Update: {
+          creado_en?: string | null
+          id?: string
+          nif?: string
+          nombre_comercial?: string | null
+          nombre_legal?: string
+        }
+        Relationships: []
+      }
+      direccion_facultativa_contactos: {
+        Row: {
+          apellido_1: string
+          apellido_2: string | null
+          creado_en: string | null
+          direccion_facultativa_id: string
+          email: string | null
+          id: string
+          nombre: string
+          telefono: string | null
+        }
+        Insert: {
+          apellido_1: string
+          apellido_2?: string | null
+          creado_en?: string | null
+          direccion_facultativa_id: string
+          email?: string | null
+          id?: string
+          nombre: string
+          telefono?: string | null
+        }
+        Update: {
+          apellido_1?: string
+          apellido_2?: string | null
+          creado_en?: string | null
+          direccion_facultativa_id?: string
+          email?: string | null
+          id?: string
+          nombre?: string
+          telefono?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direccion_facultativa_contactos_direccion_facultativa_id_fkey"
+            columns: ["direccion_facultativa_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       etiquetas_cliente: {
         Row: {
           clave: string
@@ -2051,6 +2135,55 @@ export type Database = {
             columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "usuarios_cliente"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proyecto_direccion_facultativa: {
+        Row: {
+          activo: boolean
+          contacto_id: string | null
+          creado_en: string | null
+          direccion_facultativa_id: string
+          id: string
+          proyecto_id: string
+        }
+        Insert: {
+          activo?: boolean
+          contacto_id?: string | null
+          creado_en?: string | null
+          direccion_facultativa_id: string
+          id?: string
+          proyecto_id: string
+        }
+        Update: {
+          activo?: boolean
+          contacto_id?: string | null
+          creado_en?: string | null
+          direccion_facultativa_id?: string
+          id?: string
+          proyecto_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proyecto_direccion_facultativa_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa_contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proyecto_direccion_facultativa_direccion_facultativa_id_fkey"
+            columns: ["direccion_facultativa_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proyecto_direccion_facultativa_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: true
+            referencedRelation: "proyectos"
             referencedColumns: ["id"]
           },
         ]
