@@ -557,7 +557,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
         await supabase.storage.from(BUCKET_PDF).remove([pdfUrlExistente]);
       }
 
-      // NIF del creador (actas.creado_por_nif es obligatorio)
+      // Identificación del creador (actas.creado_por_id)
       const { data: userData } = await supabase.auth.getUser();
       const email = userData.user?.email ?? "";
       const { data: yo } = await supabase
