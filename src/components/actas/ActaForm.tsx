@@ -152,20 +152,21 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     },
   });
 
-  // Contacto habitual de la Dirección Facultativa
+  // Contacto designado de la Dirección Facultativa para ESTE proyecto
   const { data: dfNombre = null } = useQuery<string | null>({
-    queryKey: ["actas", "df-contacto", proyectoSel?.df_id],
-    enabled: esDf && !!proyectoSel?.df_id,
+    queryKey: ["actas", "df-contacto", proyectoId],
+    enabled: esDf && !!proyectoId,
     queryFn: async () => {
       const { data } = await supabase
-        .from("direc_facultativa")
-        .select("persona_contacto_nombre, persona_contacto_apellido_1, persona_contacto_apellido_2")
-        .eq("id", proyectoSel!.df_id!)
+        .from("proyecto_direccion_facultativa")
+        .select("direccion_facultativa_contactos(nombre, apellido_1, apellido_2)")
+        .eq("proyecto_id", proyectoId)
         .maybeSingle();
-      if (!data) return null;
-      const nombre = [data.persona_contacto_nombre, data.persona_contacto_apellido_1, data.persona_contacto_apellido_2]
-        .filter(Boolean)
-        .join(" ");
+      const contacto = data?.direccion_facultativa_contactos as
+        | { nombre: string; apellido_1: string; apellido_2: string | null }
+        | null;
+      if (!contacto) return null;
+      const nombre = [contacto.nombre, contacto.apellido_1, contacto.apellido_2].filter(Boolean).join(" ");
       return nombre || null;
     },
   });
