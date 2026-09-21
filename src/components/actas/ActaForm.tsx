@@ -283,11 +283,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       setEstadoActa(acta.estado === "generada" ? "generada" : "borrador");
       setPdfUrlExistente(acta.pdf_url ?? null);
 
-      if (acta.creado_por_nif) {
+      if (acta.creado_por_id) {
         const { data: creador } = await supabase
           .from("personal")
           .select("nombre, apellido_1, apellido_2")
-          .eq("nif", acta.creado_por_nif)
+          .eq("id", acta.creado_por_id)
           .maybeSingle();
         if (creador && !cancelado) {
           setCreadoPorNombre([creador.nombre, creador.apellido_1, creador.apellido_2].filter(Boolean).join(" "));
