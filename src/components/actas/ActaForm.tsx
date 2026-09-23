@@ -438,7 +438,8 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const contactoIdPorNombre = (nombre: string): string | null => {
     if (esDf) return dfContacto?.nombre === nombre ? dfContacto.id : null;
     if (esPropiedad) return contactosPropiedad.find((c) => c.nombre === nombre)?.id ?? null;
-    if (esSubcontrata) return contactosSubcontrata.find((s) => s.nombre === nombre)?.id ?? null;
+    // La lista de subcontratas muestra empresas, no contactos: sin contacto concreto que guardar.
+    if (esSubcontrata) return null;
     return null;
   };
 
