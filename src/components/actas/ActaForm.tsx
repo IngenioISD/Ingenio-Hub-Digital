@@ -41,7 +41,7 @@ import {
 type Proyecto = { id: string; nombre: string; codigo_obra: string | null };
 type TipoReunion = { codigo: string; etiqueta: string };
 type Persona = { nif: string; nombre: string; apellido_1: string; apellido_2: string | null };
-type ContactoPropiedad = { nombre: string; departamento: string | null };
+type ContactoPropiedad = { id: string; nombre: string; departamento: string | null };
 
 type ImagenExistente = { id: string; url: string; preview: string | null };
 type ImagenNueva = { file: File; preview: string };
@@ -153,23 +153,24 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   });
 
   // Contacto designado de la Dirección Facultativa para ESTE proyecto
-  const { data: dfNombre = null } = useQuery<string | null>({
+  const { data: dfContacto = null } = useQuery<{ id: string; nombre: string } | null>({
     queryKey: ["actas", "df-contacto", proyectoId],
     enabled: esDf && !!proyectoId,
     queryFn: async () => {
       const { data } = await supabase
         .from("proyecto_direccion_facultativa")
-        .select("direccion_facultativa_contactos(nombre, apellido_1, apellido_2)")
+        .select("direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2)")
         .eq("proyecto_id", proyectoId)
         .maybeSingle();
       const contacto = data?.direccion_facultativa_contactos as
-        | { nombre: string; apellido_1: string; apellido_2: string | null }
+        | { id: string; nombre: string; apellido_1: string; apellido_2: string | null }
         | null;
       if (!contacto) return null;
       const nombre = [contacto.nombre, contacto.apellido_1, contacto.apellido_2].filter(Boolean).join(" ");
-      return nombre || null;
+      return nombre ? { id: contacto.id, nombre } : null;
     },
   });
+  const dfNombre = dfContacto?.nombre ?? null;
 
   // Contactos de la Propiedad del proyecto
   const { data: contactosPropiedad = [] } = useQuery<ContactoPropiedad[]>({
