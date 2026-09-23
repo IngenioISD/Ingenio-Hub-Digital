@@ -179,11 +179,12 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("propiedad_contactos")
-        .select("nombre, apellido_1, apellido_2, departamento")
+        .select("id, nombre, apellido_1, apellido_2, departamento")
         .eq("propiedad_id", proyectoSel!.propiedad_id!)
         .order("apellido_1");
       return (data ?? [])
         .map((c) => ({
+          id: c.id,
           nombre: [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" "),
           departamento: c.departamento ?? null,
         }))
