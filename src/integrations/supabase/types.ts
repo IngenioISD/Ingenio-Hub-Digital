@@ -126,6 +126,7 @@ export type Database = {
       acta_participantes: {
         Row: {
           acta_id: string
+          contacto_id: string | null
           id: string
           nombre_libre: string | null
           referencia_nif: string | null
@@ -133,6 +134,7 @@ export type Database = {
         }
         Insert: {
           acta_id: string
+          contacto_id?: string | null
           id?: string
           nombre_libre?: string | null
           referencia_nif?: string | null
@@ -140,6 +142,7 @@ export type Database = {
         }
         Update: {
           acta_id?: string
+          contacto_id?: string | null
           id?: string
           nombre_libre?: string | null
           referencia_nif?: string | null
@@ -263,6 +266,7 @@ export type Database = {
           motivo_rechazo: string | null
           num_albaran: string | null
           observaciones: string | null
+          proveedor_id: string | null
           proveedor_nif: string | null
           proyecto_id: string
           texto_agente_ia: string | null
@@ -286,6 +290,7 @@ export type Database = {
           motivo_rechazo?: string | null
           num_albaran?: string | null
           observaciones?: string | null
+          proveedor_id?: string | null
           proveedor_nif?: string | null
           proyecto_id: string
           texto_agente_ia?: string | null
@@ -309,6 +314,7 @@ export type Database = {
           motivo_rechazo?: string | null
           num_albaran?: string | null
           observaciones?: string | null
+          proveedor_id?: string | null
           proveedor_nif?: string | null
           proyecto_id?: string
           texto_agente_ia?: string | null
@@ -322,11 +328,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "albaranes_proveedor_nif_fkey"
-            columns: ["proveedor_nif"]
+            foreignKeyName: "albaranes_proveedor_id_fkey"
+            columns: ["proveedor_id"]
             isOneToOne: false
             referencedRelation: "proveedor_subcontrata"
-            referencedColumns: ["nif"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "albaranes_proyecto_id_fkey"
@@ -1478,53 +1484,6 @@ export type Database = {
           },
         ]
       }
-      direc_facultativa: {
-        Row: {
-          activo: boolean | null
-          cliente_id: string
-          email: string | null
-          id: string
-          nif: string
-          nombre: string
-          persona_contacto_apellido_1: string | null
-          persona_contacto_apellido_2: string | null
-          persona_contacto_nombre: string | null
-          telefono: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          cliente_id: string
-          email?: string | null
-          id?: string
-          nif: string
-          nombre: string
-          persona_contacto_apellido_1?: string | null
-          persona_contacto_apellido_2?: string | null
-          persona_contacto_nombre?: string | null
-          telefono?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          cliente_id?: string
-          email?: string | null
-          id?: string
-          nif?: string
-          nombre?: string
-          persona_contacto_apellido_1?: string | null
-          persona_contacto_apellido_2?: string | null
-          persona_contacto_nombre?: string | null
-          telefono?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "direc_facultativa_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       direccion_facultativa: {
         Row: {
           creado_en: string | null
@@ -2234,8 +2193,6 @@ export type Database = {
           codigo_estudios: string | null
           codigo_obra: string | null
           codigo_postal: string | null
-          df_id: string | null
-          df_nif: string | null
           estado: string
           fecha_adjudicacion: string | null
           fecha_apertura_estudio: string
@@ -2259,8 +2216,6 @@ export type Database = {
           codigo_estudios?: string | null
           codigo_obra?: string | null
           codigo_postal?: string | null
-          df_id?: string | null
-          df_nif?: string | null
           estado?: string
           fecha_adjudicacion?: string | null
           fecha_apertura_estudio?: string
@@ -2284,8 +2239,6 @@ export type Database = {
           codigo_estudios?: string | null
           codigo_obra?: string | null
           codigo_postal?: string | null
-          df_id?: string | null
-          df_nif?: string | null
           estado?: string
           fecha_adjudicacion?: string | null
           fecha_apertura_estudio?: string
@@ -2309,13 +2262,6 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "proyectos_df_id_fkey"
-            columns: ["df_id"]
-            isOneToOne: false
-            referencedRelation: "direc_facultativa"
             referencedColumns: ["id"]
           },
           {
