@@ -434,6 +434,14 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     subcontrata: "Subcontrata",
   };
 
+  // Identificador del contacto seleccionado de la lista; null si es texto libre.
+  const contactoIdPorNombre = (nombre: string): string | null => {
+    if (esDf) return dfContacto?.nombre === nombre ? dfContacto.id : null;
+    if (esPropiedad) return contactosPropiedad.find((c) => c.nombre === nombre)?.id ?? null;
+    if (esSubcontrata) return contactosSubcontrata.find((s) => s.nombre === nombre)?.id ?? null;
+    return null;
+  };
+
   const nombresParticipantes = () => {
     if (tipoReunion === "interna") {
       return [
@@ -633,6 +641,7 @@ export function ActaForm({ actaId }: { actaId?: string }) {
           tipo_participante: tipoReunion || "otro",
           referencia_nif: null,
           nombre_libre: nombre,
+          contacto_id: contactoIdPorNombre(nombre),
         })),
       ];
       if (filas.length) {
