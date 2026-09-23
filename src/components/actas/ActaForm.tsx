@@ -139,13 +139,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const esOtra = tipoReunion === "otra" || tipoReunion === "otro";
 
   // Proyecto seleccionado (para conocer su propiedad y su dirección facultativa)
-  const { data: proyectoSel } = useQuery<{ propiedad_id: string | null; df_id: string | null } | null>({
+  const { data: proyectoSel } = useQuery<{ propiedad_id: string | null } | null>({
     queryKey: ["actas", "proyecto-detalle", proyectoId],
     enabled: !!proyectoId && (esDf || esPropiedad),
     queryFn: async () => {
       const { data } = await supabase
         .from("proyectos")
-        .select("propiedad_id, df_id")
+        .select("propiedad_id")
         .eq("id", proyectoId)
         .maybeSingle();
       return data ?? null;
