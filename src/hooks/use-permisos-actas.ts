@@ -3,25 +3,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
 export type PermisosActas = {
+  puedeVer: boolean;
   puedeEditar: boolean;
   puedeEliminar: boolean;
+  cargando: boolean;
 };
 
-const SIN_PERMISOS: PermisosActas = { puedeEditar: false, puedeEliminar: false };
+const SIN_PERMISOS = { puedeVer: false, puedeEditar: false, puedeEliminar: false };
 
 /**
  * Permisos del rol actual sobre el módulo actas_reunion.
  *
  * Regla:
- * 1. ¿El rol tiene permiso general de editar/eliminar? Si no, bloqueado.
+ * 1. ¿El rol tiene permiso general de ver/editar/eliminar? Si no, bloqueado.
  * 2. ¿Es el propio creador del acta (comparando personal.id con acta.creado_por_id)? Si sí, permitido.
  * 3. Si es ajena, ¿existe una fila en rol_jerarquia donde el rol actual es superior
  *    al rol del creador para el módulo actas_reunion? Solo entonces se heredan esos permisos.
  */
 export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
-  const { usuarioCliente } = useAuth();
+  const { usuarioCliente, isLoading: cargandoAuth } = useAuth();
 
-  const { data } = useQuery<PermisosActas>({
+  const habilitado = !!usuarioCliente?.cliente_id && !!usuarioCliente?.rol_id;
+
+  const { data, isLoading } = useQuery({
     queryKey: [
       "permisos",
       "actas_reunion",
@@ -29,24 +33,28 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
       usuarioCliente?.rol_id,
       creadoPorId,
     ],
-    enabled: !!usuarioCliente?.cliente_id && !!usuarioCliente?.rol_id,
+    enabled: habilitado,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       // Paso 1: permiso general del rol sobre actas_reunion.
       const { data: filaGeneral } = await supabase
         .from("rol_permisos")
-        .select("puede_editar, puede_eliminar")
+        .select("puede_ver, puede_editar, puede_eliminar")
         .eq("modulo", "actas_reunion")
         .eq("cliente_id", usuarioCliente!.cliente_id)
         .eq("rol_id", usuarioCliente!.rol_id)
         .maybeSingle();
 
-      const permisoGeneral: PermisosActas = {
+      const puedeVer = Boolean(filaGeneral?.puede_ver);
+      const permisoGeneral = {
+        puedeVer,
         puedeEditar: Boolean(filaGeneral?.puede_editar),
         puedeEliminar: Boolean(filaGeneral?.puede_eliminar),
       };
 
-      if (!permisoGeneral.puedeEditar && !permisoGeneral.puedeEliminar) return SIN_PERMISOS;
+      if (!permisoGeneral.puedeEditar && !permisoGeneral.puedeEliminar) {
+        return { ...SIN_PERMISOS, puedeVer };
+      }
       if (!creadoPorId) return permisoGeneral; // ej. formulario nuevo: aún no hay creador.
 
       // Paso 2: ¿es el propio creador del acta?
@@ -67,7 +75,7 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
         .select("email")
         .eq("id", creadoPorId)
         .maybeSingle();
-      if (!creador?.email) return SIN_PERMISOS;
+      if (!creador?.email) return { ...SIN_PERMISOS, puedeVer };
 
       const { data: rolCreador } = await supabase
         .from("usuarios_cliente")
@@ -75,7 +83,7 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
         .eq("cliente_id", usuarioCliente!.cliente_id)
         .eq("email", creador.email)
         .maybeSingle();
-      if (!rolCreador?.rol_id) return SIN_PERMISOS;
+      if (!rolCreador?.rol_id) return { ...SIN_PERMISOS, puedeVer };
 
       const { data: jerarquia } = await supabase
         .from("rol_jerarquia")
@@ -87,11 +95,14 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
         .maybeSingle();
 
       return {
+        puedeVer,
         puedeEditar: Boolean(jerarquia?.puede_editar),
         puedeEliminar: Boolean(jerarquia?.puede_eliminar),
       };
     },
   });
 
-  return data ?? SIN_PERMISOS;
+  const cargando = cargandoAuth || (habilitado && isLoading) || (!habilitado && !usuarioCliente);
+
+  return { ...(data ?? SIN_PERMISOS), cargando: Boolean(cargando) };
 }
