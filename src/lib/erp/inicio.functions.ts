@@ -58,7 +58,7 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
 
     let consulta = supabase
       .from("proyectos")
-      .select("id, nombre, estado, provincia, tipo_obra, propiedad_id")
+      .select("id, nombre, estado, provincia_id, catalogo_provincias(nombre), tipo_obra, propiedad_id")
       .eq("cliente_id", clienteId)
       .in("estado", ["en_estudio", "adjudicado"]);
     if (proyectoIds) consulta = consulta.in("id", proyectoIds);
@@ -97,7 +97,7 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
         id: p.id,
         nombre: p.nombre,
         estado: p.estado,
-        provincia: p.provincia,
+        provincia: p.catalogo_provincias?.nombre ?? null,
         tipoObra: p.tipo_obra,
         propiedadNombre:
           comercial.get(p.propiedad_id) ?? legal.get(p.propiedad_id) ?? null,
@@ -113,7 +113,7 @@ export const getProyectoDetalle = createServerFn({ method: "GET" })
     const { data: p, error } = await context.supabase
       .from("proyectos")
       .select(
-        "id, nombre, estado, codigo_obra, tipo_obra, tipo_via, nombre_via, numero, municipio, provincia, fecha_adjudicacion, fecha_inicio_proyecto, plazo_ejecucion_meses",
+        "id, nombre, estado, codigo_obra, tipo_obra, tipo_via, nombre_via, numero, municipio, provincia_id, catalogo_provincias(nombre), fecha_adjudicacion, fecha_inicio_proyecto, plazo_ejecucion_meses",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -130,7 +130,7 @@ export const getProyectoDetalle = createServerFn({ method: "GET" })
       nombreVia: p.nombre_via,
       numero: p.numero,
       municipio: p.municipio,
-      provincia: p.provincia,
+      provincia: p.catalogo_provincias?.nombre ?? null,
       fechaAdjudicacion: p.fecha_adjudicacion,
       fechaInicioProyecto: p.fecha_inicio_proyecto,
       plazoEjecucionMeses: p.plazo_ejecucion_meses,
