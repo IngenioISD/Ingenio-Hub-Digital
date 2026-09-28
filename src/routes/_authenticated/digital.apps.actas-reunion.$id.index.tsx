@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download, Eye, FileCog, Loader2, Pencil, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { GuardActas } from "@/components/actas/GuardActas";
 import { LayoutActas } from "@/components/actas/LayoutActas";
 import { BadgeEstadoActa, BadgeTipoReunion } from "@/components/actas/BadgesActa";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +86,14 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: React.ReactNode })
 }
 
 function Page() {
+  return (
+    <GuardActas>
+      <Contenido />
+    </GuardActas>
+  );
+}
+
+function Contenido() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
