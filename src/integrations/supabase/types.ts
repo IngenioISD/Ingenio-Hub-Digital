@@ -1274,7 +1274,7 @@ export type Database = {
           cliente_id: string
           fecha_alta: string
           id: string
-          nombre_comercial: string | null
+          nombre_comercial: string
           propiedad_id: string
         }
         Insert: {
@@ -1282,7 +1282,7 @@ export type Database = {
           cliente_id: string
           fecha_alta?: string
           id?: string
-          nombre_comercial?: string | null
+          nombre_comercial: string
           propiedad_id: string
         }
         Update: {
@@ -1290,7 +1290,7 @@ export type Database = {
           cliente_id?: string
           fecha_alta?: string
           id?: string
-          nombre_comercial?: string | null
+          nombre_comercial?: string
           propiedad_id?: string
         }
         Relationships: [
