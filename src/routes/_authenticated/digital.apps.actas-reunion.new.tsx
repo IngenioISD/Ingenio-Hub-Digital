@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { ActaForm } from "@/components/actas/ActaForm";
+import { GuardActas } from "@/components/actas/GuardActas";
 import { LayoutActas } from "@/components/actas/LayoutActas";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/new")({
@@ -22,8 +23,10 @@ export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion
 
 function Page() {
   return (
-    <LayoutActas subtitulo="Nueva acta">
-      <ActaForm />
-    </LayoutActas>
+    <GuardActas>
+      <LayoutActas subtitulo="Nueva acta">
+        <ActaForm />
+      </LayoutActas>
+    </GuardActas>
   );
 }

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { ActaForm } from "@/components/actas/ActaForm";
+import { GuardActas } from "@/components/actas/GuardActas";
 import { LayoutActas } from "@/components/actas/LayoutActas";
 
 export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion/$id/edit")({
@@ -23,8 +24,10 @@ export const Route = createFileRoute("/_authenticated/digital/apps/actas-reunion
 function Page() {
   const { id } = Route.useParams();
   return (
-    <LayoutActas subtitulo="Editar acta">
-      <ActaForm actaId={id} />
-    </LayoutActas>
+    <GuardActas>
+      <LayoutActas subtitulo="Editar acta">
+        <ActaForm actaId={id} />
+      </LayoutActas>
+    </GuardActas>
   );
 }
