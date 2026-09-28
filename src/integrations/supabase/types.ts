@@ -2188,7 +2188,6 @@ export type Database = {
       }
       proyectos: {
         Row: {
-          activo: boolean | null
           cliente_id: string | null
           codigo_estudios: string | null
           codigo_obra: string | null
@@ -2211,7 +2210,6 @@ export type Database = {
           tipo_via: string | null
         }
         Insert: {
-          activo?: boolean | null
           cliente_id?: string | null
           codigo_estudios?: string | null
           codigo_obra?: string | null
@@ -2234,7 +2232,6 @@ export type Database = {
           tipo_via?: string | null
         }
         Update: {
-          activo?: boolean | null
           cliente_id?: string | null
           codigo_estudios?: string | null
           codigo_obra?: string | null
