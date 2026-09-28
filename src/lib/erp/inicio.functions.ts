@@ -60,7 +60,7 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
       .from("proyectos")
       .select("id, nombre, estado, provincia, tipo_obra, propiedad_id")
       .eq("cliente_id", clienteId)
-      .eq("activo", true);
+      .in("estado", ["en_estudio", "adjudicado"]);
     if (proyectoIds) consulta = consulta.in("id", proyectoIds);
 
     const { data: proyectos, error } = await consulta;
