@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Plus } from "lucide-react";
 
+import { GuardActas } from "@/components/actas/GuardActas";
 import { LayoutActas } from "@/components/actas/LayoutActas";
 import { BadgeEstadoActa, BadgeTipoReunion } from "@/components/actas/BadgesActa";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,14 @@ const COLUMNAS: { key: SortKey; label: string }[] = [
 ];
 
 function Page() {
+  return (
+    <GuardActas>
+      <Contenido />
+    </GuardActas>
+  );
+}
+
+function Contenido() {
   const { usuarioCliente } = useAuth();
   const { puedeEditar } = usePermisosActas();
   const isMobile = useIsMobile();
