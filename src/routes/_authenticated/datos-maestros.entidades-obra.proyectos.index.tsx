@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
@@ -177,7 +178,7 @@ function NuevoProyectoDialog() {
       if (!nombre || !propiedadId || !tipoObra || !clienteId || !estadoNuevo) {
         throw new Error("Completa los campos obligatorios");
       }
-      const payload: Record<string, unknown> = {
+      const payload: Database["public"]["Tables"]["proyectos"]["Insert"] = {
         nombre, cliente_id: clienteId, propiedad_id: propiedadId,
         tipo_obra: tipoObra, estado: estadoNuevo,
       };

@@ -3,7 +3,7 @@ import { Sidebar, type SidebarItem, type SidebarMode } from "./Sidebar";
 
 type AppShellProps = {
   mode: SidebarMode;
-  activeItem?: string;
+  activeItem?: string | undefined;
   contexto?: "hub" | "digital";
   items?: SidebarItem[];
   proyectoNombre?: string;

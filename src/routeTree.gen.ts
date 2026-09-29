@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDatosMaestrosRouteImport } from './routes/_authenticated/datos-maestros'
+import { Route as AuthenticatedDatosMaestrosIndexRouteImport } from './routes/_authenticated/datos-maestros.index'
 import { Route as AuthenticatedDigitalAgentesRouteImport } from './routes/_authenticated/digital.agentes'
 import { Route as AuthenticatedDigitalAppsRouteImport } from './routes/_authenticated/digital.apps'
 import { Route as AuthenticatedDigitalInicioRouteImport } from './routes/_authenticated/digital.inicio'
@@ -23,6 +24,8 @@ import { Route as AuthenticatedHubProyectosRouteImport } from './routes/_authent
 import { Route as AuthenticatedDigitalAppsIndexRouteImport } from './routes/_authenticated/digital.apps.index'
 import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 import { Route as AuthenticatedProyectoIdModulosRouteImport } from './routes/_authenticated/proyecto.$id.modulos'
+import { Route as AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRouteImport } from './routes/_authenticated/datos-maestros.entidades-obra.proyectos.index'
+import { Route as AuthenticatedDatosMaestrosEntidadesObraProyectosIdRouteImport } from './routes/_authenticated/datos-maestros.entidades-obra.proyectos.$id'
 import { Route as AuthenticatedDigitalAppsActasReunionIndexRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.index'
 import { Route as AuthenticatedDigitalAppsActasReunionNewRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.new'
 import { Route as AuthenticatedDigitalAppsActasReunionIdIndexRouteImport } from './routes/_authenticated/digital.apps.actas-reunion.$id.index'
@@ -53,6 +56,12 @@ const AuthenticatedDatosMaestrosRoute =
     id: '/datos-maestros',
     path: '/datos-maestros',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDatosMaestrosIndexRoute =
+  AuthenticatedDatosMaestrosIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDatosMaestrosRoute,
   } as any)
 const AuthenticatedDigitalAgentesRoute =
   AuthenticatedDigitalAgentesRouteImport.update({
@@ -106,6 +115,18 @@ const AuthenticatedProyectoIdModulosRoute =
     path: '/proyecto/$id/modulos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute =
+  AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRouteImport.update({
+    id: '/entidades-obra/proyectos/',
+    path: '/entidades-obra/proyectos/',
+    getParentRoute: () => AuthenticatedDatosMaestrosRoute,
+  } as any)
+const AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute =
+  AuthenticatedDatosMaestrosEntidadesObraProyectosIdRouteImport.update({
+    id: '/entidades-obra/proyectos/$id',
+    path: '/entidades-obra/proyectos/$id',
+    getParentRoute: () => AuthenticatedDatosMaestrosRoute,
+  } as any)
 const AuthenticatedDigitalAppsActasReunionIndexRoute =
   AuthenticatedDigitalAppsActasReunionIndexRouteImport.update({
     id: '/actas-reunion/',
@@ -135,17 +156,20 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
-  '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
+  '/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
   '/digital/apps': typeof AuthenticatedDigitalAppsRouteWithChildren
   '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/datos-maestros/': typeof AuthenticatedDatosMaestrosIndexRoute
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/datos-maestros/entidades-obra/proyectos/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute
   '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
+  '/datos-maestros/entidades-obra/proyectos/': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute
   '/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
   '/digital/apps/actas-reunion/$id/': typeof AuthenticatedDigitalAppsActasReunionIdIndexRoute
@@ -154,16 +178,18 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
-  '/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
   '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/datos-maestros': typeof AuthenticatedDatosMaestrosIndexRoute
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps': typeof AuthenticatedDigitalAppsIndexRoute
+  '/datos-maestros/entidades-obra/proyectos/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute
   '/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
+  '/datos-maestros/entidades-obra/proyectos': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute
   '/digital/apps/actas-reunion': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
   '/digital/apps/actas-reunion/$id': typeof AuthenticatedDigitalAppsActasReunionIdIndexRoute
@@ -174,17 +200,20 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
-  '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRoute
+  '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
   '/_authenticated/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
   '/_authenticated/digital/apps': typeof AuthenticatedDigitalAppsRouteWithChildren
   '/_authenticated/digital/inicio': typeof AuthenticatedDigitalInicioRoute
   '/_authenticated/hub/inicio': typeof AuthenticatedHubInicioRoute
   '/_authenticated/hub/modulos': typeof AuthenticatedHubModulosRoute
   '/_authenticated/hub/proyectos': typeof AuthenticatedHubProyectosRoute
+  '/_authenticated/datos-maestros/': typeof AuthenticatedDatosMaestrosIndexRoute
   '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/_authenticated/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/_authenticated/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/_authenticated/datos-maestros/entidades-obra/proyectos/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute
   '/_authenticated/digital/apps/actas-reunion/new': typeof AuthenticatedDigitalAppsActasReunionNewRoute
+  '/_authenticated/datos-maestros/entidades-obra/proyectos/': typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute
   '/_authenticated/digital/apps/actas-reunion/': typeof AuthenticatedDigitalAppsActasReunionIndexRoute
   '/_authenticated/digital/apps/actas-reunion/$id/edit': typeof AuthenticatedDigitalAppsActasReunionIdEditRoute
   '/_authenticated/digital/apps/actas-reunion/$id/': typeof AuthenticatedDigitalAppsActasReunionIdIndexRoute
@@ -202,10 +231,13 @@ export interface FileRouteTypes {
     | '/hub/inicio'
     | '/hub/modulos'
     | '/hub/proyectos'
+    | '/datos-maestros/'
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps/'
+    | '/datos-maestros/entidades-obra/proyectos/$id'
     | '/digital/apps/actas-reunion/new'
+    | '/datos-maestros/entidades-obra/proyectos/'
     | '/digital/apps/actas-reunion/'
     | '/digital/apps/actas-reunion/$id/edit'
     | '/digital/apps/actas-reunion/$id/'
@@ -214,16 +246,18 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/configuracion'
-    | '/datos-maestros'
     | '/digital/agentes'
     | '/digital/inicio'
     | '/hub/inicio'
     | '/hub/modulos'
     | '/hub/proyectos'
+    | '/datos-maestros'
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps'
+    | '/datos-maestros/entidades-obra/proyectos/$id'
     | '/digital/apps/actas-reunion/new'
+    | '/datos-maestros/entidades-obra/proyectos'
     | '/digital/apps/actas-reunion'
     | '/digital/apps/actas-reunion/$id/edit'
     | '/digital/apps/actas-reunion/$id'
@@ -240,10 +274,13 @@ export interface FileRouteTypes {
     | '/_authenticated/hub/inicio'
     | '/_authenticated/hub/modulos'
     | '/_authenticated/hub/proyectos'
+    | '/_authenticated/datos-maestros/'
     | '/_authenticated/proyecto/$id/inicio'
     | '/_authenticated/proyecto/$id/modulos'
     | '/_authenticated/digital/apps/'
+    | '/_authenticated/datos-maestros/entidades-obra/proyectos/$id'
     | '/_authenticated/digital/apps/actas-reunion/new'
+    | '/_authenticated/datos-maestros/entidades-obra/proyectos/'
     | '/_authenticated/digital/apps/actas-reunion/'
     | '/_authenticated/digital/apps/actas-reunion/$id/edit'
     | '/_authenticated/digital/apps/actas-reunion/$id/'
@@ -291,6 +328,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/datos-maestros'
       preLoaderRoute: typeof AuthenticatedDatosMaestrosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/datos-maestros/': {
+      id: '/_authenticated/datos-maestros/'
+      path: '/'
+      fullPath: '/datos-maestros/'
+      preLoaderRoute: typeof AuthenticatedDatosMaestrosIndexRouteImport
+      parentRoute: typeof AuthenticatedDatosMaestrosRoute
     }
     '/_authenticated/digital/agentes': {
       id: '/_authenticated/digital/agentes'
@@ -355,6 +399,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProyectoIdModulosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/datos-maestros/entidades-obra/proyectos/': {
+      id: '/_authenticated/datos-maestros/entidades-obra/proyectos/'
+      path: '/entidades-obra/proyectos'
+      fullPath: '/datos-maestros/entidades-obra/proyectos/'
+      preLoaderRoute: typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRouteImport
+      parentRoute: typeof AuthenticatedDatosMaestrosRoute
+    }
+    '/_authenticated/datos-maestros/entidades-obra/proyectos/$id': {
+      id: '/_authenticated/datos-maestros/entidades-obra/proyectos/$id'
+      path: '/entidades-obra/proyectos/$id'
+      fullPath: '/datos-maestros/entidades-obra/proyectos/$id'
+      preLoaderRoute: typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIdRouteImport
+      parentRoute: typeof AuthenticatedDatosMaestrosRoute
+    }
     '/_authenticated/digital/apps/actas-reunion/': {
       id: '/_authenticated/digital/apps/actas-reunion/'
       path: '/actas-reunion'
@@ -386,6 +444,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedDatosMaestrosRouteChildren {
+  AuthenticatedDatosMaestrosIndexRoute: typeof AuthenticatedDatosMaestrosIndexRoute
+  AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute: typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute
+  AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute: typeof AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute
+}
+
+const AuthenticatedDatosMaestrosRouteChildren: AuthenticatedDatosMaestrosRouteChildren =
+  {
+    AuthenticatedDatosMaestrosIndexRoute: AuthenticatedDatosMaestrosIndexRoute,
+    AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute:
+      AuthenticatedDatosMaestrosEntidadesObraProyectosIdRoute,
+    AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute:
+      AuthenticatedDatosMaestrosEntidadesObraProyectosIndexRoute,
+  }
+
+const AuthenticatedDatosMaestrosRouteWithChildren =
+  AuthenticatedDatosMaestrosRoute._addFileChildren(
+    AuthenticatedDatosMaestrosRouteChildren,
+  )
+
 interface AuthenticatedDigitalAppsRouteChildren {
   AuthenticatedDigitalAppsIndexRoute: typeof AuthenticatedDigitalAppsIndexRoute
   AuthenticatedDigitalAppsActasReunionNewRoute: typeof AuthenticatedDigitalAppsActasReunionNewRoute
@@ -414,7 +492,7 @@ const AuthenticatedDigitalAppsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
-  AuthenticatedDatosMaestrosRoute: typeof AuthenticatedDatosMaestrosRoute
+  AuthenticatedDatosMaestrosRoute: typeof AuthenticatedDatosMaestrosRouteWithChildren
   AuthenticatedDigitalAgentesRoute: typeof AuthenticatedDigitalAgentesRoute
   AuthenticatedDigitalAppsRoute: typeof AuthenticatedDigitalAppsRouteWithChildren
   AuthenticatedDigitalInicioRoute: typeof AuthenticatedDigitalInicioRoute
@@ -427,7 +505,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
-  AuthenticatedDatosMaestrosRoute: AuthenticatedDatosMaestrosRoute,
+  AuthenticatedDatosMaestrosRoute: AuthenticatedDatosMaestrosRouteWithChildren,
   AuthenticatedDigitalAgentesRoute: AuthenticatedDigitalAgentesRoute,
   AuthenticatedDigitalAppsRoute: AuthenticatedDigitalAppsRouteWithChildren,
   AuthenticatedDigitalInicioRoute: AuthenticatedDigitalInicioRoute,
@@ -449,13 +527,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
