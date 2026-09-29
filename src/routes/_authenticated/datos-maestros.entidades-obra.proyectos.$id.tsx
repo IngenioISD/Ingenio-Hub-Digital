@@ -8,9 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
-import { AppShell } from "@/components/layout/AppShell";
-import { itemsDatosMaestros } from "@/components/layout/Sidebar";
-import { GuardDatosMaestros } from "@/components/datos-maestros/GuardDatosMaestros";
 import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
@@ -42,13 +39,7 @@ export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-o
 });
 
 function Page() {
-  return (
-    <AppShell mode="direccion" contexto="hub" items={itemsDatosMaestros()} activeItem="proyectos">
-      <GuardDatosMaestros>
-        <ProyectoDetail />
-      </GuardDatosMaestros>
-    </AppShell>
-  );
+  return <ProyectoDetail />;
 }
 
 function ProyectoDetail() {
