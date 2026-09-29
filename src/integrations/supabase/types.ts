@@ -2195,6 +2195,7 @@ export type Database = {
           estado: string
           fecha_adjudicacion: string | null
           fecha_apertura_estudio: string
+          fecha_finalizacion_real: string | null
           fecha_inicio_proyecto: string | null
           id: string
           municipio: string | null
@@ -2204,7 +2205,6 @@ export type Database = {
           plazo_ejecucion_meses: number | null
           propiedad_id: string
           propiedad_nif: string | null
-          provincia: string | null
           provincia_id: string | null
           tipo_obra: string | null
           tipo_via: string | null
@@ -2217,6 +2217,7 @@ export type Database = {
           estado?: string
           fecha_adjudicacion?: string | null
           fecha_apertura_estudio?: string
+          fecha_finalizacion_real?: string | null
           fecha_inicio_proyecto?: string | null
           id?: string
           municipio?: string | null
@@ -2226,7 +2227,6 @@ export type Database = {
           plazo_ejecucion_meses?: number | null
           propiedad_id: string
           propiedad_nif?: string | null
-          provincia?: string | null
           provincia_id?: string | null
           tipo_obra?: string | null
           tipo_via?: string | null
@@ -2239,6 +2239,7 @@ export type Database = {
           estado?: string
           fecha_adjudicacion?: string | null
           fecha_apertura_estudio?: string
+          fecha_finalizacion_real?: string | null
           fecha_inicio_proyecto?: string | null
           id?: string
           municipio?: string | null
@@ -2248,7 +2249,6 @@ export type Database = {
           plazo_ejecucion_meses?: number | null
           propiedad_id?: string
           propiedad_nif?: string | null
-          provincia?: string | null
           provincia_id?: string | null
           tipo_obra?: string | null
           tipo_via?: string | null
