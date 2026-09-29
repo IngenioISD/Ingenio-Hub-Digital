@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Boxes, Bot, Database, Home, LayoutGrid, LayoutList, ArrowLeft, type LucideIcon } from "lucide-react";
+import { Boxes, Bot, Building2, Database, Home, LayoutGrid, LayoutList, ArrowLeft, Truck, type LucideIcon } from "lucide-react";
 
 import { useAppsVisibles } from "@/hooks/use-apps-visibles";
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
@@ -49,6 +49,20 @@ export function itemsProyecto(id: string): SidebarItem[] {
     { key: "modulos", label: "Módulos", icon: Boxes, to: `/proyecto/${id}/modulos` },
     { key: "apps", label: "Apps", icon: LayoutGrid, to: "/digital/apps" },
     { key: "agentes", label: "Agentes", icon: Bot, to: "/digital/agentes" },
+  ];
+}
+
+/**
+ * Menú dentro de Datos Maestros — bloque "Entidades de Obra".
+ * Todavía sin Dirección Facultativa ni "Accesos y Equipo" (pospuesto):
+ * se añaden aquí cuando se construyan, para no dejar enlaces rotos.
+ */
+export function itemsDatosMaestros(): SidebarItem[] {
+  return [
+    { key: "volver", label: "Volver a Inicio", icon: ArrowLeft, to: "/hub/inicio" },
+    { key: "proyectos", label: "Proyectos", icon: LayoutList, to: "/datos-maestros/entidades-obra/proyectos" },
+    { key: "propiedad", label: "Propiedad", icon: Building2, to: "/datos-maestros/entidades-obra/propiedad" },
+    { key: "proveedores", label: "Proveedores", icon: Truck, to: "/datos-maestros/entidades-obra/proveedores" },
   ];
 }
 
