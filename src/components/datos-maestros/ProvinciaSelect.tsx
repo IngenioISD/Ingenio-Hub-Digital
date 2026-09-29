@@ -33,7 +33,7 @@ export function ProvinciaSelect({
   });
 
   return (
-    <Select value={value ?? undefined} onValueChange={onChange} disabled={disabled || isLoading}>
+    <Select value={value ?? ""} onValueChange={onChange} disabled={disabled || isLoading}>
       <SelectTrigger>
         <SelectValue placeholder={isLoading ? "Cargando…" : "Selecciona provincia…"} />
       </SelectTrigger>
