@@ -365,7 +365,7 @@ function PropiedadPicker({ value, onChange }: { value: string | null; onChange: 
         });
       }}
       getLabel={(p) => p.nombre_comercial || p.nombre_legal || ""}
-      getSubLabel={(p) => p.nif}
+      getSubLabel={(p) => p.nif ?? ""}
       getValue={(p) => p.id}
       value={value}
       selectedLabel={selectedInfo?.label ?? null}
