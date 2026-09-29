@@ -16,7 +16,7 @@ export type SidebarItem = {
 
 type SidebarProps = {
   mode: SidebarMode;
-  activeItem?: string;
+  activeItem?: string | undefined;
   /** Logo de cabecera en modo dirección */
   contexto?: "hub" | "digital";
   items?: SidebarItem[];
