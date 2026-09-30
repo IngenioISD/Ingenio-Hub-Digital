@@ -238,6 +238,10 @@ function ProyectoDetail() {
                   if (v === "adjudicado" && data.estado !== "adjudicado") {
                     setAdjudicarOpen(true);
                   } else if (v === "finalizado" && data.estado !== "finalizado") {
+                    if (!data.fecha_inicio_real) {
+                      toast.error("Antes de finalizar, indica la Fecha de inicio (real) del proyecto.");
+                      return;
+                    }
                     setFinalizarOpen(true);
                   } else {
                     cambiarEstado.mutate(v);
@@ -472,11 +476,11 @@ function FinalizarDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Fecha de finalización del proyecto</DialogTitle>
-          <DialogDescription className="sr-only">Fecha de finalización del proyecto</DialogDescription>
+          <DialogTitle>Finalizar proyecto</DialogTitle>
+          <DialogDescription>Indica cuándo terminó de verdad la obra.</DialogDescription>
         </DialogHeader>
         <div className="space-y-1.5">
-          <Label>Fecha *</Label>
+          <Label>Fecha de finalización real *</Label>
           <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </div>
         <DialogFooter>
