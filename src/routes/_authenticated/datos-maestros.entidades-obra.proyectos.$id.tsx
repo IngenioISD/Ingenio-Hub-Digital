@@ -109,7 +109,6 @@ function ProyectoDetail() {
         .update({
           nombre,
           tipo_obra: tipoObra,
-          propiedad_id: propiedadId,
           codigo_estudios: data?.estado === "en_estudio" ? (codigoEstudios || null) : data?.codigo_estudios ?? null,
           fecha_inicio_real: data?.estado !== "en_estudio" ? (fechaInicioReal || null) : null,
           fecha_finalizacion_real: data?.estado === "finalizado" ? fechaFinalizacionReal : data?.fecha_finalizacion_real ?? null,
@@ -356,17 +355,17 @@ function AdjudicarDialog({
     if (!open) return;
     const d = (initial ?? {}) as Record<string, unknown>;
     const str = (v: unknown) => (v == null ? "" : String(v));
-    setCodigo(str(d.codigo_obra));
-    setFecha(str(d.fecha_adjudicacion));
-    setMeses(d.plazo_ejecucion_meses == null ? "" : String(d.plazo_ejecucion_meses));
-    setFechaInicio(str(d.fecha_inicio_proyecto));
+    setCodigo(str(d["codigo_obra"]));
+    setFecha(str(d["fecha_adjudicacion"]));
+    setMeses(d["plazo_ejecucion_meses"] == null ? "" : String(d["plazo_ejecucion_meses"]));
+    setFechaInicio(str(d["fecha_inicio_proyecto"]));
     setDir({
-      via: (d.nombre_via as string | null) ?? "",
-      numero: (d.numero as string | null) ?? "",
-      cp: (d.codigo_postal as string | null) ?? "",
-      municipio: (d.municipio as string | null) ?? "",
+      via: (d["nombre_via"] as string | null) ?? "",
+      numero: (d["numero"] as string | null) ?? "",
+      cp: (d["codigo_postal"] as string | null) ?? "",
+      municipio: (d["municipio"] as string | null) ?? "",
     });
-    setProvinciaId((d.provincia_id as string | null) ?? null);
+    setProvinciaId((d["provincia_id"] as string | null) ?? null);
   }, [open, initial]);
 
   async function confirmar() {
@@ -383,10 +382,10 @@ function AdjudicarDialog({
         fecha_adjudicacion: fecha,
         plazo_ejecucion_meses: Number(meses),
         fecha_inicio_proyecto: fechaInicio || null,
-        nombre_via: dir.via,
-        numero: dir.numero,
-        codigo_postal: dir.cp,
-        municipio: dir.municipio,
+        nombre_via: dir.via ?? null,
+        numero: dir.numero ?? null,
+        codigo_postal: dir.cp ?? null,
+        municipio: dir.municipio ?? null,
         provincia_id: provinciaId,
       })
       .eq("id", proyectoId);
