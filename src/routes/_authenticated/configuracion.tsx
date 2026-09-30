@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, User, Bell, Shield } from "lucide-react";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -21,9 +22,15 @@ const ICON_BOX =
 
 function Page() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   async function handleSignOut() {
     await supabase.auth.signOut();
+    // Limpia toda la caché (permisos, apps visibles, datos de sesión...).
+    // Sin esto, al volver a entrar con otra cuenta o con un rol cambiado,
+    // la app puede seguir mostrando datos de la sesión anterior hasta que
+    // la caché expira por su cuenta (hasta 5 minutos según la consulta).
+    queryClient.clear();
     await navigate({ to: "/login", replace: true });
   }
 
