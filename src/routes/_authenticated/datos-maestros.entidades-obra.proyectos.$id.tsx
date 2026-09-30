@@ -56,6 +56,7 @@ function ProyectoDetail() {
   const [nombre, setNombre] = useState("");
   const [tipoObra, setTipoObra] = useState("");
   const [codigoEstudios, setCodigoEstudios] = useState("");
+  const [fechaInicioReal, setFechaInicioReal] = useState("");
   const [propiedadId, setPropiedadId] = useState<string | null>(null);
   const [adjudicarOpen, setAdjudicarOpen] = useState(false);
   const [finalizarOpen, setFinalizarOpen] = useState(false);
@@ -66,6 +67,7 @@ function ProyectoDetail() {
     setNombre(data.nombre ?? "");
     setTipoObra(data.tipo_obra ?? "");
     setCodigoEstudios(data.codigo_estudios ?? "");
+    setFechaInicioReal(data.fecha_inicio_real ?? "");
     setPropiedadId(data.propiedad_id ?? null);
   };
 
@@ -96,6 +98,7 @@ function ProyectoDetail() {
           tipo_obra: tipoObra,
           propiedad_id: propiedadId,
           codigo_estudios: data?.estado === "en_estudio" ? (codigoEstudios || null) : data?.codigo_estudios ?? null,
+          fecha_inicio_real: data?.estado !== "en_estudio" ? (fechaInicioReal || null) : null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -170,67 +173,48 @@ function ProyectoDetail() {
         </CardHeader>
         <CardContent className="space-y-4">
           {editing ? (
-            <div className={`grid grid-cols-1 gap-3 ${data.estado === "en_estudio" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-              <div className="space-y-1.5">
-                <Label>Nombre</Label>
-                <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
-              </div>
-              {data.estado === "en_estudio" && (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label>Código de estudios</Label>
-                  <Input value={codigoEstudios} onChange={(e) => setCodigoEstudios(e.target.value)} />
+                  <Label>Nombre</Label>
+                  <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
                 </div>
-              )}
-              <div className="space-y-1.5">
-                <Label>Tipo de obra</Label>
-                <Select value={tipoObra} onValueChange={setTipoObra}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {tipos.map((t) => (
-                      <SelectItem key={t.id} value={t.codigo}>{t.etiqueta || t.codigo}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-1.5">
+                  <Label>Tipo de obra</Label>
+                  <Select value={tipoObra} onValueChange={setTipoObra}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {tipos.map((t) => (
+                        <SelectItem key={t.id} value={t.codigo}>{t.etiqueta || t.codigo}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className={`space-y-1.5 ${data.estado === "en_estudio" ? "sm:col-span-3" : "sm:col-span-2"}`}>
-                <Label>Propiedad</Label>
-                <PropiedadPicker value={propiedadId} onChange={setPropiedadId} />
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 border-t pt-4">
+                <Field label="Código de obra" value={data.codigo_obra ?? ""} />
+                {data.estado === "en_estudio" ? (
+                  <div className="space-y-1.5">
+                    <Label>Código de estudios</Label>
+                    <Input value={codigoEstudios} onChange={(e) => setCodigoEstudios(e.target.value)} />
+                  </div>
+                ) : (
+                  <Field label="Código de estudios" value={codigoEstudios} />
+                )}
               </div>
-            </div>
+            </>
           ) : (
-            <div className={`grid grid-cols-1 gap-4 ${data.estado === "en_estudio" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-              <Field label="Nombre" value={nombre} />
-              {data.estado === "en_estudio" && <Field label="Código de estudios" value={codigoEstudios} />}
-              <Field label="Tipo de obra" value={tipoObraLabel} />
-              <div className={`space-y-1 ${data.estado === "en_estudio" ? "sm:col-span-3" : "sm:col-span-2"}`}>
-                <Label className="text-muted-foreground">Propiedad</Label>
-                <PropiedadReadOnly propiedadId={propiedadId} />
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Nombre" value={nombre} />
+                <Field label="Tipo de obra" value={tipoObraLabel} />
               </div>
-            </div>
-          )}
-
-          {data.estado === "adjudicado" && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 border-t pt-4">
-              <Field label="Código" value={data.codigo_obra ?? ""} />
-              <Field
-                label="Fecha adjudicación"
-                value={data.fecha_adjudicacion ? new Date(data.fecha_adjudicacion).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
-              />
-              <Field label="Duración (meses)" value={String(data.plazo_ejecucion_meses ?? "")} />
-              <Field
-                label="Inicio de los trabajos"
-                value={data.fecha_inicio_proyecto ? new Date(data.fecha_inicio_proyecto).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
-              />
-            </div>
-          )}
-
-          {data.estado === "finalizado" && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 border-t pt-4">
-              <Field
-                label="Fecha de finalización real"
-                value={data.fecha_finalizacion_real ? new Date(data.fecha_finalizacion_real).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
-              />
-            </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 border-t pt-4">
+                <Field label="Código de obra" value={data.codigo_obra ?? ""} />
+                <Field label="Código de estudios" value={codigoEstudios} />
+              </div>
+            </>
           )}
 
           <div className="flex items-center gap-3 border-t pt-4">
@@ -257,6 +241,29 @@ function ProyectoDetail() {
               </Select>
             ) : (
               data.estado && <BadgeEstado estado={data.estado} />
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 border-t pt-4">
+            <Field
+              label="Fecha adjudicación"
+              value={data.fecha_adjudicacion ? new Date(data.fecha_adjudicacion).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+            />
+            <Field
+              label="Inicio (contractual)"
+              value={data.fecha_inicio_proyecto ? new Date(data.fecha_inicio_proyecto).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+            />
+            <Field label="Duración (meses)" value={String(data.plazo_ejecucion_meses ?? "")} />
+            {editing && data.estado !== "en_estudio" ? (
+              <div className="space-y-1.5">
+                <Label>Inicio (real)</Label>
+                <Input type="date" value={fechaInicioReal} onChange={(e) => setFechaInicioReal(e.target.value)} />
+              </div>
+            ) : (
+              <Field
+                label="Inicio (real)"
+                value={data.fecha_inicio_real ? new Date(data.fecha_inicio_real).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+              />
             )}
           </div>
         </CardContent>
@@ -296,80 +303,6 @@ function ProyectoDetail() {
         }}
       />
     </div>
-  );
-}
-
-function PropiedadReadOnly({ propiedadId }: { propiedadId: string | null }) {
-  const { usuarioCliente } = useAuth();
-  const clienteId = usuarioCliente?.cliente_id;
-  const { data } = useQuery({
-    queryKey: ["datos-maestros", "propiedad-readonly", clienteId, propiedadId],
-    enabled: !!propiedadId && !!clienteId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("propiedad")
-        .select("id, nombre_legal, clientes_propiedades!inner(cliente_id, nombre_comercial)")
-        .eq("id", propiedadId!)
-        .eq("clientes_propiedades.cliente_id", clienteId!)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      const cp = Array.isArray(data.clientes_propiedades) ? data.clientes_propiedades[0] : data.clientes_propiedades;
-      return { label: (cp?.nombre_comercial as string | null) || data.nombre_legal };
-    },
-  });
-  return <p className="text-sm">{data?.label || <span className="text-muted-foreground">—</span>}</p>;
-}
-
-function PropiedadPicker({ value, onChange }: { value: string | null; onChange: (v: string) => void }) {
-  const { usuarioCliente } = useAuth();
-  const clienteId = usuarioCliente?.cliente_id;
-
-  const { data: selectedInfo } = useQuery({
-    queryKey: ["datos-maestros", "propiedad-picker-selected", clienteId, value],
-    enabled: !!value && !!clienteId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("propiedad")
-        .select("id, nombre_legal, clientes_propiedades!inner(cliente_id, nombre_comercial)")
-        .eq("id", value!)
-        .eq("clientes_propiedades.cliente_id", clienteId!)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      const cp = Array.isArray(data.clientes_propiedades) ? data.clientes_propiedades[0] : data.clientes_propiedades;
-      return { label: (cp?.nombre_comercial as string | null) || data.nombre_legal };
-    },
-  });
-
-  return (
-    <BuscarCombobox
-      placeholder="Buscar propiedad…"
-      queryKey={["datos-maestros", "propiedad-picker", clienteId]}
-      search={async (term) => {
-        if (!clienteId) return [];
-        let qb = supabase
-          .from("propiedad")
-          .select("id, nif, nombre_legal, clientes_propiedades!inner(cliente_id, nombre_comercial)")
-          .eq("clientes_propiedades.cliente_id", clienteId);
-        if (term) qb = qb.or(`nombre_legal.ilike.%${term}%,nif.ilike.%${term}%`);
-        const { data, error } = await qb.limit(20);
-        if (error) throw error;
-        return (data ?? []).map((p) => {
-          const cp = Array.isArray(p.clientes_propiedades) ? p.clientes_propiedades[0] : p.clientes_propiedades;
-          return {
-            id: p.id, nif: p.nif, nombre_legal: p.nombre_legal,
-            nombre_comercial: (cp?.nombre_comercial as string | null) ?? null,
-          };
-        });
-      }}
-      getLabel={(p) => p.nombre_comercial || p.nombre_legal}
-      getSubLabel={(p) => p.nif}
-      getValue={(p) => p.id}
-      value={value}
-      selectedLabel={selectedInfo?.label ?? null}
-      onSelect={(p) => onChange(p.id)}
-    />
   );
 }
 
