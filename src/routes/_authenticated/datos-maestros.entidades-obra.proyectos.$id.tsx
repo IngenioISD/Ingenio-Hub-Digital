@@ -23,6 +23,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
+function formatFecha(v: string | null | undefined): string {
+  if (!v) return "";
+  const d = new Date(v);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}-${mm}-${d.getFullYear()}`;
+}
+
 const ESTADOS = [
   { value: "en_estudio", label: "En estudio" },
   { value: "adjudicado", label: "Adjudicado" },
@@ -148,7 +156,6 @@ function ProyectoDetail() {
             </Link>
           </Button>
           <h1 className="text-xl font-bold">{nombre}</h1>
-          {data.estado && <BadgeEstado estado={data.estado} />}
         </div>
       </div>
 
@@ -247,22 +254,22 @@ function ProyectoDetail() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 border-t pt-4">
             <Field
               label="Fecha adjudicación"
-              value={data.fecha_adjudicacion ? new Date(data.fecha_adjudicacion).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+              value={formatFecha(data.fecha_adjudicacion)}
             />
             <Field
-              label="Inicio (contractual)"
-              value={data.fecha_inicio_proyecto ? new Date(data.fecha_inicio_proyecto).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+              label="Fecha de inicio (contractual)"
+              value={formatFecha(data.fecha_inicio_proyecto)}
             />
             <Field label="Duración (meses)" value={String(data.plazo_ejecucion_meses ?? "")} />
             {editing && data.estado !== "en_estudio" ? (
               <div className="space-y-1.5">
-                <Label>Inicio (real)</Label>
+                <Label>Fecha de inicio (real)</Label>
                 <Input type="date" value={fechaInicioReal} onChange={(e) => setFechaInicioReal(e.target.value)} />
               </div>
             ) : (
               <Field
-                label="Inicio (real)"
-                value={data.fecha_inicio_real ? new Date(data.fecha_inicio_real).toLocaleDateString("es-ES").replaceAll("/", "-") : ""}
+                label="Fecha de inicio (real)"
+                value={formatFecha(data.fecha_inicio_real)}
               />
             )}
           </div>
