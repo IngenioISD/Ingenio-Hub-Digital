@@ -262,6 +262,8 @@ function ProyectoDetail() {
         </CardContent>
       </Card>
 
+      <PropiedadDFCard propiedadId={propiedadId} />
+
       <Card>
         <CardHeader>
           <CardTitle>Proveedores asignados</CardTitle>
@@ -530,6 +532,74 @@ interface PPRow {
   proveedor_id: string;
   activo: boolean | null;
   proveedor_subcontrata: { nombre_legal: string; nif: string; tipo_proveedor: string | null } | null;
+}
+
+function PropiedadDFCard({ propiedadId }: { propiedadId: string | null }) {
+  const { usuarioCliente } = useAuth();
+  const clienteId = usuarioCliente?.cliente_id;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["datos-maestros", "propiedad-df-card", clienteId, propiedadId],
+    enabled: !!propiedadId && !!clienteId,
+    queryFn: async () => {
+      const { data: prop, error: errProp } = await supabase
+        .from("propiedad")
+        .select("nombre_legal")
+        .eq("id", propiedadId!)
+        .maybeSingle();
+      if (errProp) throw errProp;
+
+      const { data: contactos, error: errContactos } = await supabase
+        .from("cliente_propiedad_contactos")
+        .select("propiedad_contactos(nombre, apellido_1, apellido_2, departamento, email, telefono)")
+        .eq("cliente_id", clienteId!)
+        .eq("propiedad_id", propiedadId!)
+        .eq("activo", true);
+      if (errContactos) throw errContactos;
+
+      return {
+        nombreLegal: prop?.nombre_legal ?? null,
+        contactos: (contactos ?? [])
+          .map((c) => (Array.isArray(c.propiedad_contactos) ? c.propiedad_contactos[0] : c.propiedad_contactos))
+          .filter((c): c is NonNullable<typeof c> => !!c),
+      };
+    },
+  });
+
+  return (
+    <Card>
+      <CardContent className="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-2">
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold">Propiedad</h3>
+          {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
+          {!isLoading && !data?.nombreLegal && <p className="text-sm text-muted-foreground">—</p>}
+          {data?.nombreLegal && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium">{data.nombreLegal}</p>
+              {data.contactos.length === 0 && (
+                <p className="text-xs text-muted-foreground">Sin contactos asignados.</p>
+              )}
+              {data.contactos.map((c, i) => (
+                <div key={i} className="space-y-0.5 border-l-2 pl-3 text-sm">
+                  <p className="font-medium">
+                    {c.nombre} {c.apellido_1} {c.apellido_2 ?? ""}
+                    {c.departamento && <span className="ml-1 text-xs text-muted-foreground">({c.departamento})</span>}
+                  </p>
+                  {c.email && <p className="text-xs text-muted-foreground">{c.email}</p>}
+                  {c.telefono && <p className="text-xs text-muted-foreground">{c.telefono}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+          <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 function ProveedoresAsignados({ proyectoId }: { proyectoId: string }) {
