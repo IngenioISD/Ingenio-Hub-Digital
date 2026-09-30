@@ -2197,6 +2197,7 @@ export type Database = {
           fecha_apertura_estudio: string
           fecha_finalizacion_real: string | null
           fecha_inicio_proyecto: string | null
+          fecha_inicio_real: string | null
           id: string
           municipio: string | null
           nombre: string
@@ -2219,6 +2220,7 @@ export type Database = {
           fecha_apertura_estudio?: string
           fecha_finalizacion_real?: string | null
           fecha_inicio_proyecto?: string | null
+          fecha_inicio_real?: string | null
           id?: string
           municipio?: string | null
           nombre: string
@@ -2241,6 +2243,7 @@ export type Database = {
           fecha_apertura_estudio?: string
           fecha_finalizacion_real?: string | null
           fecha_inicio_proyecto?: string | null
+          fecha_inicio_real?: string | null
           id?: string
           municipio?: string | null
           nombre?: string
