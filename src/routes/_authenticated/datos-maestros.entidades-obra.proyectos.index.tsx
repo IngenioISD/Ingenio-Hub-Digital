@@ -5,7 +5,6 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
@@ -71,11 +70,26 @@ function ProyectosListado() {
     },
   });
 
+  const { data: tipos = [] } = useQuery({
+    queryKey: ["catalogo", "tipo_obra"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("catalogo")
+        .select("codigo, etiqueta")
+        .eq("categoria", "tipo_obra");
+      if (error) throw error;
+      return (data ?? []) as { codigo: string; etiqueta: string | null }[];
+    },
+  });
+  const tipoObraLabel = (codigo: string | null) =>
+    (codigo && tipos.find((t) => t.codigo === codigo)?.etiqueta) || codigo || "—";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Proyectos</h1>
+          <p className="text-sm text-muted-foreground">Proyectos de tu empresa.</p>
         </div>
         {puedeCrear && <NuevoProyectoDialog />}
       </div>
@@ -111,7 +125,7 @@ function ProyectosListado() {
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.nombre}</TableCell>
                 <TableCell>{(p.estado === "en_estudio" ? p.codigo_estudios : p.codigo_obra) ?? "—"}</TableCell>
-                <TableCell>{p.tipo_obra ?? "—"}</TableCell>
+                <TableCell>{tipoObraLabel(p.tipo_obra)}</TableCell>
                 <TableCell>{p.estado && <BadgeEstado estado={p.estado} />}</TableCell>
                 <TableCell className="text-right">
                   <Button asChild variant="ghost" size="sm">
@@ -177,7 +191,7 @@ function NuevoProyectoDialog() {
       if (!nombre || !propiedadId || !tipoObra || !clienteId || !estadoNuevo) {
         throw new Error("Completa los campos obligatorios");
       }
-      const payload: Database["public"]["Tables"]["proyectos"]["Insert"] = {
+      const payload: Record<string, unknown> = {
         nombre, cliente_id: clienteId, propiedad_id: propiedadId,
         tipo_obra: tipoObra, estado: estadoNuevo,
       };
