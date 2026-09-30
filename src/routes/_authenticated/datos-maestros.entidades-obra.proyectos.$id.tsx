@@ -472,11 +472,11 @@ function FinalizarDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Finalizar proyecto</DialogTitle>
-          <DialogDescription>Indica cuándo terminó de verdad la obra.</DialogDescription>
+          <DialogTitle>Fecha de finalización del proyecto</DialogTitle>
+          <DialogDescription className="sr-only">Fecha de finalización del proyecto</DialogDescription>
         </DialogHeader>
         <div className="space-y-1.5">
-          <Label>Fecha de finalización real *</Label>
+          <Label>Fecha *</Label>
           <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </div>
         <DialogFooter>
