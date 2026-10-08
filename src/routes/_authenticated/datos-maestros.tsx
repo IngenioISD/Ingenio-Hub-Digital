@@ -10,7 +10,12 @@ export const Route = createFileRoute("/_authenticated/datos-maestros")({
 function activeItemFromPathname(pathname: string): string | undefined {
   if (pathname.includes("/entidades-obra/proyectos")) return "proyectos";
   if (pathname.includes("/entidades-obra/propiedad")) return "propiedad";
+  if (pathname.includes("/entidades-obra/direccion-facultativa")) return "df";
   if (pathname.includes("/entidades-obra/proveedores")) return "proveedores";
+  if (pathname.includes("/accesos-equipo/personal-propio")) return "personal-propio";
+  if (pathname.includes("/accesos-equipo/personal-externo")) return "personal-externo";
+  if (pathname.includes("/accesos-equipo/usuarios")) return "usuarios";
+  if (pathname.includes("/accesos-equipo/catalogos")) return "catalogos";
   return undefined;
 }
 
