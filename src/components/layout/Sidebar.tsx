@@ -1,5 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { Boxes, Bot, Building2, Database, Home, LayoutGrid, LayoutList, ArrowLeft, Truck, type LucideIcon } from "lucide-react";
+import {
+  Boxes,
+  Bot,
+  Building2,
+  Database,
+  Home,
+  LayoutGrid,
+  LayoutList,
+  ArrowLeft,
+  Truck,
+  HardHat,
+  Users,
+  UserPlus,
+  KeyRound,
+  ListChecks,
+  type LucideIcon,
+} from "lucide-react";
 
 import { useAppsVisibles } from "@/hooks/use-apps-visibles";
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
@@ -12,6 +28,11 @@ export type SidebarItem = {
   label: string;
   icon: LucideIcon;
   to: string;
+  /**
+   * Título de capítulo que se pinta justo encima de este item (p.ej.
+   * "Entidades de Obra"). Si coincide con el del item anterior, no se repite.
+   */
+  section?: string;
 };
 
 type SidebarProps = {
@@ -53,16 +74,25 @@ export function itemsProyecto(id: string): SidebarItem[] {
 }
 
 /**
- * Menú dentro de Datos Maestros — bloque "Entidades de Obra".
- * Todavía sin Dirección Facultativa ni "Accesos y Equipo" (pospuesto):
- * se añaden aquí cuando se construyan, para no dejar enlaces rotos.
+ * Menú dentro de Datos Maestros, con sus dos capítulos:
+ * "Entidades de Obra" y "Accesos y Equipo". Los accesos que todavía no
+ * tienen pantalla construida llevan a un placeholder "Próximamente"
+ * (ver EnConstruccion) en vez de quedar sin ruta: así no hay que volver
+ * a tocar el menú cuando se construyan.
  */
 export function itemsDatosMaestros(): SidebarItem[] {
   return [
     { key: "volver", label: "Volver a Inicio", icon: ArrowLeft, to: "/hub/inicio" },
-    { key: "proyectos", label: "Proyectos", icon: LayoutList, to: "/datos-maestros/entidades-obra/proyectos" },
+
+    { key: "proyectos", label: "Proyectos", icon: LayoutList, to: "/datos-maestros/entidades-obra/proyectos", section: "Entidades de Obra" },
     { key: "propiedad", label: "Propiedad", icon: Building2, to: "/datos-maestros/entidades-obra/propiedad" },
+    { key: "df", label: "Dirección Facultativa", icon: HardHat, to: "/datos-maestros/entidades-obra/direccion-facultativa" },
     { key: "proveedores", label: "Proveedores", icon: Truck, to: "/datos-maestros/entidades-obra/proveedores" },
+
+    { key: "personal-propio", label: "Personal propio", icon: Users, to: "/datos-maestros/accesos-equipo/personal-propio", section: "Accesos y Equipo" },
+    { key: "personal-externo", label: "Personal externo", icon: UserPlus, to: "/datos-maestros/accesos-equipo/personal-externo" },
+    { key: "usuarios", label: "Usuarios", icon: KeyRound, to: "/datos-maestros/accesos-equipo/usuarios" },
+    { key: "catalogos", label: "Catálogos", icon: ListChecks, to: "/datos-maestros/accesos-equipo/catalogos" },
   ];
 }
 
@@ -177,7 +207,28 @@ export function Sidebar({
 
       {/* Menú */}
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto py-3">
-        {menu.map((item) => renderItem(item, item.key === activeItem))}
+        {menu.map((item, index) => {
+          const showSection = item.section && item.section !== menu[index - 1]?.section;
+          return (
+            <div key={item.key}>
+              {showSection && (
+                <div
+                  className="hidden truncate px-4 pb-1.5 pt-4 uppercase first:pt-1 lg:block"
+                  style={{
+                    color: textColor,
+                    opacity: 0.55,
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {item.section}
+                </div>
+              )}
+              {renderItem(item, item.key === activeItem)}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Pie: Datos Maestros + tarjeta de perfil */}
