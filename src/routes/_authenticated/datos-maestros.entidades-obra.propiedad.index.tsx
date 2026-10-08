@@ -237,7 +237,7 @@ function NuevaPropiedadDialog() {
       const { error: errLink } = await supabase.from("clientes_propiedades").insert({
         cliente_id: clienteId,
         propiedad_id: propiedadId,
-        nombre_comercial: nombreComercial.trim() || null,
+        nombre_comercial: (nombreComercial.trim() || null) as string,
         activo: true,
       });
       if (errLink) throw errLink;
