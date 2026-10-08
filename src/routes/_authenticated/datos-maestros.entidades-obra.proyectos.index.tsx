@@ -55,13 +55,27 @@ function ProyectosListado() {
   const [estado, setEstado] = useState<string>("__all");
 
   const { data = [], isLoading } = useQuery({
-    queryKey: ["datos-maestros", "proyectos", clienteId, q, estado],
+    queryKey: ["datos-maestros", "proyectos", clienteId, q, estado, usuarioCliente?.acceso_total_proyectos],
     enabled: !!clienteId,
     queryFn: async () => {
+      // Si el usuario no tiene acceso total, se restringe a sus proyectos
+      // asignados en usuario_proyectos (mismo patrón que Actas e Inicio).
+      let ids: string[] | null = null;
+      if (!usuarioCliente?.acceso_total_proyectos) {
+        const { data: asignaciones, error: asignacionesError } = await supabase
+          .from("usuario_proyectos")
+          .select("proyecto_id")
+          .eq("user_id", usuarioCliente!.user_id)
+          .eq("activo", true);
+        if (asignacionesError) throw asignacionesError;
+        ids = (asignaciones ?? []).map((a) => a.proyecto_id);
+      }
+
       let qb = supabase
         .from("proyectos")
         .select("id, nombre, codigo_obra, codigo_estudios, estado, tipo_obra")
         .eq("cliente_id", clienteId!);
+      if (ids) qb = qb.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
       if (q) qb = qb.or(`nombre.ilike.%${q}%,codigo_obra.ilike.%${q}%,codigo_estudios.ilike.%${q}%`);
       if (estado !== "__all") qb = qb.eq("estado", estado);
       const { data, error } = await qb.order("nombre");
