@@ -1898,7 +1898,7 @@ export type Database = {
           nombre_via: string | null
           numero: string | null
           pais: string | null
-          provincia: string | null
+          provincia_id: string | null
           tipo_via: string | null
         }
         Insert: {
@@ -1912,7 +1912,7 @@ export type Database = {
           nombre_via?: string | null
           numero?: string | null
           pais?: string | null
-          provincia?: string | null
+          provincia_id?: string | null
           tipo_via?: string | null
         }
         Update: {
@@ -1926,7 +1926,7 @@ export type Database = {
           nombre_via?: string | null
           numero?: string | null
           pais?: string | null
-          provincia?: string | null
+          provincia_id?: string | null
           tipo_via?: string | null
         }
         Relationships: [
@@ -1935,6 +1935,13 @@ export type Database = {
             columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "usuarios_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propiedad_provincia_id_fkey"
+            columns: ["provincia_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_provincias"
             referencedColumns: ["id"]
           },
         ]

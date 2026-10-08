@@ -111,7 +111,7 @@ function PropiedadDetail() {
       if (data?.clientePropiedad?.id) {
         const { error: errCp } = await supabase
           .from("clientes_propiedades")
-          .update({ nombre_comercial: nombreComercial || null })
+          .update({ nombre_comercial: (nombreComercial || null) as string })
           .eq("id", data.clientePropiedad.id);
         if (errCp) throw errCp;
       }
