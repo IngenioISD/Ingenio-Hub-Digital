@@ -1,0 +1,321 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Plus, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
+
+import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
+import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-obra/propiedad/")({
+  head: () => ({ meta: [{ title: "Propiedad · Datos Maestros · Ingenio HUB" }] }),
+  component: Page,
+});
+
+interface Row {
+  id: string; // clientes_propiedades.id
+  propiedadId: string;
+  nombreComercial: string | null;
+  nombreLegal: string;
+  nif: string;
+  activo: boolean;
+}
+
+function Page() {
+  return <PropiedadListado />;
+}
+
+function PropiedadListado() {
+  const { usuarioCliente } = useAuth();
+  const { puedeCrear, puedeEditar, puedeEliminar } = usePermisosDatosMaestros();
+  const clienteId = usuarioCliente?.cliente_id;
+  const qc = useQueryClient();
+  const queryKey = ["datos-maestros", "propiedades", clienteId] as const;
+
+  const [q, setQ] = useState("");
+
+  const { data = [], isLoading } = useQuery({
+    queryKey,
+    enabled: !!clienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clientes_propiedades")
+        .select("id, propiedad_id, nombre_comercial, activo, propiedad(nif, nombre_legal)")
+        .eq("cliente_id", clienteId!);
+      if (error) throw error;
+      return (data ?? []).map((r): Row => {
+        const p = Array.isArray(r.propiedad) ? r.propiedad[0] : r.propiedad;
+        return {
+          id: r.id,
+          propiedadId: r.propiedad_id,
+          nombreComercial: r.nombre_comercial,
+          nombreLegal: p?.nombre_legal ?? "",
+          nif: p?.nif ?? "",
+          activo: r.activo,
+        };
+      });
+    },
+  });
+
+  const filtradas = data
+    .filter((r) => {
+      if (!q) return true;
+      const term = q.toLowerCase();
+      return (
+        (r.nombreComercial ?? "").toLowerCase().includes(term) ||
+        r.nombreLegal.toLowerCase().includes(term) ||
+        r.nif.toLowerCase().includes(term)
+      );
+    })
+    .sort((a, b) => (a.nombreComercial || a.nombreLegal).localeCompare(b.nombreComercial || b.nombreLegal));
+
+  const toggle = useMutation({
+    mutationFn: async ({ id, activo }: { id: string; activo: boolean }) => {
+      const { error } = await supabase.from("clientes_propiedades").update({ activo }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const eliminar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("clientes_propiedades").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey }); toast.success("Propiedad desvinculada"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Propiedad</h1>
+          <p className="text-sm text-muted-foreground">Propiedades de tu empresa.</p>
+        </div>
+        {puedeCrear && <NuevaPropiedadDialog />}
+      </div>
+
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input placeholder="Buscar por nombre o NIF…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+      </div>
+
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre comercial</TableHead>
+              <TableHead>Nombre legal</TableHead>
+              <TableHead>NIF</TableHead>
+              <TableHead>Activo</TableHead>
+              <TableHead></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
+            {!isLoading && filtradas.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
+            {filtradas.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">
+                  <Link to="/datos-maestros/entidades-obra/propiedad/$id" params={{ id: r.propiedadId }} className="hover:underline">
+                    {r.nombreComercial || r.nombreLegal}
+                  </Link>
+                </TableCell>
+                <TableCell>{r.nombreLegal}</TableCell>
+                <TableCell>{r.nif}</TableCell>
+                <TableCell>
+                  <Switch
+                    checked={r.activo}
+                    disabled={!puedeEditar}
+                    onCheckedChange={(activo) => toggle.mutate({ id: r.id, activo })}
+                  />
+                </TableCell>
+                <TableCell className="text-right">
+                  {puedeEliminar && (
+                    <Button size="icon" variant="ghost" onClick={() => eliminar.mutate(r.id)} aria-label="Desvincular">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
+  );
+}
+
+function NuevaPropiedadDialog() {
+  const { usuarioCliente } = useAuth();
+  const clienteId = usuarioCliente?.cliente_id;
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const [nif, setNif] = useState("");
+  const [comprobado, setComprobado] = useState(false);
+  const [existente, setExistente] = useState<{ id: string; nombre_legal: string | null } | null>(null);
+  const [comprobando, setComprobando] = useState(false);
+
+  const [nombreLegal, setNombreLegal] = useState("");
+  const [nombreComercial, setNombreComercial] = useState("");
+  const [dirObra, setDirObra] = useState<DireccionObra>({});
+  const [provinciaId, setProvinciaId] = useState<string | null>(null);
+
+  const reset = () => {
+    setNif(""); setComprobado(false); setExistente(null);
+    setNombreLegal(""); setNombreComercial(""); setDirObra({}); setProvinciaId(null);
+  };
+
+  const comprobarNif = async () => {
+    if (!nif.trim()) return;
+    setComprobando(true);
+    try {
+      const { data, error } = await supabase
+        .from("propiedad")
+        .select("id, nombre_legal")
+        .eq("nif", nif.trim())
+        .maybeSingle();
+      if (error) throw error;
+      setExistente(data);
+      setComprobado(true);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setComprobando(false);
+    }
+  };
+
+  const crear = useMutation({
+    mutationFn: async () => {
+      if (!clienteId || !nif.trim()) throw new Error("Indica el NIF");
+
+      let propiedadId = existente?.id ?? null;
+
+      if (!propiedadId) {
+        if (!nombreLegal.trim()) throw new Error("Indica el nombre legal");
+        const { data: nueva, error: errNueva } = await supabase
+          .from("propiedad")
+          .insert({
+            nif: nif.trim(),
+            nombre_legal: nombreLegal.trim(),
+            nombre_via: dirObra.via || null,
+            numero: dirObra.numero || null,
+            codigo_postal: dirObra.cp || null,
+            municipio: dirObra.municipio || null,
+            provincia_id: provinciaId,
+          })
+          .select("id")
+          .single();
+        if (errNueva) throw errNueva;
+        propiedadId = nueva.id;
+      }
+
+      const { data: yaVinculada, error: errCheck } = await supabase
+        .from("clientes_propiedades")
+        .select("id")
+        .eq("cliente_id", clienteId)
+        .eq("propiedad_id", propiedadId)
+        .maybeSingle();
+      if (errCheck) throw errCheck;
+      if (yaVinculada) throw new Error("Esta propiedad ya está vinculada a tu empresa.");
+
+      const { error: errLink } = await supabase.from("clientes_propiedades").insert({
+        cliente_id: clienteId,
+        propiedad_id: propiedadId,
+        nombre_comercial: nombreComercial.trim() || null,
+        activo: true,
+      });
+      if (errLink) throw errLink;
+    },
+    onSuccess: () => {
+      toast.success("Propiedad añadida");
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedades"] });
+      setOpen(false); reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+      <DialogTrigger asChild>
+        <Button><Plus className="mr-2 h-4 w-4" /> Nueva propiedad</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Nueva propiedad</DialogTitle>
+          <DialogDescription>
+            Si el NIF ya existe en el sistema (otra constructora ya trabaja con ella), solo vincularemos tu empresa, sin duplicar sus datos.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="flex items-end gap-2">
+            <div className="flex-1 space-y-1.5">
+              <Label>NIF *</Label>
+              <Input
+                value={nif}
+                onChange={(e) => { setNif(e.target.value); setComprobado(false); setExistente(null); }}
+                placeholder="B12345678"
+              />
+            </div>
+            <Button type="button" variant="outline" onClick={comprobarNif} disabled={!nif.trim() || comprobando}>
+              Comprobar
+            </Button>
+          </div>
+
+          {comprobado && existente && (
+            <div className="rounded-md border bg-muted/40 p-3 text-sm">
+              Ya existe: <span className="font-medium">{existente.nombre_legal}</span>. Solo hace falta el nombre comercial que le quieras dar en tu empresa.
+            </div>
+          )}
+
+          {comprobado && (
+            <>
+              <div className="space-y-1.5">
+                <Label>Nombre comercial</Label>
+                <Input value={nombreComercial} onChange={(e) => setNombreComercial(e.target.value)} placeholder="Como la llamáis internamente (opcional)" />
+              </div>
+
+              {!existente && (
+                <div className="space-y-4 border-t pt-4">
+                  <div className="space-y-1.5">
+                    <Label>Nombre legal *</Label>
+                    <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Dirección</Label>
+                    <DireccionObraFields value={dirObra} onChange={setDirObra} />
+                    <div className="max-w-xs space-y-1.5">
+                      <Label>Provincia</Label>
+                      <ProvinciaSelect value={provinciaId} onChange={setProvinciaId} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={() => crear.mutate()} disabled={!comprobado || crear.isPending}>Crear</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
