@@ -659,6 +659,10 @@ function ProveedoresAsignados({ proyectoId }: { proyectoId: string }) {
     },
   });
 
+  const asignadosIds = data.map((r) => r.proveedor_id).sort();
+  const asignadosKey = asignadosIds.join(",");
+  const [todosAsignados, setTodosAsignados] = useState(false);
+
   const asignar = useMutation({
     mutationFn: async (proveedorId: string) => {
       const { error } = await supabase.from("proyecto_proveedores").insert({
@@ -694,23 +698,35 @@ function ProveedoresAsignados({ proyectoId }: { proyectoId: string }) {
         <div className="max-w-md">
           <BuscarCombobox
             placeholder="Asignar proveedor (busca por nombre o NIF)…"
-            queryKey={["datos-maestros", "proveedor-search", clienteId]}
+            queryKey={["datos-maestros", "proveedor-search", clienteId, asignadosKey]}
             search={async (term) => {
               if (!clienteId) return [];
               let qb = supabase
                 .from("proveedor_subcontrata")
                 .select("id, nif, nombre_legal, cliente_proveedores!inner(cliente_id)")
                 .eq("cliente_proveedores.cliente_id", clienteId);
+              // Excluye en la propia consulta los ya asignados (activos o no) antes del limit.
+              if (asignadosIds.length) qb = qb.not("id", "in", `(${asignadosIds.join(",")})`);
               if (term) qb = qb.or(`nombre_legal.ilike.%${term}%,nif.ilike.%${term}%`);
-              const { data, error } = await qb.limit(20);
+              const { data, error } = await qb.order("nombre_legal", { ascending: true }).limit(20);
               if (error) throw error;
-              return (data ?? []) as { id: string; nif: string; nombre_legal: string }[];
+              const lista = (data ?? []) as { id: string; nif: string; nombre_legal: string }[];
+              if (lista.length === 0 && !term && asignadosIds.length) {
+                const { count } = await supabase
+                  .from("proveedor_subcontrata")
+                  .select("id, cliente_proveedores!inner(cliente_id)", { count: "exact", head: true })
+                  .eq("cliente_proveedores.cliente_id", clienteId);
+                setTodosAsignados((count ?? 0) > 0);
+              } else {
+                setTodosAsignados(false);
+              }
+              return lista;
             }}
             getLabel={(p) => p.nombre_legal}
             getSubLabel={(p) => p.nif}
             getValue={(p) => p.id}
             onSelect={(p) => asignar.mutate(p.id)}
-            emptyMessage="Sin proveedores vinculados todavía."
+            emptyMessage={todosAsignados ? "Todos los proveedores ya están asignados." : "Sin proveedores vinculados todavía."}
           />
         </div>
       )}
