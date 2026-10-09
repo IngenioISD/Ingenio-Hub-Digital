@@ -10,6 +10,7 @@ import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
+import { PropiedadSelector, reactivarPropiedad, type PropiedadSeleccion } from "@/components/datos-maestros/PropiedadSelector";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,8 @@ function ProyectoDetail() {
   const [codigoEstudios, setCodigoEstudios] = useState("");
   const [fechaInicioReal, setFechaInicioReal] = useState("");
   const [fechaFinalizacionReal, setFechaFinalizacionReal] = useState("");
-  const [propiedadId, setPropiedadId] = useState<string | null>(null);
+  const [propiedadSel, setPropiedadSel] = useState<PropiedadSeleccion>({ id: null, label: null, inactiva: false });
+  const { usuarioCliente } = useAuth();
   const [adjudicarOpen, setAdjudicarOpen] = useState(false);
   const [finalizarOpen, setFinalizarOpen] = useState(false);
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
@@ -87,7 +89,7 @@ function ProyectoDetail() {
     setCodigoEstudios(data.codigo_estudios ?? "");
     setFechaInicioReal(data.fecha_inicio_real ?? "");
     setFechaFinalizacionReal(data.fecha_finalizacion_real ?? "");
-    setPropiedadId(data.propiedad_id ?? null);
+    setPropiedadSel({ id: data.propiedad_id ?? null, label: null, inactiva: false });
   };
 
   useEffect(() => {
@@ -114,10 +116,12 @@ function ProyectoDetail() {
       if (data?.estado === "finalizado" && !fechaFinalizacionReal) {
         throw new Error("La fecha real de finalización es obligatoria en un proyecto Finalizado.");
       }
+      if (!propiedadSel.id) throw new Error("Selecciona una propiedad.");
       const { error } = await supabase
         .from("proyectos")
         .update({
           nombre,
+          propiedad_id: propiedadSel.id,
           tipo_obra: tipoObra,
           codigo_estudios: data?.estado === "en_estudio" ? (codigoEstudios || null) : data?.codigo_estudios ?? null,
           fecha_inicio_real: data?.estado !== "en_estudio" ? (fechaInicioReal || null) : null,
@@ -125,9 +129,13 @@ function ProyectoDetail() {
         })
         .eq("id", id);
       if (error) throw error;
+      if (propiedadSel.inactiva && usuarioCliente?.cliente_id) {
+        await reactivarPropiedad(usuarioCliente.cliente_id, propiedadSel.id);
+      }
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-df-card"] });
       setEditMode(false);
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
@@ -311,7 +319,12 @@ function ProyectoDetail() {
         </CardContent>
       </Card>
 
-      <PropiedadDFCard propiedadId={propiedadId} />
+      <PropiedadDFCard
+        propiedadId={data.propiedad_id ?? null}
+        editing={editing}
+        propiedadSel={propiedadSel}
+        onPropiedadChange={setPropiedadSel}
+      />
 
       <Card>
         <CardHeader>
@@ -528,7 +541,17 @@ interface PPRow {
   proveedor_subcontrata: { nombre_legal: string; nif: string; tipo_proveedor: string | null } | null;
 }
 
-function PropiedadDFCard({ propiedadId }: { propiedadId: string | null }) {
+function PropiedadDFCard({
+  propiedadId,
+  editing,
+  propiedadSel,
+  onPropiedadChange,
+}: {
+  propiedadId: string | null;
+  editing: boolean;
+  propiedadSel: PropiedadSeleccion;
+  onPropiedadChange: (v: PropiedadSeleccion) => void;
+}) {
   const { usuarioCliente } = useAuth();
   const clienteId = usuarioCliente?.cliente_id;
 
@@ -565,6 +588,19 @@ function PropiedadDFCard({ propiedadId }: { propiedadId: string | null }) {
       <CardContent className="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-2">
         <div className="space-y-3">
           <h3 className="text-sm font-semibold">Propiedad</h3>
+          {editing ? (
+            <div className="space-y-1.5">
+              <PropiedadSelector
+                clienteId={clienteId}
+                value={{
+                  ...propiedadSel,
+                  label: propiedadSel.label ?? (propiedadSel.id === propiedadId ? data?.nombreLegal ?? null : null),
+                }}
+                onChange={onPropiedadChange}
+              />
+            </div>
+          ) : (
+          <>
           {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
           {!isLoading && !data?.nombreLegal && <p className="text-sm text-muted-foreground">—</p>}
           {data?.nombreLegal && (
@@ -585,11 +621,19 @@ function PropiedadDFCard({ propiedadId }: { propiedadId: string | null }) {
               ))}
             </div>
           )}
+          </>
+          )}
         </div>
 
+        {/* Dirección Facultativa: misma estructura que Propiedad (lectura: nombre y contactos;
+            edición: selector propio). Pendiente de construir en ambos modos. */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
-          <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
+          {editing ? (
+            <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
+          )}
         </div>
       </CardContent>
     </Card>
