@@ -1,7 +1,9 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TipoViaSelect } from "@/components/datos-maestros/TipoViaSelect";
 
 export interface DireccionObra {
+  tipoVia?: string | null;
   via?: string | null;
   numero?: string | null;
   cp?: string | null;
@@ -15,9 +17,10 @@ interface Props {
 }
 
 /**
- * Vía, número, código postal y municipio. La provincia queda fuera a
- * propósito — se resuelve con <ProvinciaSelect /> (catálogo real), nunca
- * como texto libre aquí.
+ * Tipo de vía, vía, número, código postal y municipio. La provincia queda
+ * fuera a propósito — se resuelve con <ProvinciaSelect /> (catálogo real),
+ * nunca como texto libre aquí. El tipo de vía usa el mismo mecanismo de
+ * catálogo que "Tipo de obra" (tabla `catalogo`, categoria = 'tipo_via').
  */
 export function DireccionObraFields({ value, onChange, requiredKeys }: Props) {
   const set = <K extends keyof DireccionObra>(k: K, v: string) => onChange({ ...value, [k]: v });
@@ -26,6 +29,10 @@ export function DireccionObraFields({ value, onChange, requiredKeys }: Props) {
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label>Tipo de vía{mark("tipoVia")}</Label>
+        <TipoViaSelect value={value.tipoVia ?? null} onChange={(v) => set("tipoVia", v)} />
+      </div>
       <div className="space-y-1.5 sm:col-span-4">
         <Label htmlFor="via">Vía{mark("via")}</Label>
         <Input id="via" value={value.via ?? ""} onChange={(e) => set("via", e.target.value)} required={isReq("via")} />
