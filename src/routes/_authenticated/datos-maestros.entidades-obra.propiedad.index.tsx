@@ -207,7 +207,8 @@ function NuevaPropiedadDialog() {
       if (!clienteId || !nif.trim()) throw new Error("Indica el NIF");
 
       let propiedadId = existente?.id ?? null;
-      let comercialParaCliente = nombreComercial.trim() || null;
+      // Si no se escribe nombre comercial, se usa el legal (el de la propiedad ya existente, o el que se está creando).
+      let comercialParaCliente: string = nombreComercial.trim() || existente?.nombre_legal || "";
 
       if (!propiedadId) {
         const legal = nombreLegal.trim();
@@ -224,6 +225,7 @@ function NuevaPropiedadDialog() {
           .insert({
             nif: nif.trim(),
             nombre_legal: legal || null,
+            tipo_via: dirObra.tipoVia || null,
             nombre_via: dirObra.via || null,
             numero: dirObra.numero || null,
             codigo_postal: dirObra.cp || null,
