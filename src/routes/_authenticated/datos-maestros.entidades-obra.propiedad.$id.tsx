@@ -1,27 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Pencil, X, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Pencil, X, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
-import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
+import { useProvincias } from "@/components/datos-maestros/ProvinciaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-obra/propiedad/$id")({
   head: () => ({ meta: [{ title: "Propiedad · Datos Maestros · Ingenio HUB" }] }),
   component: Page,
 });
+
+const NIF_LONGITUD = 9;
+/** Mayúsculas y solo letras/números (quita espacios y guiones), máximo 9. */
+const normalizarNif = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, NIF_LONGITUD);
 
 interface PropiedadData {
   id: string;
@@ -71,6 +75,7 @@ function PropiedadDetail() {
   });
 
   const [editMode, setEditMode] = useState(false);
+  const [nif, setNif] = useState("");
   const [nombreLegal, setNombreLegal] = useState("");
   const [nombreComercial, setNombreComercial] = useState("");
   const [dirObra, setDirObra] = useState<DireccionObra>({});
@@ -78,6 +83,7 @@ function PropiedadDetail() {
 
   const resetForm = () => {
     if (!data?.propiedad) return;
+    setNif(data.propiedad.nif ?? "");
     setNombreLegal(data.propiedad.nombre_legal ?? "");
     setNombreComercial(data.clientePropiedad?.nombre_comercial ?? "");
     setDirObra({
@@ -96,6 +102,7 @@ function PropiedadDetail() {
   }, [data]);
 
   const [errorNombres, setErrorNombres] = useState<string | null>(null);
+  const [errorNif, setErrorNif] = useState<string | null>(null);
 
   const { data: tiposVia = [] } = useQuery({
     queryKey: ["catalogo", "tipo_via"],
@@ -109,12 +116,28 @@ function PropiedadDetail() {
   const tipoViaLabel = (codigo: string | null | undefined) =>
     (codigo && tiposVia.find((t) => t.codigo === codigo)?.etiqueta) || codigo || "";
 
+  const { data: provincias = [] } = useProvincias();
+  const provinciaNombre = provincias.find((p) => p.id === provinciaId)?.nombre ?? "";
+
+  // Ej.: "Avenida de Juan, 3. 28043 Madrid (Madrid)"
+  const calle = [[tipoViaLabel(dirObra.tipoVia), dirObra.via].filter(Boolean).join(" "), dirObra.numero]
+    .filter(Boolean)
+    .join(", ");
+  const localidad = [dirObra.cp, dirObra.municipio].filter(Boolean).join(" ");
+  const localidadConProvincia = provinciaNombre
+    ? [localidad, `(${provinciaNombre})`].filter(Boolean).join(" ")
+    : localidad;
+  const direccionTexto = [calle, localidadConProvincia].filter(Boolean).join(". ");
+
   const save = useMutation({
     mutationFn: async () => {
       const legal = nombreLegal.trim();
       const comercial = nombreComercial.trim();
       if (!legal && !comercial) {
         throw new Error("Indica al menos el nombre legal o el nombre comercial");
+      }
+      if (nif.length !== NIF_LONGITUD) {
+        throw new Error(`El NIF debe tener ${NIF_LONGITUD} caracteres`);
       }
       // Si solo se rellena el legal, se copia también al comercial.
       // Si solo se rellena el comercial, el legal se queda en blanco (no se inventa un nombre legal).
@@ -124,6 +147,7 @@ function PropiedadDetail() {
       const { error: errProp } = await supabase
         .from("propiedad")
         .update({
+          nif,
           nombre_legal: legalFinal || null,
           tipo_via: dirObra.tipoVia || null,
           nombre_via: dirObra.via || null,
@@ -133,7 +157,13 @@ function PropiedadDetail() {
           provincia_id: provinciaId,
         })
         .eq("id", id);
-      if (errProp) throw errProp;
+      if (errProp) {
+        // 23505 = clave duplicada: ya hay otra propiedad con ese NIF.
+        if ((errProp as { code?: string }).code === "23505") {
+          throw new Error("Ya existe otra propiedad con ese NIF.");
+        }
+        throw errProp;
+      }
 
       if (data?.clientePropiedad?.id) {
         const { error: errCp } = await supabase
@@ -187,17 +217,17 @@ function PropiedadDetail() {
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNombres(null); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNombres(null); setErrorNif(null); setEditMode(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
               <Button
                 size="sm"
                 onClick={() => {
-                  if (!nombreLegal.trim() && !nombreComercial.trim()) {
-                    setErrorNombres("Indica al menos el nombre legal o el nombre comercial.");
-                    return;
-                  }
-                  setErrorNombres(null);
+                  const sinNombres = !nombreLegal.trim() && !nombreComercial.trim();
+                  const nifMal = nif.length !== NIF_LONGITUD;
+                  setErrorNombres(sinNombres ? "Indica al menos el nombre legal o el nombre comercial." : null);
+                  setErrorNif(nifMal ? `El NIF debe tener ${NIF_LONGITUD} caracteres.` : null);
+                  if (sinNombres || nifMal) return;
                   save.mutate();
                 }}
                 disabled={save.isPending}
@@ -235,33 +265,42 @@ function PropiedadDetail() {
           </div>
 
           <div className="border-t pt-4">
-            <Field label="NIF" value={data.propiedad.nif ?? ""} />
-          </div>
-
-          <div className="border-t pt-4 space-y-2">
-            <Label className="text-sm font-medium">Dirección</Label>
             {editing ? (
-              <>
-                <DireccionObraFields value={dirObra} onChange={setDirObra} />
+              <div className="space-y-4">
                 <div className="max-w-xs space-y-1.5">
-                  <Label>Provincia</Label>
-                  <ProvinciaSelect value={provinciaId} onChange={setProvinciaId} />
+                  <Label>NIF</Label>
+                  <Input
+                    value={nif}
+                    onChange={(e) => { setNif(normalizarNif(e.target.value)); setErrorNif(null); }}
+                    maxLength={NIF_LONGITUD}
+                  />
+                  {(errorNif || (nif.length > 0 && nif.length !== NIF_LONGITUD)) && (
+                    <p className="text-xs font-medium text-destructive">
+                      {errorNif ?? `El NIF debe tener ${NIF_LONGITUD} caracteres (${nif.length} de ${NIF_LONGITUD}).`}
+                    </p>
+                  )}
                 </div>
-              </>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Dirección</Label>
+                  <DireccionObraFields
+                    value={dirObra}
+                    onChange={setDirObra}
+                    provinciaId={provinciaId}
+                    onProvinciaChange={setProvinciaId}
+                  />
+                </div>
+              </div>
             ) : (
-              <p className="text-sm">
-                {[
-                  dirObra.via && `${tipoViaLabel(dirObra.tipoVia) ? `${tipoViaLabel(dirObra.tipoVia)} ` : ""}${dirObra.via}${dirObra.numero ? `, ${dirObra.numero}` : ""}`,
-                  dirObra.cp,
-                  dirObra.municipio,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || <span className="text-muted-foreground">—</span>}
-              </p>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="NIF" value={nif} />
+                <Field label="Dirección" value={direccionTexto} />
+              </div>
             )}
           </div>
         </CardContent>
       </Card>
+
+      <ProyectosPropiedad propiedadId={id} clienteId={clienteId} />
 
       <Card>
         <CardHeader>
@@ -272,6 +311,67 @@ function PropiedadDetail() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+const ESTADO_PROYECTO: Record<string, string> = {
+  en_estudio: "En estudio",
+  adjudicado: "Adjudicado",
+  perdido: "Perdido",
+  finalizado: "Finalizado",
+};
+
+/**
+ * Proyectos (obras) de esta propiedad para la empresa del usuario. Cuando
+ * exista el módulo de Gestión de contratos, aquí se añadirán también los
+ * contratos de cada proyecto.
+ */
+function ProyectosPropiedad({ propiedadId, clienteId }: { propiedadId: string; clienteId: string | undefined }) {
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["datos-maestros", "propiedad-proyectos", propiedadId, clienteId],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select("id, nombre, codigo_obra, codigo_estudios, estado")
+        .eq("propiedad_id", propiedadId)
+        .eq("cliente_id", clienteId!);
+      if (error) throw error;
+      return (data ?? []).sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+    },
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Proyectos</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
+        {!isLoading && data.length === 0 && (
+          <p className="text-sm text-muted-foreground">Esta propiedad todavía no tiene proyectos.</p>
+        )}
+        <div className="space-y-3">
+          {data.map((p) => (
+            <div key={p.id} className="flex items-center justify-between gap-3 border-l-2 pl-3">
+              <div className="space-y-0.5 text-sm">
+                <Link
+                  to="/datos-maestros/entidades-obra/proyectos/$id"
+                  params={{ id: p.id }}
+                  className="font-medium hover:underline"
+                >
+                  {p.nombre}
+                </Link>
+                {(p.codigo_obra || p.codigo_estudios) && (
+                  <p className="text-xs text-muted-foreground">{p.codigo_obra || p.codigo_estudios}</p>
+                )}
+              </div>
+              <Badge variant="outline">{ESTADO_PROYECTO[p.estado] ?? p.estado}</Badge>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -344,7 +444,7 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
       <div className="space-y-3">
         {data.map((r) => (
           <div key={r.linkId} className="flex items-start justify-between gap-3 border-l-2 pl-3">
-            <div className="space-y-0.5 text-sm">
+            <div className={`space-y-0.5 text-sm ${r.activo ? "" : "text-muted-foreground/60"}`}>
               <p className="font-medium">
                 {r.contacto.nombre} {r.contacto.apellido_1} {r.contacto.apellido_2 ?? ""}
                 {r.contacto.departamento && <span className="ml-1 text-xs text-muted-foreground">({r.contacto.departamento})</span>}
@@ -353,16 +453,22 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
               {r.contacto.telefono && <p className="text-xs text-muted-foreground">{r.contacto.telefono}</p>}
             </div>
             <div className="flex items-center gap-2">
-              {puedeEditar && (
+              {puedeEditar && r.activo && (
                 <Button size="icon" variant="ghost" onClick={() => setEditando(r.contacto)} aria-label="Editar contacto">
                   <Pencil className="h-4 w-4" />
                 </Button>
               )}
-              <Switch
-                checked={r.activo}
-                disabled={!puedeEditar}
-                onCheckedChange={(activo) => toggle.mutate({ linkId: r.linkId, activo })}
-              />
+              {puedeEditar && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => toggle.mutate({ linkId: r.linkId, activo: !r.activo })}
+                  aria-label={r.activo ? "Contacto visible: pulsa para ocultarlo" : "Contacto oculto: pulsa para mostrarlo"}
+                  title={r.activo ? "Visible: pulsa para ocultarlo" : "Oculto: pulsa para mostrarlo"}
+                >
+                  {r.activo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                </Button>
+              )}
               {puedeEliminar && (
                 <Button size="icon" variant="ghost" onClick={() => quitar.mutate(r.linkId)} aria-label="Quitar de esta propiedad">
                   <Trash2 className="h-4 w-4" />
