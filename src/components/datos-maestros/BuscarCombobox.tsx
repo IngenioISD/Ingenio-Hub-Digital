@@ -25,6 +25,7 @@ export function BuscarCombobox<T>({
   getLabel,
   getSubLabel,
   getValue,
+  getItemClassName,
   value,
   selectedLabel,
   onSelect,
@@ -37,6 +38,7 @@ export function BuscarCombobox<T>({
   getLabel: (item: T) => string;
   getSubLabel?: (item: T) => string;
   getValue: (item: T) => string;
+  getItemClassName?: (item: T) => string | undefined;
   value?: string | null;
   selectedLabel?: string | null;
   onSelect: (item: T) => void;
@@ -78,11 +80,13 @@ export function BuscarCombobox<T>({
                   <CommandItem
                     key={itemValue}
                     value={itemValue}
+                    className={getItemClassName?.(item)}
                     onSelect={() => {
                       onSelect(item);
                       setOpen(false);
                     }}
                   >
+
                     <Check
                       className={cn("mr-2 h-4 w-4", value === itemValue ? "opacity-100" : "opacity-0")}
                     />
