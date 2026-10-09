@@ -12,7 +12,7 @@ import { useProvincias } from "@/components/datos-maestros/ProvinciaSelect";
 import { useTiposVia } from "@/components/datos-maestros/TipoViaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 
-import { Badge } from "@/components/ui/badge";
+import { BadgeEstado } from "@/components/shared/BadgeEstado";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -307,12 +307,6 @@ function PropiedadDetail() {
   );
 }
 
-const ESTADO_PROYECTO: Record<string, string> = {
-  en_estudio: "En estudio",
-  adjudicado: "Adjudicado",
-  perdido: "Perdido",
-  finalizado: "Finalizado",
-};
 
 /**
  * Proyectos (obras) de esta propiedad para la empresa del usuario. Cuando
@@ -359,7 +353,7 @@ function ProyectosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
                   <p className="text-xs text-muted-foreground">{p.codigo_obra || p.codigo_estudios}</p>
                 )}
               </div>
-              <Badge variant="outline">{ESTADO_PROYECTO[p.estado] ?? p.estado}</Badge>
+              <BadgeEstado estado={p.estado} />
             </div>
           ))}
         </div>
@@ -437,7 +431,7 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
       <div className="space-y-3">
         {data.map((r) => (
           <div key={r.linkId} className="flex items-start justify-between gap-3 border-l-2 pl-3">
-            <div className={`space-y-0.5 text-sm ${r.activo ? "" : "text-muted-foreground/60"}`}>
+            <div className={`space-y-0.5 text-sm ${r.activo ? "" : "opacity-50"}`}>
               <p className="font-medium">
                 {r.contacto.nombre} {r.contacto.apellido_1} {r.contacto.apellido_2 ?? ""}
                 {r.contacto.departamento && <span className="ml-1 text-xs text-muted-foreground">({r.contacto.departamento})</span>}
