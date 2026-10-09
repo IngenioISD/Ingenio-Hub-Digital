@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
-import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,10 @@ export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-o
   head: () => ({ meta: [{ title: "Propiedad · Datos Maestros · Ingenio HUB" }] }),
   component: Page,
 });
+
+const NIF_LONGITUD = 9;
+/** Mayúsculas y solo letras/números (quita espacios y guiones), máximo 9. */
+const normalizarNif = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, NIF_LONGITUD);
 
 interface Row {
   id: string; // clientes_propiedades.id
@@ -183,8 +186,10 @@ function NuevaPropiedadDialog() {
     setErrorNombres(null);
   };
 
+  const nifValido = nif.length === NIF_LONGITUD;
+
   const comprobarNif = async () => {
-    if (!nif.trim()) return;
+    if (!nifValido) return;
     setComprobando(true);
     try {
       const { data, error } = await supabase
@@ -204,7 +209,8 @@ function NuevaPropiedadDialog() {
 
   const crear = useMutation({
     mutationFn: async () => {
-      if (!clienteId || !nif.trim()) throw new Error("Indica el NIF");
+      if (!clienteId) throw new Error("Falta identificar tu empresa");
+      if (!nifValido) throw new Error(`El NIF debe tener ${NIF_LONGITUD} caracteres`);
 
       let propiedadId = existente?.id ?? null;
       // Si no se escribe nombre comercial, se usa el legal (el de la propiedad ya existente, o el que se está creando).
@@ -282,11 +288,17 @@ function NuevaPropiedadDialog() {
               <Label>NIF *</Label>
               <Input
                 value={nif}
-                onChange={(e) => { setNif(e.target.value); setComprobado(false); setExistente(null); }}
+                onChange={(e) => { setNif(normalizarNif(e.target.value)); setComprobado(false); setExistente(null); }}
                 placeholder="B12345678"
+                maxLength={NIF_LONGITUD}
               />
+              {nif.length > 0 && !nifValido && (
+                <p className="text-xs text-muted-foreground">
+                  El NIF debe tener {NIF_LONGITUD} caracteres ({nif.length} de {NIF_LONGITUD}).
+                </p>
+              )}
             </div>
-            <Button type="button" variant="outline" onClick={comprobarNif} disabled={!nif.trim() || comprobando}>
+            <Button type="button" variant="outline" onClick={comprobarNif} disabled={!nifValido || comprobando}>
               Comprobar
             </Button>
           </div>
@@ -320,11 +332,12 @@ function NuevaPropiedadDialog() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Dirección</Label>
-                    <DireccionObraFields value={dirObra} onChange={setDirObra} />
-                    <div className="max-w-xs space-y-1.5">
-                      <Label>Provincia</Label>
-                      <ProvinciaSelect value={provinciaId} onChange={setProvinciaId} />
-                    </div>
+                    <DireccionObraFields
+                      value={dirObra}
+                      onChange={setDirObra}
+                      provinciaId={provinciaId}
+                      onProvinciaChange={setProvinciaId}
+                    />
                   </div>
                 </div>
               )}
