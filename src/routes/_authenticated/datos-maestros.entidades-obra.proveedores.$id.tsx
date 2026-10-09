@@ -11,7 +11,7 @@ import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 import { useProvincias } from "@/components/datos-maestros/ProvinciaSelect";
 import { useTiposVia } from "@/components/datos-maestros/TipoViaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
-import { TIPOS_PROVEEDOR, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
+import { TIPOS_PROVEEDOR, etiquetaTipoProveedor, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
 
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 import { Button } from "@/components/ui/button";
@@ -78,7 +78,7 @@ function ProveedorDetail() {
     setNif(p.nif ?? "");
     setNombreLegal(p.nombre_legal ?? "");
     setNombreComercial(data?.clienteProveedor?.nombre_comercial ?? "");
-    setTipo(p.tipo_proveedor ?? "");
+    setTipo((p.tipo_proveedor ?? "").toLowerCase());
     setDirObra({ tipoVia: p.tipo_via, via: p.nombre_via, numero: p.numero, cp: p.codigo_postal, municipio: p.municipio });
     setProvinciaId(p.provincia_id);
     setProvinciaTxt(p.provincia ?? "");
@@ -110,7 +110,7 @@ function ProveedorDetail() {
         .update({
           nif,
           nombre_legal: legal,
-          tipo_proveedor: tipo,
+          tipo_proveedor: tipo.toLowerCase(),
           tipo_via: dirObra.tipoVia || null,
           nombre_via: dirObra.via || null,
           numero: dirObra.numero || null,
@@ -277,12 +277,12 @@ function ProveedorDetail() {
                 <Select value={tipo} onValueChange={setTipo}>
                   <SelectTrigger><SelectValue placeholder="Selecciona…" /></SelectTrigger>
                   <SelectContent>
-                    {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t.codigo} value={t.codigo}>{t.etiqueta}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             ) : (
-              <Field label="Tipo de proveedor" value={tipo} />
+              <Field label="Tipo de proveedor" value={etiquetaTipoProveedor(tipo)} />
             )}
             {!espana && <Field label="País" value={pais ?? ""} />}
           </div>
