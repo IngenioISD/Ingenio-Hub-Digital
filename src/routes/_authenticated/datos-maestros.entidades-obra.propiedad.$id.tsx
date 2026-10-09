@@ -64,7 +64,7 @@ function PropiedadDetail() {
           .maybeSingle(),
         supabase
           .from("clientes_propiedades")
-          .select("id, nombre_comercial")
+          .select("id, nombre_comercial, activo")
           .eq("propiedad_id", id)
           .eq("cliente_id", clienteId!)
           .maybeSingle(),
@@ -177,6 +177,18 @@ function PropiedadDetail() {
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Cargando…</div>;
   if (!data?.propiedad) return <div className="text-sm text-muted-foreground">No encontrado.</div>;
+  if (data.clientePropiedad?.activo === false) {
+    return (
+      <Card className="mx-auto max-w-3xl p-6">
+        <p className="text-sm">Esta propiedad está desactivada. Actívala desde el listado para ver su ficha.</p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to="/datos-maestros/entidades-obra/propiedad">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+          </Link>
+        </Button>
+      </Card>
+    );
+  }
 
   const editing = puedeEditar && editMode;
 
