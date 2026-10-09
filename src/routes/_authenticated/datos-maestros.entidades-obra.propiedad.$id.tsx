@@ -27,6 +27,7 @@ interface PropiedadData {
   id: string;
   nif: string | null;
   nombre_legal: string | null;
+  tipo_via: string | null;
   nombre_via: string | null;
   numero: string | null;
   codigo_postal: string | null;
@@ -53,7 +54,7 @@ function PropiedadDetail() {
       const [{ data: prop, error: errProp }, { data: cp, error: errCp }] = await Promise.all([
         supabase
           .from("propiedad")
-          .select("id, nif, nombre_legal, nombre_via, numero, codigo_postal, municipio, provincia_id")
+          .select("id, nif, nombre_legal, tipo_via, nombre_via, numero, codigo_postal, municipio, provincia_id")
           .eq("id", id)
           .maybeSingle(),
         supabase
@@ -80,6 +81,7 @@ function PropiedadDetail() {
     setNombreLegal(data.propiedad.nombre_legal ?? "");
     setNombreComercial(data.clientePropiedad?.nombre_comercial ?? "");
     setDirObra({
+      tipoVia: data.propiedad.tipo_via,
       via: data.propiedad.nombre_via,
       numero: data.propiedad.numero,
       cp: data.propiedad.codigo_postal,
@@ -94,6 +96,18 @@ function PropiedadDetail() {
   }, [data]);
 
   const [errorNombres, setErrorNombres] = useState<string | null>(null);
+
+  const { data: tiposVia = [] } = useQuery({
+    queryKey: ["catalogo", "tipo_via"],
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("catalogo").select("codigo, etiqueta").eq("categoria", "tipo_via");
+      if (error) throw error;
+      return (data ?? []) as { codigo: string; etiqueta: string | null }[];
+    },
+  });
+  const tipoViaLabel = (codigo: string | null | undefined) =>
+    (codigo && tiposVia.find((t) => t.codigo === codigo)?.etiqueta) || codigo || "";
 
   const save = useMutation({
     mutationFn: async () => {
@@ -111,6 +125,7 @@ function PropiedadDetail() {
         .from("propiedad")
         .update({
           nombre_legal: legalFinal || null,
+          tipo_via: dirObra.tipoVia || null,
           nombre_via: dirObra.via || null,
           numero: dirObra.numero || null,
           codigo_postal: dirObra.cp || null,
@@ -142,10 +157,12 @@ function PropiedadDetail() {
 
   const editing = puedeEditar && editMode;
 
-  const Field = ({ label, value }: { label: string; value: string }) => (
+  const Field = ({ label, value, blankIfEmpty }: { label: string; value: string; blankIfEmpty?: boolean }) => (
     <div className="space-y-1">
       <Label className="text-muted-foreground">{label}</Label>
-      <p className="text-sm">{value || <span className="text-muted-foreground">—</span>}</p>
+      <p className="text-sm">
+        {value || (blankIfEmpty ? "" : <span className="text-muted-foreground">—</span>)}
+      </p>
     </div>
   );
 
@@ -201,18 +218,18 @@ function PropiedadDetail() {
                   {errorNombres && <p className="text-xs font-medium text-destructive">{errorNombres}</p>}
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Nombre comercial</Label>
-                  <Input value={nombreComercial} onChange={(e) => setNombreComercial(e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
                   <Label>Nombre legal</Label>
                   <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Nombre comercial</Label>
+                  <Input value={nombreComercial} onChange={(e) => setNombreComercial(e.target.value)} />
                 </div>
               </>
             ) : (
               <>
-                <Field label="Nombre comercial" value={nombreComercial} />
-                <Field label="Nombre legal" value={nombreLegal} />
+                <Field label="Nombre legal" value={nombreLegal} blankIfEmpty />
+                <Field label="Nombre comercial" value={nombreComercial} blankIfEmpty />
               </>
             )}
           </div>
@@ -233,7 +250,11 @@ function PropiedadDetail() {
               </>
             ) : (
               <p className="text-sm">
-                {[dirObra.via && `${dirObra.via}${dirObra.numero ? `, ${dirObra.numero}` : ""}`, dirObra.cp, dirObra.municipio]
+                {[
+                  dirObra.via && `${tipoViaLabel(dirObra.tipoVia) ? `${tipoViaLabel(dirObra.tipoVia)} ` : ""}${dirObra.via}${dirObra.numero ? `, ${dirObra.numero}` : ""}`,
+                  dirObra.cp,
+                  dirObra.municipio,
+                ]
                   .filter(Boolean)
                   .join(" · ") || <span className="text-muted-foreground">—</span>}
               </p>
