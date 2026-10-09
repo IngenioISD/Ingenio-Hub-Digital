@@ -525,6 +525,7 @@ function ContactoDialog({
   const [telefono, setTelefono] = useState(contacto?.telefono ?? "");
   const [email, setEmail] = useState(contacto?.email ?? "");
   const [duplicado, setDuplicado] = useState<ContactoRow | null>(null);
+  const [nivelDup, setNivelDup] = useState<1 | 2>(2);
 
   const reset = () => {
     setNombre(""); setApellido1(""); setApellido2(""); setDepartamento(""); setTelefono(""); setEmail("");
@@ -540,27 +541,29 @@ function ContactoDialog({
     }
   };
 
-  const buscarDuplicado = (): ContactoRow | null => {
+  /** Nivel 1: nombre + apellidos + email coinciden. Nivel 2: nombre + apellidos coinciden, email distinto o ausente. */
+  const buscarDuplicado = (): { row: ContactoRow; nivel: 1 | 2 } | null => {
     const n = normalizarTexto(nombre);
     const a1 = normalizarTexto(apellido1);
     const a2 = normalizarTexto(apellido2);
     const em = normalizarTexto(email);
-    return (
-      contactos.find((r) => {
-        if (esEdicion && r.contacto.id === contacto!.id) return false;
-        if (normalizarTexto(r.contacto.nombre) !== n) return false;
-        if (normalizarTexto(r.contacto.apellido_1) !== a1) return false;
-        if (normalizarTexto(r.contacto.apellido_2) !== a2) return false;
-        if (em && normalizarTexto(r.contacto.email) !== em) return false;
-        return true;
-      }) ?? null
-    );
+    const mismos = contactos.filter((r) => {
+      if (esEdicion && r.contacto.id === contacto!.id) return false;
+      return (
+        normalizarTexto(r.contacto.nombre) === n &&
+        normalizarTexto(r.contacto.apellido_1) === a1 &&
+        normalizarTexto(r.contacto.apellido_2) === a2
+      );
+    });
+    const n1 = em ? mismos.find((r) => normalizarTexto(r.contacto.email) === em) : undefined;
+    if (n1) return { row: n1, nivel: 1 };
+    return mismos[0] ? { row: mismos[0], nivel: 2 } : null;
   };
 
   const intentarGuardar = () => {
     if (nombre.trim()) {
       const d = buscarDuplicado();
-      if (d) { setDuplicado(d); return; }
+      if (d) { setDuplicado(d.row); setNivelDup(d.nivel); return; }
     }
     guardar.mutate();
   };
@@ -665,10 +668,16 @@ function ContactoDialog({
         {duplicado ? (
           <div role="alert" className="space-y-3 rounded-md border border-[var(--state-warning)] p-3 text-sm">
             <p>
-              {!duplicado.activo && !esEdicion
-                ? `Posible contacto duplicado: ya tienes a ${nombreDup}, pero está oculto.`
-                : `Posible contacto duplicado: ya tienes a ${nombreDup}${email.trim() ? " con este email" : ""}.`}
+              {nivelDup === 1
+                ? `Contacto duplicado: ya tienes a ${nombreDup} con este email.`
+                : `Posible contacto duplicado: ya tienes a ${nombreDup} con otros datos de contacto.`}
+              {!duplicado.activo && " (está oculto)"}
             </p>
+            {nivelDup === 2 && (
+              <p className="text-xs text-muted-foreground">
+                Email: {duplicado.contacto.email || "—"} · Teléfono: {duplicado.contacto.telefono || "—"}
+              </p>
+            )}
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="ghost" onClick={() => setDuplicado(null)}>Cancelar</Button>
               {!duplicado.activo && !esEdicion && (
