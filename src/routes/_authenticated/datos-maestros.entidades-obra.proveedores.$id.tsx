@@ -110,7 +110,7 @@ function ProveedorDetail() {
         .update({
           nif,
           nombre_legal: legal,
-          tipo_proveedor: tipo,
+          tipo_proveedor: tipo.toLowerCase(),
           tipo_via: dirObra.tipoVia || null,
           nombre_via: dirObra.via || null,
           numero: dirObra.numero || null,
