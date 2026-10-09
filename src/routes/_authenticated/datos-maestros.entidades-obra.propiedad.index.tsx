@@ -155,14 +155,21 @@ function PropiedadListado() {
             {filtradas.map((r) => {
               const proyectos = proyectosPorPropiedad.get(r.propiedadId) ?? [];
               return (
-              <TableRow key={r.id}>
-                <TableCell className="font-medium">
-                  <Link to="/datos-maestros/entidades-obra/propiedad/$id" params={{ id: r.propiedadId }} className="hover:underline">
-                    {r.nombreComercial || r.nombreLegal}
-                  </Link>
+              <TableRow key={r.id} className={r.activo ? undefined : "hover:bg-transparent"}>
+                <TableCell className={`font-medium ${r.activo ? "" : "opacity-50"}`}>
+                  {r.activo ? (
+                    <Link to="/datos-maestros/entidades-obra/propiedad/$id" params={{ id: r.propiedadId }} className="hover:underline">
+                      {r.nombreComercial || r.nombreLegal}
+                    </Link>
+                  ) : (
+                    <span>{r.nombreComercial || r.nombreLegal}</span>
+                  )}
                 </TableCell>
-                <TableCell>{r.nif}</TableCell>
-                <TableCell title={proyectos.length > 1 ? proyectos.join("\n") : undefined}>
+                <TableCell className={r.activo ? undefined : "opacity-50"}>{r.nif}</TableCell>
+                <TableCell
+                  className={r.activo ? undefined : "opacity-50"}
+                  title={proyectos.length > 1 ? proyectos.join("\n") : undefined}
+                >
                   {proyectos.length === 1 ? proyectos[0] : proyectos.length > 1 ? `${proyectos.length} proyectos` : ""}
                 </TableCell>
                 <TableCell>
