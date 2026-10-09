@@ -543,17 +543,16 @@ function ContactoDialog({
       }
 
       if (!clienteId) throw new Error("Falta identificar tu empresa");
-      const { data: nuevo, error: errNuevo } = await supabase
+      const nuevoId = crypto.randomUUID();
+      const { error: errNuevo } = await supabase
         .from("propiedad_contactos")
-        .insert({ propiedad_id: propiedadId, ...campos })
-        .select("id")
-        .single();
+        .insert({ id: nuevoId, propiedad_id: propiedadId, ...campos });
       if (errNuevo) throw errNuevo;
 
       const { error: errLink } = await supabase.from("cliente_propiedad_contactos").insert({
         cliente_id: clienteId,
         propiedad_id: propiedadId,
-        contacto_id: nuevo.id,
+        contacto_id: nuevoId,
         activo: true,
       });
       if (errLink) throw errLink;
