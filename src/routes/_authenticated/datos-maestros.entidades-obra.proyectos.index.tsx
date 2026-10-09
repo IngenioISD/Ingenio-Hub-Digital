@@ -11,6 +11,7 @@ import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
+import { NuevaPropiedadDialog, normalizarNif } from "@/components/datos-maestros/NuevaPropiedadDialog";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 
 import { Button } from "@/components/ui/button";
@@ -179,8 +180,10 @@ function NuevoProyectoDialog() {
   const [provinciaId, setProvinciaId] = useState<string | null>(null);
   const [dirObra, setDirObra] = useState<DireccionObra>({ via: "", numero: "", cp: "", municipio: "" });
 
+  const [propiedadInactiva, setPropiedadInactiva] = useState(false);
+
   const reset = () => {
-    setNombre(""); setPropiedadId(null); setPropiedadLabel(null); setTipoObra("");
+    setNombre(""); setPropiedadId(null); setPropiedadLabel(null); setPropiedadInactiva(false); setTipoObra("");
     setEstadoNuevo(""); setCodigoEstudios(""); setCodigoObra("");
     setFechaAdjudicacion(""); setPlazoMeses(""); setFechaInicioProyecto(""); setProvinciaId(null);
     setDirObra({ via: "", numero: "", cp: "", municipio: "" });
@@ -229,6 +232,14 @@ function NuevoProyectoDialog() {
       }
       const { error } = await supabase.from("proyectos").insert(payload);
       if (error) throw error;
+      if (propiedadInactiva) {
+        const { error: errAct } = await supabase
+          .from("clientes_propiedades")
+          .update({ activo: true })
+          .eq("cliente_id", clienteId)
+          .eq("propiedad_id", propiedadId);
+        if (errAct) throw errAct;
+      }
     },
     onSuccess: () => {
       toast.success("Proyecto creado");
@@ -284,34 +295,67 @@ function NuevoProyectoDialog() {
           <div className="space-y-1.5">
             <Label>Propiedad *</Label>
             <BuscarCombobox
-              placeholder="Buscar propiedad por nombre o NIF…"
+              placeholder="Buscar por NIF…"
               queryKey={["datos-maestros", "propiedad-search", clienteId]}
               search={async (term) => {
                 if (!clienteId) return [];
+                const nifTerm = normalizarNif(term);
                 let qb = supabase
                   .from("propiedad")
-                  .select("id, nif, nombre_legal, clientes_propiedades!inner(cliente_id, nombre_comercial)")
+                  .select("id, nif, nombre_legal, clientes_propiedades!inner(cliente_id, nombre_comercial, activo)")
                   .eq("clientes_propiedades.cliente_id", clienteId);
-                if (term) qb = qb.or(`nombre_legal.ilike.%${term}%,nif.ilike.%${term}%`);
-                const { data, error } = await qb.limit(20);
+                if (nifTerm) qb = qb.ilike("nif", `%${nifTerm}%`);
+                const { data, error } = await qb;
                 if (error) throw error;
-                return (data ?? []).map((p) => {
-                  const cp = Array.isArray(p.clientes_propiedades) ? p.clientes_propiedades[0] : p.clientes_propiedades;
-                  const nombre_comercial = (cp as { nombre_comercial?: string | null } | null)?.nombre_comercial ?? null;
-                  return { id: p.id as string, nif: p.nif as string, nombre_legal: p.nombre_legal as string, nombre_comercial };
-                });
+                return (data ?? [])
+                  .map((p) => {
+                    const cp = (Array.isArray(p.clientes_propiedades) ? p.clientes_propiedades[0] : p.clientes_propiedades) as
+                      | { nombre_comercial?: string | null; activo?: boolean | null }
+                      | null;
+                    return {
+                      id: p.id as string,
+                      nif: (p.nif ?? "") as string,
+                      nombre_legal: (p.nombre_legal ?? null) as string | null,
+                      nombre_comercial: cp?.nombre_comercial ?? null,
+                      activo: cp?.activo !== false,
+                    };
+                  })
+                  .sort((a, b) =>
+                    (a.nombre_comercial || a.nombre_legal || "").localeCompare(b.nombre_comercial || b.nombre_legal || "", "es"),
+                  )
+                  .slice(0, 20);
               }}
-              getLabel={(p) => p.nombre_comercial || p.nombre_legal}
-              getSubLabel={(p) => p.nif}
+              getLabel={(p) => p.nombre_comercial || p.nombre_legal || p.nif || "—"}
+              getSubLabel={(p) => (p.activo ? p.nif : `${p.nif} · Desactivada`)}
+              getItemClassName={(p) => (p.activo ? undefined : "opacity-50")}
               getValue={(p) => p.id}
               value={propiedadId}
               selectedLabel={propiedadLabel}
-              onSelect={(p) => { setPropiedadId(p.id); setPropiedadLabel(p.nombre_comercial || p.nombre_legal); }}
+              onSelect={(p) => {
+                setPropiedadId(p.id);
+                setPropiedadLabel(p.nombre_comercial || p.nombre_legal || p.nif);
+                setPropiedadInactiva(!p.activo);
+              }}
               emptyMessage="Sin propiedades vinculadas todavía."
             />
-            <p className="text-xs text-muted-foreground">
-              ¿No está? Créala primero desde la sección Propiedad.
-            </p>
+            {propiedadInactiva && (
+              <p className="text-xs text-muted-foreground">
+                Esta propiedad se volverá a activar, ya que estaba desactivada.
+              </p>
+            )}
+            <NuevaPropiedadDialog
+              trigger={
+                <Button type="button" variant="outline" size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> Crear propiedad
+                </Button>
+              }
+              onCreated={(p) => {
+                setPropiedadId(p.id);
+                setPropiedadLabel(p.nombre_comercial || p.nombre_legal || p.nif);
+                setPropiedadInactiva(false);
+                qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-search"] });
+              }}
+            />
           </div>
 
           {estadoNuevo === "adjudicado" && (
