@@ -25,10 +25,11 @@ export function TipoViaSelect({
       const { data, error } = await supabase
         .from("catalogo")
         .select("id, codigo, etiqueta")
-        .eq("categoria", "tipo_via")
-        .order("etiqueta");
+        .eq("categoria", "tipo_via");
       if (error) throw error;
-      return (data ?? []) as TipoVia[];
+      return ((data ?? []) as TipoVia[]).sort((a, b) =>
+        (a.etiqueta || a.codigo).localeCompare(b.etiqueta || b.codigo, "es"),
+      );
     },
   });
 
