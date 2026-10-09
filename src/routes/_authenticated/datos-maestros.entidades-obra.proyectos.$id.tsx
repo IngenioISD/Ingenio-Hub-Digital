@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
-import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
@@ -102,10 +101,11 @@ function ProyectoDetail() {
       const { data, error } = await supabase
         .from("catalogo")
         .select("id, codigo, etiqueta")
-        .eq("categoria", "tipo_obra")
-        .order("etiqueta");
+        .eq("categoria", "tipo_obra");
       if (error) throw error;
-      return (data ?? []) as { id: string; codigo: string; etiqueta: string | null }[];
+      return ((data ?? []) as { id: string; codigo: string; etiqueta: string | null }[]).sort((a, b) =>
+        (a.etiqueta || a.codigo).localeCompare(b.etiqueta || b.codigo, "es"),
+      );
     },
   });
 
@@ -388,6 +388,7 @@ function AdjudicarDialog({
     setMeses(d["plazo_ejecucion_meses"] == null ? "" : String(d["plazo_ejecucion_meses"]));
     setFechaInicio(str(d["fecha_inicio_proyecto"]));
     setDir({
+      tipoVia: (d["tipo_via"] as string | null) ?? "",
       via: (d["nombre_via"] as string | null) ?? "",
       numero: (d["numero"] as string | null) ?? "",
       cp: (d["codigo_postal"] as string | null) ?? "",
@@ -410,6 +411,7 @@ function AdjudicarDialog({
         fecha_adjudicacion: fecha,
         plazo_ejecucion_meses: Number(meses),
         fecha_inicio_proyecto: fechaInicio || null,
+        tipo_via: dir.tipoVia ?? null,
         nombre_via: dir.via ?? null,
         numero: dir.numero ?? null,
         codigo_postal: dir.cp ?? null,
@@ -450,11 +452,14 @@ function AdjudicarDialog({
         </div>
         <div className="space-y-2 border-t pt-3">
           <Label className="text-sm font-medium">Dirección de la obra *</Label>
-          <DireccionObraFields value={dir} onChange={setDir} requiredKeys={["municipio"]} />
-          <div className="max-w-xs space-y-1.5">
-            <Label>Provincia *</Label>
-            <ProvinciaSelect value={provinciaId} onChange={setProvinciaId} />
-          </div>
+          <DireccionObraFields
+            value={dir}
+            onChange={setDir}
+            requiredKeys={["municipio"]}
+            provinciaId={provinciaId}
+            onProvinciaChange={setProvinciaId}
+            provinciaRequired
+          />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>

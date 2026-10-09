@@ -9,7 +9,6 @@ import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
-import { ProvinciaSelect } from "@/components/datos-maestros/ProvinciaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
@@ -194,10 +193,11 @@ function NuevoProyectoDialog() {
       const { data, error } = await supabase
         .from("catalogo")
         .select("id, codigo, etiqueta")
-        .eq("categoria", "tipo_obra")
-        .order("etiqueta");
+        .eq("categoria", "tipo_obra");
       if (error) throw error;
-      return (data ?? []) as { id: string; codigo: string; etiqueta: string | null }[];
+      return ((data ?? []) as { id: string; codigo: string; etiqueta: string | null }[]).sort((a, b) =>
+        (a.etiqueta || a.codigo).localeCompare(b.etiqueta || b.codigo, "es"),
+      );
     },
   });
 
@@ -220,6 +220,7 @@ function NuevoProyectoDialog() {
         payload.fecha_adjudicacion = fechaAdjudicacion;
         payload.plazo_ejecucion_meses = Number(plazoMeses);
         payload.fecha_inicio_proyecto = fechaInicioProyecto || null;
+        payload.tipo_via = dirObra.tipoVia || null;
         payload.nombre_via = dirObra.via || null;
         payload.numero = dirObra.numero || null;
         payload.codigo_postal = dirObra.cp || null;
@@ -335,11 +336,14 @@ function NuevoProyectoDialog() {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Dirección de la obra *</Label>
-                <DireccionObraFields value={dirObra} onChange={setDirObra} requiredKeys={["municipio"]} />
-                <div className="max-w-xs space-y-1.5">
-                  <Label>Provincia *</Label>
-                  <ProvinciaSelect value={provinciaId} onChange={setProvinciaId} />
-                </div>
+                <DireccionObraFields
+                  value={dirObra}
+                  onChange={setDirObra}
+                  requiredKeys={["municipio"]}
+                  provinciaId={provinciaId}
+                  onProvinciaChange={setProvinciaId}
+                  provinciaRequired
+                />
               </div>
             </div>
           )}
