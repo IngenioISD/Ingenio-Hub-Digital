@@ -12,7 +12,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-export const TIPOS_PROVEEDOR = ["Material", "Mixto", "Servicios"] as const;
+/** Tipos de proveedor: `codigo` es lo que se guarda en BD (proveedor_subcontrata_tipo_check); `etiqueta`, lo que ve el usuario. Orden alfabético por etiqueta. */
+export const TIPOS_PROVEEDOR = [
+  { codigo: "material", etiqueta: "Material" },
+  { codigo: "mixto", etiqueta: "Mixto" },
+  { codigo: "servicios", etiqueta: "Servicios" },
+] as const;
+
+/** Traduce el código guardado en BD (material/mixto/servicios, con o sin mayúsculas) a su etiqueta visible. */
+export const etiquetaTipoProveedor = (codigo: string | null | undefined): string =>
+  TIPOS_PROVEEDOR.find((t) => t.codigo === (codigo ?? "").toLowerCase())?.etiqueta ?? (codigo ?? "");
 
 /** Mayúsculas, sin espacios, puntos ni guiones. */
 export const normalizarNifProveedor = (v: string) => v.toUpperCase().replace(/[\s.\-]/g, "");
@@ -236,7 +245,7 @@ export function NuevoProveedorDialog() {
                     <Select value={tipo} onValueChange={setTipo}>
                       <SelectTrigger><SelectValue placeholder="Selecciona…" /></SelectTrigger>
                       <SelectContent>
-                        {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t.codigo} value={t.codigo}>{t.etiqueta}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
