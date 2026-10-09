@@ -49,6 +49,27 @@ function PropiedadListado() {
 
   const [q, setQ] = useState("");
 
+  const { data: proyectosPorPropiedad = new Map<string, string[]>() } = useQuery({
+    queryKey: ["datos-maestros", "propiedades-proyectos-en-ejecucion", clienteId],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      if (!clienteId) throw new Error("Falta identificar tu empresa");
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select("id, nombre, propiedad_id")
+        .eq("cliente_id", clienteId)
+        .eq("estado", "adjudicado");
+      if (error) throw error;
+      const agrupados = new Map<string, string[]>();
+      for (const proyecto of data ?? []) {
+        const nombres = agrupados.get(proyecto.propiedad_id) ?? [];
+        nombres.push(proyecto.nombre);
+        agrupados.set(proyecto.propiedad_id, nombres);
+      }
+      return agrupados;
+    },
+  });
+
   const { data = [], isLoading } = useQuery({
     queryKey,
     enabled: !!clienteId,
@@ -122,8 +143,8 @@ function PropiedadListado() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre comercial</TableHead>
-              <TableHead>Nombre legal</TableHead>
               <TableHead>NIF</TableHead>
+              <TableHead>Proyectos en ejecución</TableHead>
               <TableHead>Activo</TableHead>
               <TableHead></TableHead>
             </TableRow>
@@ -131,15 +152,19 @@ function PropiedadListado() {
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
             {!isLoading && filtradas.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
-            {filtradas.map((r) => (
+            {filtradas.map((r) => {
+              const proyectos = proyectosPorPropiedad.get(r.propiedadId) ?? [];
+              return (
               <TableRow key={r.id}>
                 <TableCell className="font-medium">
                   <Link to="/datos-maestros/entidades-obra/propiedad/$id" params={{ id: r.propiedadId }} className="hover:underline">
                     {r.nombreComercial || r.nombreLegal}
                   </Link>
                 </TableCell>
-                <TableCell>{r.nombreLegal}</TableCell>
                 <TableCell>{r.nif}</TableCell>
+                <TableCell title={proyectos.length > 1 ? proyectos.join("\n") : undefined}>
+                  {proyectos.length === 1 ? proyectos[0] : proyectos.length > 1 ? `${proyectos.length} proyectos` : ""}
+                </TableCell>
                 <TableCell>
                   <Switch
                     checked={r.activo}
@@ -155,7 +180,8 @@ function PropiedadListado() {
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
