@@ -1034,6 +1034,7 @@ export type Database = {
           cliente_id: string
           fecha_alta: string
           id: string
+          nombre_comercial: string | null
           proveedor_id: string
         }
         Insert: {
@@ -1041,6 +1042,7 @@ export type Database = {
           cliente_id: string
           fecha_alta?: string
           id?: string
+          nombre_comercial?: string | null
           proveedor_id: string
         }
         Update: {
@@ -1048,6 +1050,7 @@ export type Database = {
           cliente_id?: string
           fecha_alta?: string
           id?: string
+          nombre_comercial?: string | null
           proveedor_id?: string
         }
         Relationships: [
@@ -2047,6 +2050,7 @@ export type Database = {
           persona_contacto_apellido_2: string | null
           persona_contacto_nombre: string | null
           provincia: string | null
+          provincia_id: string | null
           telefono: string | null
           tipo_proveedor: string | null
           tipo_via: string | null
@@ -2069,6 +2073,7 @@ export type Database = {
           persona_contacto_apellido_2?: string | null
           persona_contacto_nombre?: string | null
           provincia?: string | null
+          provincia_id?: string | null
           telefono?: string | null
           tipo_proveedor?: string | null
           tipo_via?: string | null
@@ -2091,6 +2096,7 @@ export type Database = {
           persona_contacto_apellido_2?: string | null
           persona_contacto_nombre?: string | null
           provincia?: string | null
+          provincia_id?: string | null
           telefono?: string | null
           tipo_proveedor?: string | null
           tipo_via?: string | null
@@ -2101,6 +2107,13 @@ export type Database = {
             columns: ["modificado_por"]
             isOneToOne: false
             referencedRelation: "usuarios_cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proveedor_subcontrata_provincia_id_fkey"
+            columns: ["provincia_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_provincias"
             referencedColumns: ["id"]
           },
         ]
