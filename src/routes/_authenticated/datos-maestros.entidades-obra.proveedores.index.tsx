@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
-import { NuevoProveedorDialog, TIPOS_PROVEEDOR, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
+import { NuevoProveedorDialog, TIPOS_PROVEEDOR, etiquetaTipoProveedor, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,7 +112,7 @@ function ProveedoresListado() {
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los tipos</SelectItem>
-            {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+            {TIPOS_PROVEEDOR.map((t) => <SelectItem key={t.codigo} value={t.codigo}>{t.etiqueta}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -142,7 +142,7 @@ function ProveedoresListado() {
                 >
                   <TableCell className={`font-medium ${tenue}`}>{r.nombre}</TableCell>
                   <TableCell className={tenue}>{r.nif}</TableCell>
-                  <TableCell className={tenue}>{r.tipo ?? ""}</TableCell>
+                  <TableCell className={tenue}>{r.tipo ? etiquetaTipoProveedor(r.tipo) : ""}</TableCell>
                   <TableCell className={tenue}>{r.municipio ?? ""}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Switch
