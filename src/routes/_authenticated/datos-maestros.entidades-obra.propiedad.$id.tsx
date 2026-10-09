@@ -435,7 +435,7 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
 
   return (
     <div className="space-y-3">
-      {puedeCrear && <ContactoDialog propiedadId={propiedadId} clienteId={clienteId} queryKey={queryKey} />}
+      {puedeCrear && <ContactoDialog propiedadId={propiedadId} clienteId={clienteId} queryKey={queryKey} contactos={data} />}
 
       {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
       {!isLoading && data.length === 0 && <p className="text-sm text-muted-foreground">Sin contactos todavía.</p>}
@@ -484,6 +484,7 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
           clienteId={clienteId}
           queryKey={queryKey}
           contacto={editando}
+          contactos={data}
           onClose={() => setEditando(null)}
         />
       )}
@@ -491,8 +492,18 @@ function ContactosPropiedad({ propiedadId, clienteId }: { propiedadId: string; c
   );
 }
 
+/** Normalización única para comparar contactos: minúsculas, sin tildes/diéresis y espacios compactados. */
+function normalizarTexto(v: string | null | undefined): string {
+  return (v ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function ContactoDialog({
-  propiedadId, clienteId, queryKey, contacto, onClose,
+  propiedadId, clienteId, queryKey, contacto, onClose, contactos = [],
 }: {
   propiedadId: string;
   clienteId: string | undefined;
@@ -501,6 +512,8 @@ function ContactoDialog({
   contacto?: ContactoRow["contacto"];
   /** Solo en modo edición: se llama al cerrar el diálogo (crea su propio trigger "Añadir"). */
   onClose?: () => void;
+  /** Contactos actuales del cliente (activos y ocultos) para detectar duplicados. */
+  contactos?: ContactoRow[];
 }) {
   const esEdicion = !!contacto;
   const qc = useQueryClient();
@@ -511,18 +524,59 @@ function ContactoDialog({
   const [departamento, setDepartamento] = useState(contacto?.departamento ?? "");
   const [telefono, setTelefono] = useState(contacto?.telefono ?? "");
   const [email, setEmail] = useState(contacto?.email ?? "");
+  const [duplicado, setDuplicado] = useState<ContactoRow | null>(null);
 
   const reset = () => {
     setNombre(""); setApellido1(""); setApellido2(""); setDepartamento(""); setTelefono(""); setEmail("");
+    setDuplicado(null);
   };
 
   const cerrar = (o: boolean) => {
     setOpen(o);
     if (!o) {
+      setDuplicado(null);
       if (esEdicion) onClose?.();
       else reset();
     }
   };
+
+  const buscarDuplicado = (): ContactoRow | null => {
+    const n = normalizarTexto(nombre);
+    const a1 = normalizarTexto(apellido1);
+    const a2 = normalizarTexto(apellido2);
+    const em = normalizarTexto(email);
+    return (
+      contactos.find((r) => {
+        if (esEdicion && r.contacto.id === contacto!.id) return false;
+        if (normalizarTexto(r.contacto.nombre) !== n) return false;
+        if (normalizarTexto(r.contacto.apellido_1) !== a1) return false;
+        if (normalizarTexto(r.contacto.apellido_2) !== a2) return false;
+        if (em && normalizarTexto(r.contacto.email) !== em) return false;
+        return true;
+      }) ?? null
+    );
+  };
+
+  const intentarGuardar = () => {
+    if (nombre.trim()) {
+      const d = buscarDuplicado();
+      if (d) { setDuplicado(d); return; }
+    }
+    guardar.mutate();
+  };
+
+  const mostrarExistente = useMutation({
+    mutationFn: async (linkId: string) => {
+      const { error } = await supabase.from("cliente_propiedad_contactos").update({ activo: true }).eq("id", linkId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Contacto mostrado");
+      qc.invalidateQueries({ queryKey });
+      cerrar(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const guardar = useMutation({
     mutationFn: async () => {
@@ -565,6 +619,10 @@ function ContactoDialog({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const nombreDup = duplicado
+    ? [duplicado.contacto.nombre, duplicado.contacto.apellido_1, duplicado.contacto.apellido_2].filter(Boolean).join(" ")
+    : "";
+
   return (
     <Dialog open={open} onOpenChange={cerrar}>
       {!esEdicion && (
@@ -604,12 +662,37 @@ function ContactoDialog({
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => cerrar(false)}>Cancelar</Button>
-          <Button onClick={() => guardar.mutate()} disabled={guardar.isPending}>
-            {esEdicion ? "Guardar" : "Añadir"}
-          </Button>
-        </DialogFooter>
+        {duplicado ? (
+          <div role="alert" className="space-y-3 rounded-md border border-[var(--state-warning)] p-3 text-sm">
+            <p>
+              {!duplicado.activo && !esEdicion
+                ? `Posible contacto duplicado: ya tienes a ${nombreDup}, pero está oculto.`
+                : `Posible contacto duplicado: ya tienes a ${nombreDup}${email.trim() ? " con este email" : ""}.`}
+            </p>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button variant="ghost" onClick={() => setDuplicado(null)}>Cancelar</Button>
+              {!duplicado.activo && !esEdicion && (
+                <Button
+                  variant="outline"
+                  onClick={() => mostrarExistente.mutate(duplicado.linkId)}
+                  disabled={mostrarExistente.isPending}
+                >
+                  Mostrar el existente
+                </Button>
+              )}
+              <Button onClick={() => guardar.mutate()} disabled={guardar.isPending}>
+                {esEdicion ? "Guardar de todas formas" : "Crear de todas formas"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => cerrar(false)}>Cancelar</Button>
+            <Button onClick={intentarGuardar} disabled={guardar.isPending}>
+              {esEdicion ? "Guardar" : "Añadir"}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
