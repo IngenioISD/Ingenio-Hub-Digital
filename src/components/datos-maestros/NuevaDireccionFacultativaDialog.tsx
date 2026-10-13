@@ -65,6 +65,16 @@ export function NuevaDireccionFacultativaDialog() {
           .maybeSingle();
         if (ev) throw ev;
         if (v) { setAviso({ tipo: "ya_en_lista", vinculoId: v.id, activo: v.activo }); return; }
+        const { data: n, error: en } = await supabase.rpc("clientes_que_usan_df", { p_id: existente.id });
+        if (en) throw en;
+        if (Number(n ?? 0) === 0) {
+          // Ningún cliente la usa: primero se vincula y después se actualiza el nombre.
+          await vincular(existente.id);
+          const { error: eu } = await supabase.from("direccion_facultativa").update({ nombre_legal: nombre.trim() }).eq("id", existente.id);
+          if (eu) throw eu;
+          terminar("Dirección Facultativa añadida");
+          return;
+        }
         if (normalizarNombreDF(existente.nombre_legal) === normalizarNombreDF(nombre)) {
           await vincular(existente.id);
           terminar("Dirección Facultativa añadida");

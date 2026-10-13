@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
+import { NIF_LONGITUD, normalizarNif } from "@/components/datos-maestros/NuevaPropiedadDialog";
 
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,18 @@ function DFDetail() {
   const [editMode, setEditMode] = useState(false);
   const [nif, setNif] = useState("");
   const [nombreLegal, setNombreLegal] = useState("");
-  const [confirmarOpen, setConfirmarOpen] = useState(false);
+  const [errorNif, setErrorNif] = useState<string | null>(null);
+
+  // Nº de clientes vinculados a la DF: si es > 1, nombre legal y NIF son de solo lectura.
+  const { data: numClientes } = useQuery({
+    queryKey: ["datos-maestros", "clientes_que_usan_df", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("clientes_que_usan_df", { p_id: id });
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+  });
+  const compartida = (numClientes ?? 0) > 1;
 
   const resetForm = () => {
     if (!data?.df) return;
@@ -67,8 +79,13 @@ function DFDetail() {
     mutationFn: async () => {
       const legal = nombreLegal.trim();
       if (!legal) throw new Error("El nombre legal es obligatorio");
-      const { error } = await supabase.from("direccion_facultativa").update({ nombre_legal: legal }).eq("id", id);
-      if (error) throw error;
+      if (compartida) return;
+      if (nif.length !== NIF_LONGITUD) throw new Error(`El NIF debe tener ${NIF_LONGITUD} caracteres`);
+      const { error } = await supabase.from("direccion_facultativa").update({ nif, nombre_legal: legal }).eq("id", id);
+      if (error) {
+        if (error.code === "23505") throw new Error("Ya existe una Dirección Facultativa con ese NIF.");
+        throw error;
+      }
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
@@ -124,31 +141,19 @@ function DFDetail() {
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNif(null); setEditMode(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
               <Button
                 size="sm"
                 onClick={() => {
-                  if (nombreLegal.trim() !== (data.df?.nombre_legal ?? "").trim()) setConfirmarOpen(true);
-                  else save.mutate();
+                  if (!compartida && nif.length !== NIF_LONGITUD) { setErrorNif(`El NIF debe tener ${NIF_LONGITUD} caracteres.`); return; }
+                  save.mutate();
                 }}
                 disabled={save.isPending}
               >
                 <Save className="mr-2 h-4 w-4" /> Guardar
               </Button>
-              <Dialog open={confirmarOpen} onOpenChange={setConfirmarOpen}>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Confirmar cambios</DialogTitle>
-                  </DialogHeader>
-                  <p className="text-sm">Este cambio afectará a todos los clientes que trabajan con este estudio. ¿Quieres guardarlo?</p>
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setConfirmarOpen(false)}>Cancelar</Button>
-                    <Button onClick={() => { setConfirmarOpen(false); save.mutate(); }} disabled={save.isPending}>Guardar</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </div>
           )}
         </CardHeader>
@@ -157,13 +162,29 @@ function DFDetail() {
             {editing ? (
               <>
                 <div className="space-y-1.5">
-                  <Label>Nombre legal *</Label>
-                  <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />
+                  <Label>Nombre legal{compartida ? "" : " *"}</Label>
+                  {compartida
+                    ? <p className="text-sm text-muted-foreground">{nombreLegal || "—"}</p>
+                    : <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />}
                 </div>
                 <div className="space-y-1.5">
-                  <Label>NIF</Label>
-                  <p className="text-sm text-muted-foreground">{nif}</p>
-                  <p className="text-xs text-muted-foreground">El NIF no se puede modificar. Si es incorrecto, desactiva esta Dirección Facultativa desde el listado y créala de nuevo con el NIF correcto.</p>
+                  <Label>NIF{compartida ? "" : " *"}</Label>
+                  {compartida ? (
+                    <p className="text-sm text-muted-foreground">{nif || "—"}</p>
+                  ) : (
+                    <>
+                      <Input
+                        value={nif}
+                        maxLength={NIF_LONGITUD}
+                        onChange={(e) => { setNif(normalizarNif(e.target.value)); setErrorNif(null); }}
+                      />
+                      {(errorNif || (nif.length > 0 && nif.length !== NIF_LONGITUD)) && (
+                        <p className="text-xs font-medium text-destructive">
+                          {errorNif ?? `El NIF debe tener ${NIF_LONGITUD} caracteres (${nif.length} de ${NIF_LONGITUD}).`}
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
               </>
             ) : (
@@ -173,6 +194,9 @@ function DFDetail() {
               </>
             )}
           </div>
+          {editing && compartida && (
+            <p className="mt-4 text-xs text-muted-foreground">Estos datos no se pueden modificar. Si hay un error, contacta con Ingenio ISD.</p>
+          )}
         </CardContent>
       </Card>
 
