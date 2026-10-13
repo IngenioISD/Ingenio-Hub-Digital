@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
-import { NIF_LONGITUD, normalizarNif } from "@/components/datos-maestros/NuevaPropiedadDialog";
 
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ function DFDetail() {
   const [editMode, setEditMode] = useState(false);
   const [nif, setNif] = useState("");
   const [nombreLegal, setNombreLegal] = useState("");
-  const [errorNif, setErrorNif] = useState<string | null>(null);
+  const [confirmarOpen, setConfirmarOpen] = useState(false);
 
   const resetForm = () => {
     if (!data?.df) return;
@@ -68,11 +67,8 @@ function DFDetail() {
     mutationFn: async () => {
       const legal = nombreLegal.trim();
       if (!legal) throw new Error("El nombre legal es obligatorio");
-      const { error } = await supabase.from("direccion_facultativa").update({ nif, nombre_legal: legal }).eq("id", id);
-      if (error) {
-        if (error.code === "23505") throw new Error("Ya existe otra Dirección Facultativa con ese NIF.");
-        throw error;
-      }
+      const { error } = await supabase.from("direccion_facultativa").update({ nombre_legal: legal }).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
@@ -128,19 +124,31 @@ function DFDetail() {
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNif(null); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setEditMode(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
               <Button
                 size="sm"
                 onClick={() => {
-                  if (nif.length !== NIF_LONGITUD) { setErrorNif(`El NIF debe tener ${NIF_LONGITUD} caracteres.`); return; }
-                  save.mutate();
+                  if (nombreLegal.trim() !== (data.df?.nombre_legal ?? "").trim()) setConfirmarOpen(true);
+                  else save.mutate();
                 }}
                 disabled={save.isPending}
               >
                 <Save className="mr-2 h-4 w-4" /> Guardar
               </Button>
+              <Dialog open={confirmarOpen} onOpenChange={setConfirmarOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirmar cambios</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm">Este cambio afectará a todos los clientes que trabajan con este estudio. ¿Quieres guardarlo?</p>
+                  <DialogFooter>
+                    <Button variant="ghost" onClick={() => setConfirmarOpen(false)}>Cancelar</Button>
+                    <Button onClick={() => { setConfirmarOpen(false); save.mutate(); }} disabled={save.isPending}>Guardar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </CardHeader>
@@ -153,17 +161,9 @@ function DFDetail() {
                   <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>NIF *</Label>
-                  <Input
-                    value={nif}
-                    maxLength={NIF_LONGITUD}
-                    onChange={(e) => { setNif(normalizarNif(e.target.value)); setErrorNif(null); }}
-                  />
-                  {(errorNif || (nif.length > 0 && nif.length !== NIF_LONGITUD)) && (
-                    <p className="text-xs font-medium text-destructive">
-                      {errorNif ?? `El NIF debe tener ${NIF_LONGITUD} caracteres (${nif.length} de ${NIF_LONGITUD}).`}
-                    </p>
-                  )}
+                  <Label>NIF</Label>
+                  <p className="text-sm text-muted-foreground">{nif}</p>
+                  <p className="text-xs text-muted-foreground">El NIF no se puede modificar. Si es incorrecto, desactiva esta Dirección Facultativa desde el listado y créala de nuevo con el NIF correcto.</p>
                 </div>
               </>
             ) : (
@@ -400,6 +400,7 @@ function ContactoDialog({
     setOpen(o);
     if (!o) {
       setDuplicado(null);
+      setErrores({});
       if (esEdicion) onClose?.();
       else reset();
     }
@@ -424,11 +425,19 @@ function ContactoDialog({
     return mismos[0] ? { row: mismos[0], nivel: 2 } : null;
   };
 
+  const [errores, setErrores] = useState<{ nombre?: string; apellido1?: string; email?: string }>({});
+
   const intentarGuardar = () => {
-    if (nombre.trim()) {
-      const d = buscarDuplicado();
-      if (d) { setDuplicado(d.row); setNivelDup(d.nivel); return; }
-    }
+    const em = email.trim();
+    const e: { nombre?: string; apellido1?: string; email?: string } = {};
+    if (!nombre.trim()) e.nombre = "Indica el nombre.";
+    if (!apellido1.trim()) e.apellido1 = "Indica el primer apellido.";
+    if (!em) e.email = "Indica el email.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) e.email = "Indica un email válido.";
+    setErrores(e);
+    if (Object.keys(e).length) return;
+    const d = buscarDuplicado();
+    if (d) { setDuplicado(d.row); setNivelDup(d.nivel); return; }
     guardar.mutate();
   };
 
@@ -454,7 +463,7 @@ function ContactoDialog({
         apellido_2: apellido2.trim() || null,
         cargo: cargo.trim() || null,
         telefono: telefono.trim() || null,
-        email: email.trim() || null,
+        email: email.trim().toLowerCase() || null,
       };
 
       if (esEdicion) {
@@ -504,10 +513,12 @@ function ContactoDialog({
             <div className="space-y-1.5">
               <Label>Nombre *</Label>
               <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+              {errores.nombre && <p className="text-xs text-destructive">{errores.nombre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Primer apellido *</Label>
               <Input value={apellido1} onChange={(e) => setApellido1(e.target.value)} />
+              {errores.apellido1 && <p className="text-xs text-destructive">{errores.apellido1}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Segundo apellido</Label>
@@ -524,8 +535,9 @@ function ContactoDialog({
               <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Email</Label>
+              <Label>Email *</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              {errores.email && <p className="text-xs text-destructive">{errores.email}</p>}
             </div>
           </div>
         </div>
