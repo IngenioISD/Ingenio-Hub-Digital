@@ -103,7 +103,22 @@ function PropiedadDetail() {
   }, [data]);
 
   const [errorNombres, setErrorNombres] = useState<string | null>(null);
-  const [errorNif, setErrorNif] = useState<string | null>(null);
+  const [confirmarOpen, setConfirmarOpen] = useState(false);
+  /** Datos fiscales comunes a todos los clientes (nombre legal y dirección). */
+  const cambiaFiscal = () => {
+    const p = data?.propiedad;
+    if (!p) return false;
+    const n = (v: string | null | undefined) => (v ?? "").trim();
+    return (
+      n(nombreLegal) !== n(p.nombre_legal) ||
+      n(dirObra.tipoVia) !== n(p.tipo_via) ||
+      n(dirObra.via) !== n(p.nombre_via) ||
+      n(dirObra.numero) !== n(p.numero) ||
+      n(dirObra.cp) !== n(p.codigo_postal) ||
+      n(dirObra.municipio) !== n(p.municipio) ||
+      (provinciaId ?? null) !== (p.provincia_id ?? null)
+    );
+  };
 
   const { data: tiposVia = [] } = useTiposVia();
   const tipoViaLabel = (codigo: string | null | undefined) =>
@@ -129,9 +144,6 @@ function PropiedadDetail() {
       if (!legal && !comercial) {
         throw new Error("Indica al menos el nombre legal o el nombre comercial");
       }
-      if (nif.length !== NIF_LONGITUD) {
-        throw new Error(`El NIF debe tener ${NIF_LONGITUD} caracteres`);
-      }
       // Si solo se rellena el legal, se copia también al comercial.
       // Si solo se rellena el comercial, el legal se queda en blanco (no se inventa un nombre legal).
       const legalFinal = legal;
@@ -140,7 +152,6 @@ function PropiedadDetail() {
       const { error: errProp } = await supabase
         .from("propiedad")
         .update({
-          nif,
           nombre_legal: legalFinal || null,
           tipo_via: dirObra.tipoVia || null,
           nombre_via: dirObra.via || null,
@@ -150,13 +161,7 @@ function PropiedadDetail() {
           provincia_id: provinciaId,
         })
         .eq("id", id);
-      if (errProp) {
-        // 23505 = clave duplicada: ya hay otra propiedad con ese NIF.
-        if ((errProp as { code?: string }).code === "23505") {
-          throw new Error("Ya existe otra propiedad con ese NIF.");
-        }
-        throw errProp;
-      }
+      if (errProp) throw errProp;
 
       if (data?.clientePropiedad?.id) {
         const { error: errCp } = await supabase
@@ -222,23 +227,34 @@ function PropiedadDetail() {
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNombres(null); setErrorNif(null); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNombres(null); setEditMode(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
               <Button
                 size="sm"
                 onClick={() => {
                   const sinNombres = !nombreLegal.trim() && !nombreComercial.trim();
-                  const nifMal = nif.length !== NIF_LONGITUD;
                   setErrorNombres(sinNombres ? "Indica al menos el nombre legal o el nombre comercial." : null);
-                  setErrorNif(nifMal ? `El NIF debe tener ${NIF_LONGITUD} caracteres.` : null);
-                  if (sinNombres || nifMal) return;
-                  save.mutate();
+                  if (sinNombres) return;
+                  if (cambiaFiscal()) setConfirmarOpen(true);
+                  else save.mutate();
                 }}
                 disabled={save.isPending}
               >
                 <Save className="mr-2 h-4 w-4" /> Guardar
               </Button>
+              <Dialog open={confirmarOpen} onOpenChange={setConfirmarOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirmar cambios</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm">Este cambio afectará a todos los clientes que trabajan con {data.clientePropiedad?.nombre_comercial || data.propiedad.nombre_legal}. ¿Quieres guardarlo?</p>
+                  <DialogFooter>
+                    <Button variant="ghost" onClick={() => setConfirmarOpen(false)}>Cancelar</Button>
+                    <Button onClick={() => { setConfirmarOpen(false); save.mutate(); }} disabled={save.isPending}>Guardar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </CardHeader>
@@ -274,16 +290,8 @@ function PropiedadDetail() {
               <div className="space-y-4">
                 <div className="max-w-xs space-y-1.5">
                   <Label>NIF</Label>
-                  <Input
-                    value={nif}
-                    onChange={(e) => { setNif(normalizarNif(e.target.value)); setErrorNif(null); }}
-                    maxLength={NIF_LONGITUD}
-                  />
-                  {(errorNif || (nif.length > 0 && nif.length !== NIF_LONGITUD)) && (
-                    <p className="text-xs font-medium text-destructive">
-                      {errorNif ?? `El NIF debe tener ${NIF_LONGITUD} caracteres (${nif.length} de ${NIF_LONGITUD}).`}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground">{nif}</p>
+                  <p className="text-xs text-muted-foreground">El NIF no se puede modificar. Si es incorrecto, desactiva este registro desde el listado y créalo de nuevo con el NIF correcto.</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Dirección</Label>

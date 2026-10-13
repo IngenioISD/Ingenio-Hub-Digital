@@ -11,7 +11,7 @@ import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 import { useProvincias } from "@/components/datos-maestros/ProvinciaSelect";
 import { useTiposVia } from "@/components/datos-maestros/TipoViaSelect";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
-import { TIPOS_PROVEEDOR, etiquetaTipoProveedor, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
+import { TIPOS_PROVEEDOR, etiquetaTipoProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
 
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
 import { Button } from "@/components/ui/button";
@@ -67,10 +67,25 @@ function ProveedorDetail() {
   const [dirObra, setDirObra] = useState<DireccionObra>({});
   const [provinciaId, setProvinciaId] = useState<string | null>(null);
   const [provinciaTxt, setProvinciaTxt] = useState("");
-  const [errorNif, setErrorNif] = useState<string | null>(null);
+  const [confirmarOpen, setConfirmarOpen] = useState(false);
 
   const espana = esEspana(data?.proveedor?.pais);
-  const nifValido = espana ? nif.length === 9 : nif.length > 0;
+  /** Datos fiscales comunes a todos los clientes (nombre legal, tipo y dirección). */
+  const cambiaFiscal = () => {
+    const p = data?.proveedor;
+    if (!p) return false;
+    const n = (v: string | null | undefined) => (v ?? "").trim();
+    return (
+      n(nombreLegal) !== n(p.nombre_legal) ||
+      tipo.toLowerCase() !== n(p.tipo_proveedor).toLowerCase() ||
+      n(dirObra.tipoVia) !== n(p.tipo_via) ||
+      n(dirObra.via) !== n(p.nombre_via) ||
+      n(dirObra.numero) !== n(p.numero) ||
+      n(dirObra.cp) !== n(p.codigo_postal) ||
+      n(dirObra.municipio) !== n(p.municipio) ||
+      (espana ? (provinciaId ?? null) !== (p.provincia_id ?? null) : n(provinciaTxt) !== n(p.provincia))
+    );
+  };
 
   const resetForm = () => {
     const p = data?.proveedor;
@@ -108,7 +123,6 @@ function ProveedorDetail() {
       const { error } = await supabase
         .from("proveedor_subcontrata")
         .update({
-          nif,
           nombre_legal: legal,
           tipo_proveedor: tipo.toLowerCase(),
           tipo_via: dirObra.tipoVia || null,
@@ -120,10 +134,7 @@ function ProveedorDetail() {
           provincia: espana ? null : provinciaTxt.trim() || null,
         })
         .eq("id", id);
-      if (error) {
-        if (error.code === "23505") throw new Error("Ya existe otro proveedor con ese NIF.");
-        throw error;
-      }
+      if (error) throw error;
       if (data?.clienteProveedor?.id) {
         const { error: e2 } = await supabase
           .from("cliente_proveedores")
@@ -187,22 +198,31 @@ function ProveedorDetail() {
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setErrorNif(null); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setEditMode(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
               <Button
                 size="sm"
                 onClick={() => {
-                  if (!nifValido) {
-                    setErrorNif(espana ? "El NIF debe tener 9 caracteres." : "El NIF es obligatorio.");
-                    return;
-                  }
-                  save.mutate();
+                  if (cambiaFiscal()) setConfirmarOpen(true);
+                  else save.mutate();
                 }}
                 disabled={save.isPending}
               >
                 <Save className="mr-2 h-4 w-4" /> Guardar
               </Button>
+              <Dialog open={confirmarOpen} onOpenChange={setConfirmarOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirmar cambios</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm">Este cambio afectará a todos los clientes que trabajan con {data.clienteProveedor.nombre_comercial || data.proveedor.nombre_legal}. ¿Quieres guardarlo?</p>
+                  <DialogFooter>
+                    <Button variant="ghost" onClick={() => setConfirmarOpen(false)}>Cancelar</Button>
+                    <Button onClick={() => { setConfirmarOpen(false); save.mutate(); }} disabled={save.isPending}>Guardar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </CardHeader>
@@ -231,21 +251,9 @@ function ProveedorDetail() {
             {editing ? (
               <div className="space-y-4">
                 <div className="max-w-xs space-y-1.5">
-                  <Label>NIF *</Label>
-                  <Input
-                    value={nif}
-                    onChange={(e) => {
-                      const v = normalizarNifProveedor(e.target.value);
-                      setNif(espana ? v.slice(0, 9) : v);
-                      setErrorNif(null);
-                    }}
-                    maxLength={espana ? 9 : undefined}
-                  />
-                  {(errorNif || (espana && nif.length > 0 && nif.length !== 9)) && (
-                    <p className="text-xs font-medium text-destructive">
-                      {errorNif ?? `El NIF debe tener 9 caracteres (${nif.length} de 9).`}
-                    </p>
-                  )}
+                  <Label>NIF</Label>
+                  <p className="text-sm text-muted-foreground">{nif}</p>
+                  <p className="text-xs text-muted-foreground">El NIF no se puede modificar. Si es incorrecto, desactiva este registro desde el listado y créalo de nuevo con el NIF correcto.</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Dirección</Label>
