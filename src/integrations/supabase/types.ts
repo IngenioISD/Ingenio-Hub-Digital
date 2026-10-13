@@ -886,6 +886,55 @@ export type Database = {
           },
         ]
       }
+      cliente_direccion_facultativa_contactos: {
+        Row: {
+          activo: boolean
+          cliente_id: string
+          contacto_id: string
+          direccion_facultativa_id: string
+          fecha_alta: string
+          id: string
+        }
+        Insert: {
+          activo?: boolean
+          cliente_id: string
+          contacto_id: string
+          direccion_facultativa_id: string
+          fecha_alta?: string
+          id?: string
+        }
+        Update: {
+          activo?: boolean
+          cliente_id?: string
+          contacto_id?: string
+          direccion_facultativa_id?: string
+          fecha_alta?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_direccion_facultativa_con_direccion_facultativa_id_fkey"
+            columns: ["direccion_facultativa_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_direccion_facultativa_contactos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cliente_direccion_facultativa_contactos_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "direccion_facultativa_contactos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cliente_modulos: {
         Row: {
           activo: boolean | null
@@ -1515,6 +1564,7 @@ export type Database = {
         Row: {
           apellido_1: string
           apellido_2: string | null
+          cargo: string | null
           creado_en: string | null
           direccion_facultativa_id: string
           email: string | null
@@ -1525,6 +1575,7 @@ export type Database = {
         Insert: {
           apellido_1: string
           apellido_2?: string | null
+          cargo?: string | null
           creado_en?: string | null
           direccion_facultativa_id: string
           email?: string | null
@@ -1535,6 +1586,7 @@ export type Database = {
         Update: {
           apellido_1?: string
           apellido_2?: string | null
+          cargo?: string | null
           creado_en?: string | null
           direccion_facultativa_id?: string
           email?: string | null
