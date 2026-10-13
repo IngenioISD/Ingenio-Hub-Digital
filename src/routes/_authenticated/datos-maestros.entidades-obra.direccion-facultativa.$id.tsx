@@ -246,6 +246,7 @@ interface ContactoRow {
     nombre: string | null;
     apellido_1: string | null;
     apellido_2: string | null;
+    cargo: string | null;
     telefono: string | null;
     email: string | null;
   };
@@ -262,7 +263,7 @@ function ContactosDF({ dfId, clienteId }: { dfId: string; clienteId: string | un
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cliente_direccion_facultativa_contactos")
-        .select("id, activo, direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2, telefono, email)")
+        .select("id, activo, direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2, cargo, telefono, email)")
         .eq("direccion_facultativa_id", dfId)
         .eq("cliente_id", clienteId!);
       if (error) throw error;
@@ -309,6 +310,7 @@ function ContactosDF({ dfId, clienteId }: { dfId: string; clienteId: string | un
             <div className={`space-y-0.5 text-sm ${r.activo ? "" : "opacity-50"}`}>
               <p className="font-medium">
                 {r.contacto.nombre} {r.contacto.apellido_1} {r.contacto.apellido_2 ?? ""}
+                {r.contacto.cargo && <span className="ml-1 text-xs text-muted-foreground">({r.contacto.cargo})</span>}
               </p>
               {r.contacto.email && <p className="text-xs text-muted-foreground">{r.contacto.email}</p>}
               {r.contacto.telefono && <p className="text-xs text-muted-foreground">{r.contacto.telefono}</p>}
@@ -383,13 +385,14 @@ function ContactoDialog({
   const [nombre, setNombre] = useState(contacto?.nombre ?? "");
   const [apellido1, setApellido1] = useState(contacto?.apellido_1 ?? "");
   const [apellido2, setApellido2] = useState(contacto?.apellido_2 ?? "");
+  const [cargo, setCargo] = useState(contacto?.cargo ?? "");
   const [telefono, setTelefono] = useState(contacto?.telefono ?? "");
   const [email, setEmail] = useState(contacto?.email ?? "");
   const [duplicado, setDuplicado] = useState<ContactoRow | null>(null);
   const [nivelDup, setNivelDup] = useState<1 | 2>(2);
 
   const reset = () => {
-    setNombre(""); setApellido1(""); setApellido2(""); setTelefono(""); setEmail("");
+    setNombre(""); setApellido1(""); setApellido2(""); setCargo(""); setTelefono(""); setEmail("");
     setDuplicado(null);
   };
 
@@ -449,6 +452,7 @@ function ContactoDialog({
         nombre: nombre.trim(),
         apellido_1: apellido1.trim(),
         apellido_2: apellido2.trim() || null,
+        cargo: cargo.trim() || null,
         telefono: telefono.trim() || null,
         email: email.trim() || null,
       };
@@ -510,7 +514,11 @@ function ContactoDialog({
               <Input value={apellido2} onChange={(e) => setApellido2(e.target.value)} />
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label>Cargo</Label>
+              <Input value={cargo} onChange={(e) => setCargo(e.target.value)} placeholder="Arquitecto director" />
+            </div>
             <div className="space-y-1.5">
               <Label>Teléfono</Label>
               <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
