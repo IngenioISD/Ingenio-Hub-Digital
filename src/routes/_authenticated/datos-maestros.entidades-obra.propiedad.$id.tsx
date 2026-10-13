@@ -526,6 +526,7 @@ function ContactoDialog({
   const [email, setEmail] = useState(contacto?.email ?? "");
   const [duplicado, setDuplicado] = useState<ContactoRow | null>(null);
   const [nivelDup, setNivelDup] = useState<1 | 2>(2);
+  const [errores, setErrores] = useState<{ nombre?: string; apellido1?: string; email?: string }>({});
 
   const reset = () => {
     setNombre(""); setApellido1(""); setApellido2(""); setDepartamento(""); setTelefono(""); setEmail("");
@@ -560,11 +561,22 @@ function ContactoDialog({
     return mismos[0] ? { row: mismos[0], nivel: 2 } : null;
   };
 
+  /** Valida obligatorios y formato de email. Devuelve true si todo es correcto. */
+  const validar = (): boolean => {
+    const errs: { nombre?: string; apellido1?: string; email?: string } = {};
+    if (!nombre.trim()) errs.nombre = "Indica el nombre.";
+    if (!apellido1.trim()) errs.apellido1 = "Indica el primer apellido.";
+    const em = email.trim();
+    if (!em) errs.email = "Indica el email.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) errs.email = "Indica un email válido.";
+    setErrores(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const intentarGuardar = () => {
-    if (nombre.trim()) {
-      const d = buscarDuplicado();
-      if (d) { setDuplicado(d.row); setNivelDup(d.nivel); return; }
-    }
+    if (!validar()) return;
+    const d = buscarDuplicado();
+    if (d) { setDuplicado(d.row); setNivelDup(d.nivel); return; }
     guardar.mutate();
   };
 
@@ -590,7 +602,7 @@ function ContactoDialog({
         apellido_2: apellido2.trim() || null,
         departamento: departamento.trim() || null,
         telefono: telefono.trim() || null,
-        email: email.trim() || null,
+        email: email.trim().toLowerCase() || null,
       };
 
       if (esEdicion) {
@@ -640,10 +652,12 @@ function ContactoDialog({
             <div className="space-y-1.5">
               <Label>Nombre *</Label>
               <Input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+              {errores.nombre && <p className="text-sm text-[var(--state-error)]">{errores.nombre}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label>Primer apellido</Label>
+              <Label>Primer apellido *</Label>
               <Input value={apellido1} onChange={(e) => setApellido1(e.target.value)} />
+              {errores.apellido1 && <p className="text-sm text-[var(--state-error)]">{errores.apellido1}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Segundo apellido</Label>
@@ -660,8 +674,9 @@ function ContactoDialog({
               <Input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Email</Label>
+              <Label>Email *</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              {errores.email && <p className="text-sm text-[var(--state-error)]">{errores.email}</p>}
             </div>
           </div>
         </div>
