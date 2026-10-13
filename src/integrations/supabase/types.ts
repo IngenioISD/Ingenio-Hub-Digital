@@ -2909,6 +2909,9 @@ export type Database = {
       }
     }
     Functions: {
+      clientes_que_usan_df: { Args: { p_id: string }; Returns: number }
+      clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
+      clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
     }
     Enums: {

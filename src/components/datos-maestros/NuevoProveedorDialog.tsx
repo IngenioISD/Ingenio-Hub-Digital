@@ -42,6 +42,8 @@ export function NuevoProveedorDialog() {
   const [comprobando, setComprobando] = useState(false);
   const [existente, setExistente] = useState<Existente | null>(null);
   const [vinculo, setVinculo] = useState<Vinculo | null>(null);
+  /** Existe en el catálogo común pero ningún cliente lo tiene vinculado: se trata como alta nueva. */
+  const [huerfano, setHuerfano] = useState(false);
 
   const [nombreLegal, setNombreLegal] = useState("");
   const [nombreComercial, setNombreComercial] = useState("");
@@ -52,7 +54,7 @@ export function NuevoProveedorDialog() {
   const [pais, setPais] = useState("");
 
   const reset = () => {
-    setOrigen(null); setNif(""); setComprobado(false); setExistente(null); setVinculo(null);
+    setOrigen(null); setNif(""); setComprobado(false); setExistente(null); setVinculo(null); setHuerfano(false);
     setNombreLegal(""); setNombreComercial(""); setTipo(""); setDir({});
     setProvinciaId(null); setProvinciaTxt(""); setPais("");
   };
@@ -75,6 +77,13 @@ export function NuevoProveedorDialog() {
         if (e2) throw e2;
         v = cp;
       }
+      let sinClientes = false;
+      if (data && !v) {
+        const { data: n, error: eN } = await supabase.rpc("clientes_que_usan_proveedor", { p_id: data.id });
+        if (eN) throw eN;
+        sinClientes = Number(n ?? 0) === 0;
+      }
+      setHuerfano(sinClientes);
       setVinculo(v);
       setComprobado(true);
     } catch (e) {
@@ -104,6 +113,38 @@ export function NuevoProveedorDialog() {
       if (!clienteId) throw new Error("Falta identificar tu empresa");
       let proveedorId = existente?.id ?? null;
       let comercial = nombreComercial.trim() || existente?.nombre_legal || "";
+
+      const ficha = () => ({
+        nif,
+        nombre_legal: nombreLegal.trim(),
+        tipo_proveedor: tipo,
+        tipo_via: dir.tipoVia || null,
+        nombre_via: dir.via || null,
+        numero: dir.numero || null,
+        codigo_postal: dir.cp || null,
+        municipio: dir.municipio || null,
+        provincia_id: origen === "es" ? provinciaId : null,
+        provincia: origen === "ext" ? provinciaTxt.trim() || null : null,
+        pais: origen === "es" ? "España" : pais.trim(),
+      });
+
+      if (huerfano && proveedorId) {
+        const legal = nombreLegal.trim();
+        if (!legal) throw new Error("El nombre legal es obligatorio");
+        if (!tipo) throw new Error("El tipo de proveedor es obligatorio");
+        if (origen === "ext" && !pais.trim()) throw new Error("El país es obligatorio");
+        // Primero se vincula a este cliente y después se actualiza la ficha común.
+        const { error: errLinkH } = await supabase.from("cliente_proveedores").insert({
+          cliente_id: clienteId,
+          proveedor_id: proveedorId,
+          nombre_comercial: nombreComercial.trim() || legal,
+          activo: true,
+        });
+        if (errLinkH) throw errLinkH;
+        const { error: errUpd } = await supabase.from("proveedor_subcontrata").update(ficha()).eq("id", proveedorId);
+        if (errUpd) throw errUpd;
+        return;
+      }
 
       if (!proveedorId) {
         const legal = nombreLegal.trim();
@@ -216,7 +257,7 @@ export function NuevoProveedorDialog() {
             </div>
           )}
 
-          {comprobado && existente && !vinculo && (
+          {comprobado && existente && !vinculo && !huerfano && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm">
               Ya existe: <span className="font-medium">{existente.nombre_legal}</span>. Solo hace falta el nombre comercial que le quieras dar en tu empresa.
             </div>
@@ -224,7 +265,7 @@ export function NuevoProveedorDialog() {
 
           {comprobado && !yaEnLista && (
             <>
-              {!existente && (
+              {(!existente || huerfano) && (
                 <div className="space-y-1.5">
                   <Label>Nombre legal *</Label>
                   <Input value={nombreLegal} onChange={(e) => setNombreLegal(e.target.value)} />
@@ -238,7 +279,7 @@ export function NuevoProveedorDialog() {
                   placeholder="Si lo dejas vacío se usará el nombre legal"
                 />
               </div>
-              {!existente && (
+              {(!existente || huerfano) && (
                 <div className="space-y-4 border-t pt-4">
                   <div className="space-y-1.5">
                     <Label>Tipo de proveedor *</Label>

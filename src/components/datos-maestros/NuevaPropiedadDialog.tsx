@@ -43,6 +43,8 @@ export function NuevaPropiedadDialog({
   const [comprobado, setComprobado] = useState(false);
   const [existente, setExistente] = useState<{ id: string; nombre_legal: string | null } | null>(null);
   const [comprobando, setComprobando] = useState(false);
+  /** Existe en el catálogo común pero ningún cliente la tiene vinculada: se trata como alta nueva. */
+  const [huerfana, setHuerfana] = useState(false);
 
   const [nombreLegal, setNombreLegal] = useState("");
   const [nombreComercial, setNombreComercial] = useState("");
@@ -51,7 +53,7 @@ export function NuevaPropiedadDialog({
   const [errorNombres, setErrorNombres] = useState<string | null>(null);
 
   const reset = () => {
-    setNif(""); setComprobado(false); setExistente(null);
+    setNif(""); setComprobado(false); setExistente(null); setHuerfana(false);
     setNombreLegal(""); setNombreComercial(""); setDirObra({}); setProvinciaId(null);
     setErrorNombres(null);
   };
@@ -68,6 +70,13 @@ export function NuevaPropiedadDialog({
         .eq("nif", nif.trim())
         .maybeSingle();
       if (error) throw error;
+      let sinClientes = false;
+      if (data) {
+        const { data: n, error: eN } = await supabase.rpc("clientes_que_usan_propiedad", { p_id: data.id });
+        if (eN) throw eN;
+        sinClientes = Number(n ?? 0) === 0;
+      }
+      setHuerfana(sinClientes);
       setExistente(data);
       setComprobado(true);
     } catch (e) {
@@ -85,6 +94,39 @@ export function NuevaPropiedadDialog({
       let propiedadId = existente?.id ?? null;
       // Si no se escribe nombre comercial, se usa el legal (el de la propiedad ya existente, o el que se está creando).
       let comercialParaCliente: string = nombreComercial.trim() || existente?.nombre_legal || "";
+      const datosFicha = () => ({
+        nif: nif.trim(),
+        nombre_legal: nombreLegal.trim() || null,
+        tipo_via: dirObra.tipoVia || null,
+        nombre_via: dirObra.via || null,
+        numero: dirObra.numero || null,
+        codigo_postal: dirObra.cp || null,
+        municipio: dirObra.municipio || null,
+        provincia_id: provinciaId,
+      });
+
+      if (huerfana && propiedadId) {
+        const legal = nombreLegal.trim();
+        const comercial = nombreComercial.trim();
+        if (!legal && !comercial) throw new Error("Indica el nombre legal o el nombre comercial");
+        comercialParaCliente = comercial || legal;
+        // Primero se vincula a este cliente y después se actualiza la ficha común.
+        const { error: errLinkH } = await supabase.from("clientes_propiedades").insert({
+          cliente_id: clienteId,
+          propiedad_id: propiedadId,
+          nombre_comercial: comercialParaCliente,
+          activo: true,
+        });
+        if (errLinkH) throw errLinkH;
+        const { error: errUpd } = await supabase.from("propiedad").update(datosFicha()).eq("id", propiedadId);
+        if (errUpd) throw errUpd;
+        return {
+          id: propiedadId,
+          nif: nif.trim(),
+          nombre_legal: legal || null,
+          nombre_comercial: comercialParaCliente,
+        } as PropiedadCreada;
+      }
 
       if (!propiedadId) {
         const legal = nombreLegal.trim();
@@ -133,7 +175,7 @@ export function NuevaPropiedadDialog({
       return {
         id: propiedadId,
         nif: nif.trim(),
-        nombre_legal: existente ? existente.nombre_legal : nombreLegal.trim() || null,
+        nombre_legal: existente && !huerfana ? existente.nombre_legal : nombreLegal.trim() || null,
         nombre_comercial: comercialParaCliente,
       } as PropiedadCreada;
     },
@@ -180,7 +222,7 @@ export function NuevaPropiedadDialog({
             </Button>
           </div>
 
-          {comprobado && existente && (
+          {comprobado && existente && !huerfana && (
             <div className="rounded-md border bg-muted/40 p-3 text-sm">
               Ya existe: <span className="font-medium">{existente.nombre_legal}</span>. Solo hace falta el nombre comercial que le quieras dar en tu empresa.
             </div>
@@ -193,11 +235,11 @@ export function NuevaPropiedadDialog({
                 <Input
                   value={nombreComercial}
                   onChange={(e) => setNombreComercial(e.target.value)}
-                  placeholder={existente ? "Como la llamáis internamente (opcional)" : "Como la llamáis internamente"}
+                  placeholder={existente && !huerfana ? "Como la llamáis internamente (opcional)" : "Como la llamáis internamente"}
                 />
               </div>
 
-              {!existente && (
+              {(!existente || huerfana) && (
                 <div className="space-y-4 border-t pt-4">
                   <p className="text-xs text-muted-foreground">
                     Rellena al menos uno de los dos nombres. Si solo pones el legal, se copiará también como comercial.
@@ -226,7 +268,7 @@ export function NuevaPropiedadDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
           <Button
             onClick={() => {
-              if (!existente && !nombreLegal.trim() && !nombreComercial.trim()) {
+              if ((!existente || huerfana) && !nombreLegal.trim() && !nombreComercial.trim()) {
                 setErrorNombres("Indica al menos el nombre legal o el nombre comercial.");
                 return;
               }
