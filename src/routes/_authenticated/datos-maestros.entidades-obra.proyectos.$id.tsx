@@ -398,42 +398,54 @@ function ProyectoDetail() {
         </CardContent>
       </Card>
 
-      <PropiedadDFCard
-        propiedadId={data.propiedad_id ?? null}
-        editing={puedeEditar && editProp}
-        acciones={
-          <CardEditActions
-            puedeEditar={puedeEditar}
-            editing={editProp}
-            saving={saveProp.isPending}
-            onEdit={() => setEditProp(true)}
-            onCancel={() => { resetProp(); setEditProp(false); }}
-            onSave={() => saveProp.mutate()}
-          />
-        }
-        propiedadSel={propiedadSel}
-        onPropiedadChange={setPropiedadSel}
-      />
-
-      {muestraDF && (
-        <DireccionFacultativaCard
-          asignada={dfAsignada ?? null}
-          isLoading={dfLoading}
-          editing={puedeEditar && editDF}
-          acciones={
-            <CardEditActions
-              puedeEditar={puedeEditar}
-              editing={editDF}
-              saving={saveDF.isPending}
-              onEdit={() => setEditDF(true)}
-              onCancel={() => { resetDF(); setEditDF(false); }}
-              onSave={() => saveDF.mutate()}
+      <Card>
+        <CardContent className="pt-6">
+          <div
+            className={
+              muestraDF
+                ? "grid grid-cols-1 gap-6 divide-y divide-border md:grid-cols-2 md:gap-0 md:divide-y-0 md:divide-x"
+                : undefined
+            }
+          >
+            <PropiedadDFCard
+              propiedadId={data.propiedad_id ?? null}
+              editing={puedeEditar && editProp}
+              acciones={
+                <CardEditActions
+                  puedeEditar={puedeEditar}
+                  editing={editProp}
+                  saving={saveProp.isPending}
+                  onEdit={() => setEditProp(true)}
+                  onCancel={() => { resetProp(); setEditProp(false); }}
+                  onSave={() => saveProp.mutate()}
+                />
+              }
+              propiedadSel={propiedadSel}
+              onPropiedadChange={setPropiedadSel}
             />
-          }
-          sel={dfSel}
-          onChange={setDfSel}
-        />
-      )}
+
+            {muestraDF && (
+              <DireccionFacultativaCard
+                asignada={dfAsignada ?? null}
+                isLoading={dfLoading}
+                editing={puedeEditar && editDF}
+                acciones={
+                  <CardEditActions
+                    puedeEditar={puedeEditar}
+                    editing={editDF}
+                    saving={saveDF.isPending}
+                    onEdit={() => setEditDF(true)}
+                    onCancel={() => { resetDF(); setEditDF(false); }}
+                    onSave={() => saveDF.mutate()}
+                  />
+                }
+                sel={dfSel}
+                onChange={setDfSel}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
