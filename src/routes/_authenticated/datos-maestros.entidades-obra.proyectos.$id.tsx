@@ -968,8 +968,7 @@ function DireccionFacultativaCard({
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
