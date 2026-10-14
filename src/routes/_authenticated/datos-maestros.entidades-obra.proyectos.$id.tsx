@@ -743,7 +743,7 @@ function PropiedadDFCard({
   });
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:pr-6">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">Propiedad</h3>
         {acciones}
