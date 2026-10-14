@@ -98,7 +98,7 @@ function ProveedoresListado() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Listado de Proveedores</h1>
-          <p className="text-sm text-muted-foreground">Proveedores de tu empresa.</p>
+          <p className="text-sm text-muted-foreground">{"\n"}</p>
         </div>
         {puedeCrear && <NuevoProveedorDialog />}
       </div>
