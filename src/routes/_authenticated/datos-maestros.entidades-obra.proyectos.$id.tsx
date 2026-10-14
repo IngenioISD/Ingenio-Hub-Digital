@@ -82,6 +82,27 @@ function ProyectoDetail() {
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
+  const [dfSel, setDfSel] = useState<DFSeleccion>({ dfId: null, dfLabel: null, contactoId: null, contactoLabel: null });
+
+  const { data: dfAsignada, isLoading: dfLoading } = useQuery({
+    queryKey: ["datos-maestros", "proyecto-df", id],
+    queryFn: async (): Promise<DFAsignada | null> => {
+      const { data: r, error } = await supabase
+        .from("proyecto_direccion_facultativa")
+        .select(
+          "direccion_facultativa_id, contacto_id, activo, direccion_facultativa(nif, nombre_legal), direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2, email, telefono, cargo)",
+        )
+        .eq("proyecto_id", id)
+        .eq("activo", true)
+        .maybeSingle();
+      if (error) throw error;
+      if (!r) return null;
+      const d = Array.isArray(r.direccion_facultativa) ? r.direccion_facultativa[0] : r.direccion_facultativa;
+      const c = Array.isArray(r.direccion_facultativa_contactos) ? r.direccion_facultativa_contactos[0] : r.direccion_facultativa_contactos;
+      return { dfId: r.direccion_facultativa_id, nombre: d?.nombre_legal ?? "", nif: d?.nif ?? "", contacto: c ?? null };
+    },
+  });
+
   const resetForm = () => {
     if (!data) return;
     setNombre(data.nombre ?? "");
@@ -90,12 +111,20 @@ function ProyectoDetail() {
     setFechaInicioReal(data.fecha_inicio_real ?? "");
     setFechaFinalizacionReal(data.fecha_finalizacion_real ?? "");
     setPropiedadSel({ id: data.propiedad_id ?? null, label: null, inactiva: false });
+    setDfSel({
+      dfId: dfAsignada?.dfId ?? null,
+      dfLabel: dfAsignada?.nombre ?? null,
+      contactoId: dfAsignada?.contacto?.id ?? null,
+      contactoLabel: dfAsignada?.contacto
+        ? [dfAsignada.contacto.nombre, dfAsignada.contacto.apellido_1, dfAsignada.contacto.apellido_2].filter(Boolean).join(" ")
+        : null,
+    });
   };
 
   useEffect(() => {
     if (data) resetForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, dfAsignada]);
 
   const { data: tipos = [] } = useQuery({
     queryKey: ["catalogo", "tipo_obra"],
@@ -132,10 +161,24 @@ function ProyectoDetail() {
       if (propiedadSel.inactiva && usuarioCliente?.cliente_id) {
         await reactivarPropiedad(usuarioCliente.cliente_id, propiedadSel.id);
       }
+      if (data?.estado === "adjudicado" || data?.estado === "finalizado") {
+        if (dfSel.dfId) {
+          const { error: e1 } = await supabase.from("proyecto_direccion_facultativa").upsert(
+            { proyecto_id: id, direccion_facultativa_id: dfSel.dfId, contacto_id: dfSel.contactoId, activo: true },
+            { onConflict: "proyecto_id" },
+          );
+          if (e1) throw e1;
+        } else {
+          const { error: e2 } = await supabase.from("proyecto_direccion_facultativa").delete().eq("proyecto_id", id);
+          if (e2) throw e2;
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
       qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-df-card"] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-search"] });
       setEditMode(false);
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
@@ -160,6 +203,7 @@ function ProyectoDetail() {
   if (!data) return <div className="text-sm text-muted-foreground">No encontrado.</div>;
 
   const editing = puedeEditar && editMode;
+  const muestraDF = data.estado === "adjudicado" || data.estado === "finalizado";
   const tipoObraLabel = tipos.find((t) => t.codigo === tipoObra)?.etiqueta || tipoObra;
 
   const Field = ({ label, value, colSpan = "" }: { label: string; value: string; colSpan?: string }) => (
@@ -325,6 +369,16 @@ function ProyectoDetail() {
         propiedadSel={propiedadSel}
         onPropiedadChange={setPropiedadSel}
       />
+
+      {muestraDF && (
+        <DireccionFacultativaCard
+          asignada={dfAsignada ?? null}
+          isLoading={dfLoading}
+          editing={editing}
+          sel={dfSel}
+          onChange={setDfSel}
+        />
+      )}
 
       <Card>
         <CardHeader>
