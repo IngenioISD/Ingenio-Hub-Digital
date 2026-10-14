@@ -743,13 +743,11 @@ function PropiedadDFCard({
   });
 
   return (
-    <Card>
-      <CardContent className="space-y-3 pt-6">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold">Propiedad</h3>
-            {acciones}
-          </div>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Propiedad</h3>
+        {acciones}
+      </div>
           {editing ? (
             <div className="space-y-1.5">
               <PropiedadSelector
