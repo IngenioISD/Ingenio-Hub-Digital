@@ -84,7 +84,7 @@ function DFListado() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dirección Facultativa</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Listado de Dirección Facultativa</h1>
           <p className="text-sm text-muted-foreground">Estudios de arquitectura e ingeniería de tu empresa.</p>
         </div>
         {puedeCrear && <NuevaDireccionFacultativaDialog />}
