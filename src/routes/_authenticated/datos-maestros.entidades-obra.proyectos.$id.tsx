@@ -783,9 +783,7 @@ function PropiedadDFCard({
           )}
           </>
           )}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
