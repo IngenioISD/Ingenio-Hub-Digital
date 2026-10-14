@@ -847,6 +847,50 @@ export type Database = {
           },
         ]
       }
+      cliente_catalogos: {
+        Row: {
+          activo: boolean
+          cliente_id: string
+          codigo: string | null
+          creado_en: string | null
+          cuenta_como_activo: boolean
+          id: string
+          nombre: string
+          orden: number
+          tipo: string
+        }
+        Insert: {
+          activo?: boolean
+          cliente_id: string
+          codigo?: string | null
+          creado_en?: string | null
+          cuenta_como_activo?: boolean
+          id?: string
+          nombre: string
+          orden?: number
+          tipo: string
+        }
+        Update: {
+          activo?: boolean
+          cliente_id?: string
+          codigo?: string | null
+          creado_en?: string | null
+          cuenta_como_activo?: boolean
+          id?: string
+          nombre?: string
+          orden?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cliente_catalogos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cliente_direccion_facultativa: {
         Row: {
           activo: boolean
@@ -1541,21 +1585,18 @@ export type Database = {
           creado_en: string | null
           id: string
           nif: string
-          nombre_comercial: string | null
           nombre_legal: string
         }
         Insert: {
           creado_en?: string | null
           id?: string
           nif: string
-          nombre_comercial?: string | null
           nombre_legal: string
         }
         Update: {
           creado_en?: string | null
           id?: string
           nif?: string
-          nombre_comercial?: string | null
           nombre_legal?: string
         }
         Relationships: []
@@ -1841,44 +1882,119 @@ export type Database = {
       personal: {
         Row: {
           activo: boolean | null
+          actualizado_en: string | null
           apellido_1: string
           apellido_2: string | null
+          centro_trabajo_id: string | null
           cliente_id: string
-          email: string
+          codigo_empleado: string | null
+          creado_en: string | null
+          departamento_id: string | null
+          email: string | null
+          estado_id: string | null
+          fecha_alta: string | null
+          fecha_baja: string | null
           id: string
+          motivo_baja_id: string | null
           nif: string
           nombre: string
+          puesto_id: string | null
           telefono: string | null
+          tipo_contrato_id: string | null
         }
         Insert: {
           activo?: boolean | null
+          actualizado_en?: string | null
           apellido_1: string
           apellido_2?: string | null
+          centro_trabajo_id?: string | null
           cliente_id: string
-          email: string
+          codigo_empleado?: string | null
+          creado_en?: string | null
+          departamento_id?: string | null
+          email?: string | null
+          estado_id?: string | null
+          fecha_alta?: string | null
+          fecha_baja?: string | null
           id?: string
+          motivo_baja_id?: string | null
           nif: string
           nombre: string
+          puesto_id?: string | null
           telefono?: string | null
+          tipo_contrato_id?: string | null
         }
         Update: {
           activo?: boolean | null
+          actualizado_en?: string | null
           apellido_1?: string
           apellido_2?: string | null
+          centro_trabajo_id?: string | null
           cliente_id?: string
-          email?: string
+          codigo_empleado?: string | null
+          creado_en?: string | null
+          departamento_id?: string | null
+          email?: string | null
+          estado_id?: string | null
+          fecha_alta?: string | null
+          fecha_baja?: string | null
           id?: string
+          motivo_baja_id?: string | null
           nif?: string
           nombre?: string
+          puesto_id?: string | null
           telefono?: string | null
+          tipo_contrato_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "personal_centro_trabajo_fkey"
+            columns: ["centro_trabajo_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
+          },
           {
             foreignKeyName: "personal_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_departamento_fkey"
+            columns: ["departamento_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
+          },
+          {
+            foreignKeyName: "personal_estado_fkey"
+            columns: ["estado_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
+          },
+          {
+            foreignKeyName: "personal_motivo_baja_fkey"
+            columns: ["motivo_baja_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
+          },
+          {
+            foreignKeyName: "personal_puesto_fkey"
+            columns: ["puesto_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
+          },
+          {
+            foreignKeyName: "personal_tipo_contrato_fkey"
+            columns: ["tipo_contrato_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente_catalogos"
+            referencedColumns: ["id", "cliente_id"]
           },
         ]
       }
@@ -2085,71 +2201,50 @@ export type Database = {
       }
       proveedor_subcontrata: {
         Row: {
-          activo: boolean | null
           codigo_postal: string | null
-          email: string | null
           id: string
           modificado_en: string | null
           modificado_por: string | null
           municipio: string | null
           nif: string
-          nombre_comercial: string | null
           nombre_legal: string
           nombre_via: string | null
           numero: string | null
           pais: string | null
-          persona_contacto_apellido_1: string | null
-          persona_contacto_apellido_2: string | null
-          persona_contacto_nombre: string | null
           provincia: string | null
           provincia_id: string | null
-          telefono: string | null
           tipo_proveedor: string | null
           tipo_via: string | null
         }
         Insert: {
-          activo?: boolean | null
           codigo_postal?: string | null
-          email?: string | null
           id?: string
           modificado_en?: string | null
           modificado_por?: string | null
           municipio?: string | null
           nif: string
-          nombre_comercial?: string | null
           nombre_legal: string
           nombre_via?: string | null
           numero?: string | null
           pais?: string | null
-          persona_contacto_apellido_1?: string | null
-          persona_contacto_apellido_2?: string | null
-          persona_contacto_nombre?: string | null
           provincia?: string | null
           provincia_id?: string | null
-          telefono?: string | null
           tipo_proveedor?: string | null
           tipo_via?: string | null
         }
         Update: {
-          activo?: boolean | null
           codigo_postal?: string | null
-          email?: string | null
           id?: string
           modificado_en?: string | null
           modificado_por?: string | null
           municipio?: string | null
           nif?: string
-          nombre_comercial?: string | null
           nombre_legal?: string
           nombre_via?: string | null
           numero?: string | null
           pais?: string | null
-          persona_contacto_apellido_1?: string | null
-          persona_contacto_apellido_2?: string | null
-          persona_contacto_nombre?: string | null
           provincia?: string | null
           provincia_id?: string | null
-          telefono?: string | null
           tipo_proveedor?: string | null
           tipo_via?: string | null
         }
@@ -2913,6 +3008,11 @@ export type Database = {
       clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      personal_puede: { Args: { p_accion: string }; Returns: boolean }
+      sembrar_catalogos_personal: {
+        Args: { p_cliente_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
