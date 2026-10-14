@@ -102,7 +102,7 @@ function ProyectosListado() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Proyectos</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Relación de proyectos</h1>
           <p className="text-sm text-muted-foreground">{"\n"}</p>
         </div>
         {puedeCrear && <NuevoProyectoDialog />}
