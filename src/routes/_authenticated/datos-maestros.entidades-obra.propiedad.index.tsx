@@ -122,7 +122,7 @@ function PropiedadListado() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Propiedad</h1>
-          <p className="text-sm text-muted-foreground">Propiedades de tu empresa.</p>
+          <p className="text-sm text-muted-foreground">{"\n"}</p>
         </div>
         {puedeCrear && <NuevaPropiedadDialog />}
       </div>
