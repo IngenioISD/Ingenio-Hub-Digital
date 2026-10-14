@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { ArrowLeft, Save, Trash2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -80,7 +80,9 @@ function ProyectoDetail() {
   const [adjudicarOpen, setAdjudicarOpen] = useState(false);
   const [finalizarOpen, setFinalizarOpen] = useState(false);
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [editGen, setEditGen] = useState(false);
+  const [editProp, setEditProp] = useState(false);
+  const [editDF, setEditDF] = useState(false);
 
   const [dfSel, setDfSel] = useState<DFSeleccion>({ dfId: null, dfLabel: null, contactoId: null, contactoLabel: null });
 
@@ -103,14 +105,19 @@ function ProyectoDetail() {
     },
   });
 
-  const resetForm = () => {
+  const resetGen = () => {
     if (!data) return;
     setNombre(data.nombre ?? "");
     setTipoObra(data.tipo_obra ?? "");
     setCodigoEstudios(data.codigo_estudios ?? "");
     setFechaInicioReal(data.fecha_inicio_real ?? "");
     setFechaFinalizacionReal(data.fecha_finalizacion_real ?? "");
+  };
+  const resetProp = () => {
+    if (!data) return;
     setPropiedadSel({ id: data.propiedad_id ?? null, label: null, inactiva: false });
+  };
+  const resetDF = () => {
     setDfSel({
       dfId: dfAsignada?.dfId ?? null,
       dfLabel: dfAsignada?.nombre ?? null,
@@ -121,10 +128,16 @@ function ProyectoDetail() {
     });
   };
 
+  // Cada card se resincroniza solo si no está en edición, para no perder cambios de otra card.
   useEffect(() => {
-    if (data) resetForm();
+    if (data && !editGen) resetGen();
+    if (data && !editProp) resetProp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, dfAsignada]);
+  }, [data]);
+  useEffect(() => {
+    if (!editDF) resetDF();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dfAsignada]);
 
   const { data: tipos = [] } = useQuery({
     queryKey: ["catalogo", "tipo_obra"],
@@ -140,17 +153,15 @@ function ProyectoDetail() {
     },
   });
 
-  const save = useMutation({
+  const saveGen = useMutation({
     mutationFn: async () => {
       if (data?.estado === "finalizado" && !fechaFinalizacionReal) {
         throw new Error("La fecha real de finalización es obligatoria en un proyecto Finalizado.");
       }
-      if (!propiedadSel.id) throw new Error("Selecciona una propiedad.");
       const { error } = await supabase
         .from("proyectos")
         .update({
           nombre,
-          propiedad_id: propiedadSel.id,
           tipo_obra: tipoObra,
           codigo_estudios: data?.estado === "en_estudio" ? (codigoEstudios || null) : data?.codigo_estudios ?? null,
           fecha_inicio_real: data?.estado !== "en_estudio" ? (fechaInicioReal || null) : null,
@@ -158,30 +169,53 @@ function ProyectoDetail() {
         })
         .eq("id", id);
       if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cambios guardados");
+      setEditGen(false);
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveProp = useMutation({
+    mutationFn: async () => {
+      if (!propiedadSel.id) throw new Error("Selecciona una propiedad.");
+      const { error } = await supabase.from("proyectos").update({ propiedad_id: propiedadSel.id }).eq("id", id);
+      if (error) throw error;
       if (propiedadSel.inactiva && usuarioCliente?.cliente_id) {
         await reactivarPropiedad(usuarioCliente.cliente_id, propiedadSel.id);
-      }
-      if (data?.estado === "adjudicado" || data?.estado === "finalizado") {
-        if (dfSel.dfId) {
-          const { error: e1 } = await supabase.from("proyecto_direccion_facultativa").upsert(
-            { proyecto_id: id, direccion_facultativa_id: dfSel.dfId, contacto_id: dfSel.contactoId, activo: true },
-            { onConflict: "proyecto_id" },
-          );
-          if (e1) throw e1;
-        } else {
-          const { error: e2 } = await supabase.from("proyecto_direccion_facultativa").delete().eq("proyecto_id", id);
-          if (e2) throw e2;
-        }
       }
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
+      setEditProp(false);
       qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-df-card"] });
-      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-search"] });
-      setEditMode(false);
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveDF = useMutation({
+    mutationFn: async () => {
+      if (dfSel.dfId) {
+        const { error: e1 } = await supabase.from("proyecto_direccion_facultativa").upsert(
+          { proyecto_id: id, direccion_facultativa_id: dfSel.dfId, contacto_id: dfSel.contactoId, activo: true },
+          { onConflict: "proyecto_id" },
+        );
+        if (e1) throw e1;
+      } else {
+        const { error: e2 } = await supabase.from("proyecto_direccion_facultativa").delete().eq("proyecto_id", id);
+        if (e2) throw e2;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Cambios guardados");
+      setEditDF(false);
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -194,6 +228,7 @@ function ProyectoDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
       toast.success("Estado actualizado");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -202,7 +237,7 @@ function ProyectoDetail() {
   if (isLoading) return <div className="text-sm text-muted-foreground">Cargando…</div>;
   if (!data) return <div className="text-sm text-muted-foreground">No encontrado.</div>;
 
-  const editing = puedeEditar && editMode;
+  const editing = puedeEditar && editGen;
   const muestraDF = data.estado === "adjudicado" || data.estado === "finalizado";
   const tipoObraLabel = tipos.find((t) => t.codigo === tipoObra)?.etiqueta || tipoObra;
 
@@ -230,16 +265,16 @@ function ProyectoDetail() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Datos generales del proyecto</CardTitle>
           {puedeEditar && !editing && (
-            <Button size="icon" variant="ghost" onClick={() => setEditMode(true)} aria-label="Editar">
+            <Button size="icon" variant="ghost" onClick={() => setEditGen(true)} aria-label="Editar">
               <Pencil className="h-4 w-4" />
             </Button>
           )}
           {editing && (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { resetForm(); setEditMode(false); }}>
+              <Button variant="ghost" size="sm" onClick={() => { resetGen(); setEditGen(false); }}>
                 <X className="mr-2 h-4 w-4" /> Cancelar
               </Button>
-              <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending}>
+              <Button size="sm" onClick={() => saveGen.mutate()} disabled={saveGen.isPending}>
                 <Save className="mr-2 h-4 w-4" /> Guardar
               </Button>
             </div>
@@ -365,7 +400,17 @@ function ProyectoDetail() {
 
       <PropiedadDFCard
         propiedadId={data.propiedad_id ?? null}
-        editing={editing}
+        editing={puedeEditar && editProp}
+        acciones={
+          <CardEditActions
+            puedeEditar={puedeEditar}
+            editing={editProp}
+            saving={saveProp.isPending}
+            onEdit={() => setEditProp(true)}
+            onCancel={() => { resetProp(); setEditProp(false); }}
+            onSave={() => saveProp.mutate()}
+          />
+        }
         propiedadSel={propiedadSel}
         onPropiedadChange={setPropiedadSel}
       />
@@ -374,7 +419,17 @@ function ProyectoDetail() {
         <DireccionFacultativaCard
           asignada={dfAsignada ?? null}
           isLoading={dfLoading}
-          editing={editing}
+          editing={puedeEditar && editDF}
+          acciones={
+            <CardEditActions
+              puedeEditar={puedeEditar}
+              editing={editDF}
+              saving={saveDF.isPending}
+              onEdit={() => setEditDF(true)}
+              onCancel={() => { resetDF(); setEditDF(false); }}
+              onSave={() => saveDF.mutate()}
+            />
+          }
           sel={dfSel}
           onChange={setDfSel}
         />
@@ -595,14 +650,52 @@ interface PPRow {
   proveedor_subcontrata: { nombre_legal: string; nif: string; tipo_proveedor: string | null } | null;
 }
 
+/** Lápiz / Cancelar / Guardar de una card, con el mismo estilo que Datos generales. */
+function CardEditActions({
+  puedeEditar,
+  editing,
+  saving,
+  onEdit,
+  onCancel,
+  onSave,
+}: {
+  puedeEditar: boolean;
+  editing: boolean;
+  saving: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  if (!puedeEditar) return null;
+  if (!editing) {
+    return (
+      <Button size="icon" variant="ghost" onClick={onEdit} aria-label="Editar">
+        <Pencil className="h-4 w-4" />
+      </Button>
+    );
+  }
+  return (
+    <div className="flex gap-2">
+      <Button variant="ghost" size="sm" onClick={onCancel}>
+        <X className="mr-2 h-4 w-4" /> Cancelar
+      </Button>
+      <Button size="sm" onClick={onSave} disabled={saving}>
+        <Save className="mr-2 h-4 w-4" /> Guardar
+      </Button>
+    </div>
+  );
+}
+
 function PropiedadDFCard({
   propiedadId,
   editing,
+  acciones,
   propiedadSel,
   onPropiedadChange,
 }: {
   propiedadId: string | null;
   editing: boolean;
+  acciones: ReactNode;
   propiedadSel: PropiedadSeleccion;
   onPropiedadChange: (v: PropiedadSeleccion) => void;
 }) {
@@ -641,7 +734,10 @@ function PropiedadDFCard({
     <Card>
       <CardContent className="space-y-3 pt-6">
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold">Propiedad</h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">Propiedad</h3>
+            {acciones}
+          </div>
           {editing ? (
             <div className="space-y-1.5">
               <PropiedadSelector
@@ -712,12 +808,14 @@ function DireccionFacultativaCard({
   asignada,
   isLoading,
   editing,
+  acciones,
   sel,
   onChange,
 }: {
   asignada: DFAsignada | null;
   isLoading: boolean;
   editing: boolean;
+  acciones: ReactNode;
   sel: DFSeleccion;
   onChange: (v: DFSeleccion) => void;
 }) {
@@ -727,7 +825,10 @@ function DireccionFacultativaCard({
   return (
     <Card>
       <CardContent className="space-y-3 pt-6">
-        <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+          {acciones}
+        </div>
         {editing ? (
           <div className="space-y-4">
             <div className="space-y-1.5">
