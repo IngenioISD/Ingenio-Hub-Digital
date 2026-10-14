@@ -449,7 +449,7 @@ function ProyectoDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Proveedores asignados</CardTitle>
+          <CardTitle>Proveedores asociados a este proyecto</CardTitle>
         </CardHeader>
         <CardContent>
           <ProveedoresAsignados proyectoId={id} />
