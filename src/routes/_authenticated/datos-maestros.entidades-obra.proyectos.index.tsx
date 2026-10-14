@@ -103,7 +103,7 @@ function ProyectosListado() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Proyectos</h1>
-          <p className="text-sm text-muted-foreground">Proyectos de tu empresa.</p>
+          <p className="text-sm text-muted-foreground">{"\n"}</p>
         </div>
         {puedeCrear && <NuevoProyectoDialog />}
       </div>
