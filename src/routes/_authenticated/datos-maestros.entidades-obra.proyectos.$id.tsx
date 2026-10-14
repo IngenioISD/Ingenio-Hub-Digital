@@ -398,42 +398,54 @@ function ProyectoDetail() {
         </CardContent>
       </Card>
 
-      <PropiedadDFCard
-        propiedadId={data.propiedad_id ?? null}
-        editing={puedeEditar && editProp}
-        acciones={
-          <CardEditActions
-            puedeEditar={puedeEditar}
-            editing={editProp}
-            saving={saveProp.isPending}
-            onEdit={() => setEditProp(true)}
-            onCancel={() => { resetProp(); setEditProp(false); }}
-            onSave={() => saveProp.mutate()}
-          />
-        }
-        propiedadSel={propiedadSel}
-        onPropiedadChange={setPropiedadSel}
-      />
-
-      {muestraDF && (
-        <DireccionFacultativaCard
-          asignada={dfAsignada ?? null}
-          isLoading={dfLoading}
-          editing={puedeEditar && editDF}
-          acciones={
-            <CardEditActions
-              puedeEditar={puedeEditar}
-              editing={editDF}
-              saving={saveDF.isPending}
-              onEdit={() => setEditDF(true)}
-              onCancel={() => { resetDF(); setEditDF(false); }}
-              onSave={() => saveDF.mutate()}
+      <Card>
+        <CardContent className="pt-6">
+          <div
+            className={
+              muestraDF
+                ? "grid grid-cols-1 gap-6 divide-y divide-border md:grid-cols-2 md:gap-0 md:divide-y-0 md:divide-x"
+                : undefined
+            }
+          >
+            <PropiedadDFCard
+              propiedadId={data.propiedad_id ?? null}
+              editing={puedeEditar && editProp}
+              acciones={
+                <CardEditActions
+                  puedeEditar={puedeEditar}
+                  editing={editProp}
+                  saving={saveProp.isPending}
+                  onEdit={() => setEditProp(true)}
+                  onCancel={() => { resetProp(); setEditProp(false); }}
+                  onSave={() => saveProp.mutate()}
+                />
+              }
+              propiedadSel={propiedadSel}
+              onPropiedadChange={setPropiedadSel}
             />
-          }
-          sel={dfSel}
-          onChange={setDfSel}
-        />
-      )}
+
+            {muestraDF && (
+              <DireccionFacultativaCard
+                asignada={dfAsignada ?? null}
+                isLoading={dfLoading}
+                editing={puedeEditar && editDF}
+                acciones={
+                  <CardEditActions
+                    puedeEditar={puedeEditar}
+                    editing={editDF}
+                    saving={saveDF.isPending}
+                    onEdit={() => setEditDF(true)}
+                    onCancel={() => { resetDF(); setEditDF(false); }}
+                    onSave={() => saveDF.mutate()}
+                  />
+                }
+                sel={dfSel}
+                onChange={setDfSel}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -731,13 +743,11 @@ function PropiedadDFCard({
   });
 
   return (
-    <Card>
-      <CardContent className="space-y-3 pt-6">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold">Propiedad</h3>
-            {acciones}
-          </div>
+    <div className="space-y-3 md:pr-6">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Propiedad</h3>
+        {acciones}
+      </div>
           {editing ? (
             <div className="space-y-1.5">
               <PropiedadSelector
@@ -773,9 +783,7 @@ function PropiedadDFCard({
           )}
           </>
           )}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
@@ -823,12 +831,11 @@ function DireccionFacultativaCard({
   const clienteId = usuarioCliente?.cliente_id;
 
   return (
-    <Card>
-      <CardContent className="space-y-3 pt-6">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
-          {acciones}
-        </div>
+    <div className="space-y-3 pt-6 md:pt-0 md:pl-6">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+        {acciones}
+      </div>
         {editing ? (
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -961,8 +968,7 @@ function DireccionFacultativaCard({
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 
