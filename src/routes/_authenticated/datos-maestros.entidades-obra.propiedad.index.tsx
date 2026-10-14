@@ -121,7 +121,7 @@ function PropiedadListado() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Propiedad</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Listado de Propiedad</h1>
           <p className="text-sm text-muted-foreground">{"\n"}</p>
         </div>
         {puedeCrear && <NuevaPropiedadDialog />}
@@ -136,7 +136,7 @@ function PropiedadListado() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre comercial</TableHead>
+              <TableHead>Nombre</TableHead>
               <TableHead>NIF</TableHead>
               <TableHead>Proyectos en ejecución</TableHead>
               <TableHead>Activo</TableHead>
