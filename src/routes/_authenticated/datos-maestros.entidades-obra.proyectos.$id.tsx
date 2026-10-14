@@ -831,12 +831,11 @@ function DireccionFacultativaCard({
   const clienteId = usuarioCliente?.cliente_id;
 
   return (
-    <Card>
-      <CardContent className="space-y-3 pt-6">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
-          {acciones}
-        </div>
+    <div className="space-y-3 pt-6 md:pt-0 md:pl-6">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+        {acciones}
+      </div>
         {editing ? (
           <div className="space-y-4">
             <div className="space-y-1.5">
