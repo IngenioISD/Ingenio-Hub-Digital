@@ -19,6 +19,7 @@ import {
 
 import { useAppsVisibles } from "@/hooks/use-apps-visibles";
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
+import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 
 
 export type SidebarMode = "direccion" | "proyecto";
@@ -108,6 +109,7 @@ export function Sidebar({
 }: SidebarProps) {
   const perfil = usePerfilUsuario();
   const appsVisibles = useAppsVisibles();
+  const permisosPersonal = usePermisosPersonal();
   const esDireccion = mode === "direccion";
 
   const bg = esDireccion ? "var(--sidebar-bg)" : "var(--sidebar-proyecto-bg)";
@@ -119,7 +121,9 @@ export function Sidebar({
 
   const menuBase = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
   const menu = menuBase.filter(
-    (item) => item.key !== "apps" || appsVisibles.length > 0,
+    (item) =>
+      (item.key !== "apps" || appsVisibles.length > 0) &&
+      (item.key !== "personal-propio" || permisosPersonal.puedeVer),
   );
 
 
