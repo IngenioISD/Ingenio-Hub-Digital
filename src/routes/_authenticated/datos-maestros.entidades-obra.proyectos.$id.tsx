@@ -82,6 +82,27 @@ function ProyectoDetail() {
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
+  const [dfSel, setDfSel] = useState<DFSeleccion>({ dfId: null, dfLabel: null, contactoId: null, contactoLabel: null });
+
+  const { data: dfAsignada, isLoading: dfLoading } = useQuery({
+    queryKey: ["datos-maestros", "proyecto-df", id],
+    queryFn: async (): Promise<DFAsignada | null> => {
+      const { data: r, error } = await supabase
+        .from("proyecto_direccion_facultativa")
+        .select(
+          "direccion_facultativa_id, contacto_id, activo, direccion_facultativa(nif, nombre_legal), direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2, email, telefono, cargo)",
+        )
+        .eq("proyecto_id", id)
+        .eq("activo", true)
+        .maybeSingle();
+      if (error) throw error;
+      if (!r) return null;
+      const d = Array.isArray(r.direccion_facultativa) ? r.direccion_facultativa[0] : r.direccion_facultativa;
+      const c = Array.isArray(r.direccion_facultativa_contactos) ? r.direccion_facultativa_contactos[0] : r.direccion_facultativa_contactos;
+      return { dfId: r.direccion_facultativa_id, nombre: d?.nombre_legal ?? "", nif: d?.nif ?? "", contacto: c ?? null };
+    },
+  });
+
   const resetForm = () => {
     if (!data) return;
     setNombre(data.nombre ?? "");
@@ -90,12 +111,20 @@ function ProyectoDetail() {
     setFechaInicioReal(data.fecha_inicio_real ?? "");
     setFechaFinalizacionReal(data.fecha_finalizacion_real ?? "");
     setPropiedadSel({ id: data.propiedad_id ?? null, label: null, inactiva: false });
+    setDfSel({
+      dfId: dfAsignada?.dfId ?? null,
+      dfLabel: dfAsignada?.nombre ?? null,
+      contactoId: dfAsignada?.contacto?.id ?? null,
+      contactoLabel: dfAsignada?.contacto
+        ? [dfAsignada.contacto.nombre, dfAsignada.contacto.apellido_1, dfAsignada.contacto.apellido_2].filter(Boolean).join(" ")
+        : null,
+    });
   };
 
   useEffect(() => {
     if (data) resetForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  }, [data, dfAsignada]);
 
   const { data: tipos = [] } = useQuery({
     queryKey: ["catalogo", "tipo_obra"],
@@ -132,10 +161,24 @@ function ProyectoDetail() {
       if (propiedadSel.inactiva && usuarioCliente?.cliente_id) {
         await reactivarPropiedad(usuarioCliente.cliente_id, propiedadSel.id);
       }
+      if (data?.estado === "adjudicado" || data?.estado === "finalizado") {
+        if (dfSel.dfId) {
+          const { error: e1 } = await supabase.from("proyecto_direccion_facultativa").upsert(
+            { proyecto_id: id, direccion_facultativa_id: dfSel.dfId, contacto_id: dfSel.contactoId, activo: true },
+            { onConflict: "proyecto_id" },
+          );
+          if (e1) throw e1;
+        } else {
+          const { error: e2 } = await supabase.from("proyecto_direccion_facultativa").delete().eq("proyecto_id", id);
+          if (e2) throw e2;
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
       qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-df-card"] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
+      qc.invalidateQueries({ queryKey: ["datos-maestros", "propiedad-search"] });
       setEditMode(false);
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
       qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
@@ -160,6 +203,7 @@ function ProyectoDetail() {
   if (!data) return <div className="text-sm text-muted-foreground">No encontrado.</div>;
 
   const editing = puedeEditar && editMode;
+  const muestraDF = data.estado === "adjudicado" || data.estado === "finalizado";
   const tipoObraLabel = tipos.find((t) => t.codigo === tipoObra)?.etiqueta || tipoObra;
 
   const Field = ({ label, value, colSpan = "" }: { label: string; value: string; colSpan?: string }) => (
@@ -325,6 +369,16 @@ function ProyectoDetail() {
         propiedadSel={propiedadSel}
         onPropiedadChange={setPropiedadSel}
       />
+
+      {muestraDF && (
+        <DireccionFacultativaCard
+          asignada={dfAsignada ?? null}
+          isLoading={dfLoading}
+          editing={editing}
+          sel={dfSel}
+          onChange={setDfSel}
+        />
+      )}
 
       <Card>
         <CardHeader>
@@ -585,7 +639,7 @@ function PropiedadDFCard({
 
   return (
     <Card>
-      <CardContent className="grid grid-cols-1 gap-6 pt-6 sm:grid-cols-2">
+      <CardContent className="space-y-3 pt-6">
         <div className="space-y-3">
           <h3 className="text-sm font-semibold">Propiedad</h3>
           {editing ? (
@@ -624,17 +678,188 @@ function PropiedadDFCard({
           </>
           )}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-        {/* Dirección Facultativa: misma estructura que Propiedad (lectura: nombre y contactos;
-            edición: selector propio). Pendiente de construir en ambos modos. */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
-          {editing ? (
-            <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">Pendiente de construir.</p>
-          )}
-        </div>
+export interface DFSeleccion {
+  dfId: string | null;
+  dfLabel: string | null;
+  contactoId: string | null;
+  contactoLabel: string | null;
+}
+
+export interface DFAsignada {
+  dfId: string;
+  nombre: string;
+  nif: string;
+  contacto: {
+    id: string;
+    nombre: string;
+    apellido_1: string;
+    apellido_2: string | null;
+    email: string | null;
+    telefono: string | null;
+    cargo: string | null;
+  } | null;
+}
+
+const nombreContacto = (c: { nombre: string; apellido_1: string; apellido_2: string | null }) =>
+  [c.nombre, c.apellido_1, c.apellido_2].filter(Boolean).join(" ");
+
+function DireccionFacultativaCard({
+  asignada,
+  isLoading,
+  editing,
+  sel,
+  onChange,
+}: {
+  asignada: DFAsignada | null;
+  isLoading: boolean;
+  editing: boolean;
+  sel: DFSeleccion;
+  onChange: (v: DFSeleccion) => void;
+}) {
+  const { usuarioCliente } = useAuth();
+  const clienteId = usuarioCliente?.cliente_id;
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 pt-6">
+        <h3 className="text-sm font-semibold">Dirección Facultativa</h3>
+        {editing ? (
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Dirección Facultativa</Label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <BuscarCombobox
+                    placeholder="Buscar por nombre o NIF…"
+                    queryKey={["datos-maestros", "df-search", clienteId]}
+                    search={async (term) => {
+                      if (!clienteId) return [];
+                      const { data, error } = await supabase
+                        .from("cliente_direccion_facultativa")
+                        .select("direccion_facultativa_id, direccion_facultativa(id, nif, nombre_legal)")
+                        .eq("cliente_id", clienteId)
+                        .eq("activo", true);
+                      if (error) throw error;
+                      const t = term.trim().toLowerCase();
+                      return (data ?? [])
+                        .map((r) => (Array.isArray(r.direccion_facultativa) ? r.direccion_facultativa[0] : r.direccion_facultativa))
+                        .filter((d): d is NonNullable<typeof d> => !!d)
+                        .filter((d) => !t || d.nombre_legal.toLowerCase().includes(t) || d.nif.toLowerCase().includes(t))
+                        .sort((a, b) => a.nombre_legal.localeCompare(b.nombre_legal, "es"));
+                    }}
+                    getLabel={(d) => d.nombre_legal}
+                    getSubLabel={(d) => d.nif}
+                    getValue={(d) => d.id}
+                    value={sel.dfId}
+                    selectedLabel={sel.dfLabel}
+                    onSelect={(d) => {
+                      if (d.id === sel.dfId) return;
+                      onChange({ dfId: d.id, dfLabel: d.nombre_legal, contactoId: null, contactoLabel: null });
+                    }}
+                    emptyMessage="Sin resultados."
+                  />
+                </div>
+                {sel.dfId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Quitar Dirección Facultativa"
+                    onClick={() => onChange({ dfId: null, dfLabel: null, contactoId: null, contactoLabel: null })}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {sel.dfId && (
+              <div className="space-y-1.5">
+                <Label>Contacto de la DF para este proyecto</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <BuscarCombobox
+                      placeholder="Buscar contacto…"
+                      queryKey={["datos-maestros", "df-contactos-search", clienteId, sel.dfId]}
+                      search={async (term) => {
+                        if (!clienteId || !sel.dfId) return [];
+                        const { data, error } = await supabase
+                          .from("cliente_direccion_facultativa_contactos")
+                          .select("contacto_id, direccion_facultativa_contactos(id, nombre, apellido_1, apellido_2, email, cargo)")
+                          .eq("cliente_id", clienteId)
+                          .eq("direccion_facultativa_id", sel.dfId)
+                          .eq("activo", true);
+                        if (error) throw error;
+                        const t = term.trim().toLowerCase();
+                        return (data ?? [])
+                          .map((r) =>
+                            Array.isArray(r.direccion_facultativa_contactos)
+                              ? r.direccion_facultativa_contactos[0]
+                              : r.direccion_facultativa_contactos,
+                          )
+                          .filter((c): c is NonNullable<typeof c> => !!c)
+                          .filter((c) => !t || nombreContacto(c).toLowerCase().includes(t))
+                          .sort((a, b) => nombreContacto(a).localeCompare(nombreContacto(b), "es"));
+                      }}
+                      getLabel={(c) => nombreContacto(c)}
+                      getSubLabel={(c) => [c.cargo, c.email].filter(Boolean).join(" · ")}
+                      getValue={(c) => c.id}
+                      value={sel.contactoId}
+                      selectedLabel={sel.contactoLabel}
+                      onSelect={(c) => onChange({ ...sel, contactoId: c.id, contactoLabel: nombreContacto(c) })}
+                      emptyMessage="Sin contactos."
+                    />
+                  </div>
+                  {sel.contactoId && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Quitar contacto"
+                      onClick={() => onChange({ ...sel, contactoId: null, contactoLabel: null })}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
+            {!isLoading && !asignada && (
+              <p className="text-sm text-muted-foreground opacity-70">Sin Dirección Facultativa asignada</p>
+            )}
+            {asignada && (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium">{asignada.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{asignada.nif}</p>
+                </div>
+                {asignada.contacto ? (
+                  <div className="space-y-0.5 border-l-2 pl-3 text-sm">
+                    <p className="font-medium">
+                      {nombreContacto(asignada.contacto)}
+                      {asignada.contacto.cargo && (
+                        <span className="ml-1 text-xs text-muted-foreground">({asignada.contacto.cargo})</span>
+                      )}
+                    </p>
+                    {asignada.contacto.email && <p className="text-xs text-muted-foreground">{asignada.contacto.email}</p>}
+                    {asignada.contacto.telefono && <p className="text-xs text-muted-foreground">{asignada.contacto.telefono}</p>}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sin contacto designado.</p>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );
