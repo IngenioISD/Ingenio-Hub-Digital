@@ -18,6 +18,12 @@ export const NINGUNO = "__ninguno__";
 export function normalizarNif(s: string) {
   return s.toUpperCase().replace(/[\s.\-]/g, "");
 }
+/** Nº de empleado: sin espacios, minúsculas, sin ceros iniciales ("000" → "0"). */
+export function normalizarCodigoEmpleado(s: string) {
+  const t = s.replace(/\s/g, "").toLowerCase();
+  if (!t) return "";
+  return t.replace(/^0+/, "") || "0";
+}
 export function normalizarTexto(s: string) {
   return s
     .normalize("NFD")
