@@ -418,6 +418,9 @@ function DatosLaborales({
     }
     setErrores(e);
     if (Object.keys(e).length) return;
+    const dupeCodigo = clienteId ? await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id) : null;
+    setCodigoExiste(dupeCodigo);
+    if (dupeCodigo) return;
     setGuardando(true);
     const { error } = await supabase
       .from("personal")
