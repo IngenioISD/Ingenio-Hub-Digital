@@ -168,9 +168,9 @@ function Listado() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Todavía no hay personal dado de alta.</TableCell></TableRow>}
-            {!isLoading && data.length > 0 && filtradas.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Todavía no hay personal dado de alta.</TableCell></TableRow>}
+            {!isLoading && data.length > 0 && filtradas.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
             {filtradas.map((r) => (
               <TableRow
                 key={r.id}
