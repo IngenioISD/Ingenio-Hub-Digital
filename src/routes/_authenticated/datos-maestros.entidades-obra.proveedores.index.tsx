@@ -137,8 +137,9 @@ function ProveedoresListado() {
               return (
                 <TableRow
                   key={r.id}
-                  className={r.activo ? "cursor-pointer" : "hover:bg-transparent"}
-                  onClick={r.activo ? () => navigate({ to: "/datos-maestros/entidades-obra/proveedores/$id", params: { id: r.proveedorId } }) : undefined}
+                  {...(r.activo
+                    ? filaClicableProps(() => navigate({ to: "/datos-maestros/entidades-obra/proveedores/$id", params: { id: r.proveedorId } }))
+                    : { className: "hover:bg-transparent" })}
                 >
                   <TableCell className={`font-medium ${tenue}`}>{r.nombre}</TableCell>
                   <TableCell className={tenue}>{r.nif}</TableCell>
