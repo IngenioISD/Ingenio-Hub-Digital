@@ -27,6 +27,7 @@ interface Row {
   nombreCompleto: string;
   apellido1: string;
   nombre: string;
+  codigoEmpleado: string | null;
   nif: string;
   email: string;
   departamentoId: string | null;
@@ -80,7 +81,7 @@ function Listado() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("personal")
-        .select("id, nif, nombre, apellido_1, apellido_2, email, departamento_id, puesto_id, estado_id, fecha_alta, activo")
+        .select("id, nif, codigo_empleado, nombre, apellido_1, apellido_2, email, departamento_id, puesto_id, estado_id, fecha_alta, activo")
         .eq("cliente_id", clienteId!);
       if (error) throw error;
       return (data ?? []).map((p): Row => ({
@@ -88,6 +89,7 @@ function Listado() {
         nombreCompleto: `${[p.apellido_1, p.apellido_2].filter(Boolean).join(" ")}, ${p.nombre}`,
         apellido1: p.apellido_1,
         nombre: p.nombre,
+        codigoEmpleado: p.codigo_empleado ?? null,
         nif: p.nif,
         email: p.email ?? "",
         departamentoId: p.departamento_id,
@@ -157,6 +159,7 @@ function Listado() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre completo</TableHead>
+              <TableHead>Nº Trabajador</TableHead>
               <TableHead>NIF</TableHead>
               <TableHead>Departamento</TableHead>
               <TableHead>Puesto</TableHead>
@@ -165,9 +168,9 @@ function Listado() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Todavía no hay personal dado de alta.</TableCell></TableRow>}
-            {!isLoading && data.length > 0 && filtradas.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Todavía no hay personal dado de alta.</TableCell></TableRow>}
+            {!isLoading && data.length > 0 && filtradas.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
             {filtradas.map((r) => (
               <TableRow
                 key={r.id}
@@ -175,6 +178,7 @@ function Listado() {
                 onClick={() => void navigate({ to: `/datos-maestros/accesos-equipo/personal-propio/${r.id}` as never })}
               >
                 <TableCell className="font-medium">{r.nombreCompleto}</TableCell>
+                <TableCell>{r.codigoEmpleado ?? ""}</TableCell>
                 <TableCell>{r.nif}</TableCell>
                 <TableCell>{nombreCat(r.departamentoId)}</TableCell>
                 <TableCell>{nombreCat(r.puestoId)}</TableCell>
