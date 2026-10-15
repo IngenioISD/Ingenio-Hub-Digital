@@ -238,9 +238,14 @@ export function NuevaPersonaDialog() {
     setGuardando(false);
     if (error) {
       if (error.code === "23505") {
-        const campo = error.message.includes("email") ? "email" : "nif";
-        const e = await buscarPor(campo, campo === "nif" ? nif : email);
-        setExiste(e ?? { id: "", nombre: "", campo });
+        if (error.message.includes("codigo_empleado")) {
+          const e = await buscarCodigoEmpleado(clienteId, f.codigo_empleado);
+          setExiste(e ? { ...e, campo: "codigo" } : { id: "", nombre: "", campo: "codigo" });
+        } else {
+          const campo = error.message.includes("email") ? "email" : "nif";
+          const e = await buscarPor(campo, campo === "nif" ? nif : email);
+          setExiste(e ?? { id: "", nombre: "", campo });
+        }
       } else {
         setErrores({ general: "No se ha podido guardar. Inténtalo de nuevo." });
       }
