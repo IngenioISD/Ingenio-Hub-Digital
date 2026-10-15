@@ -150,6 +150,12 @@ export function NuevaPersonaDialog() {
     setAvisoNombre(false);
   };
 
+  const salirCodigo = async () => {
+    if (!clienteId) return;
+    const e = await buscarCodigoEmpleado(clienteId, f.codigo_empleado);
+    setExiste(e ? { ...e, campo: "codigo" } : existe?.campo === "codigo" ? null : existe);
+  };
+
   const buscarPor = async (campo: "nif" | "email", valor: string): Promise<Existe | null> => {
     if (!valor || !clienteId) return null;
     const q = supabase.from("personal").select("id, nombre, apellido_1, apellido_2").eq("cliente_id", clienteId);
