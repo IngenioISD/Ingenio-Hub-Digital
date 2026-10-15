@@ -88,7 +88,24 @@ export function CatalogoSelect({
   );
 }
 
-type Existe = { id: string; nombre: string; campo: "nif" | "email" };
+type Existe = { id: string; nombre: string; campo: "nif" | "email" | "codigo" };
+
+/** Busca en el personal del cliente a alguien con el mismo Nº de empleado (normalizado). */
+export async function buscarCodigoEmpleado(
+  clienteId: string,
+  codigo: string,
+  excluirId?: string,
+): Promise<{ id: string; nombre: string } | null> {
+  const clave = normalizarCodigoEmpleado(codigo);
+  if (!clave) return null;
+  const { data } = await supabase
+    .from("personal")
+    .select("id, nombre, apellido_1, apellido_2, codigo_empleado")
+    .eq("cliente_id", clienteId)
+    .not("codigo_empleado", "is", null);
+  const o = (data ?? []).find((x) => x.id !== excluirId && normalizarCodigoEmpleado(x.codigo_empleado ?? "") === clave);
+  return o ? { id: o.id, nombre: [o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ") } : null;
+}
 
 function hoyIso() {
   const d = new Date();
