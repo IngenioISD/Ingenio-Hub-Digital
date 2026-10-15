@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { errorProyecto } from "@/lib/erp/proyectos-errores";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
@@ -29,8 +30,9 @@ export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-o
 const ESTADOS = [
   { value: "en_estudio", label: "En estudio" },
   { value: "adjudicado", label: "Adjudicado" },
-  { value: "perdido", label: "Perdido" },
+  { value: "en_ejecucion", label: "En ejecución" },
   { value: "finalizado", label: "Finalizado" },
+  { value: "perdido", label: "Perdido" },
 ] as const;
 
 interface Row {
@@ -138,7 +140,7 @@ function ProyectosListado() {
             {data.map((p) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.nombre}</TableCell>
-                <TableCell>{(p.estado === "en_estudio" ? p.codigo_estudios : p.codigo_obra) ?? "—"}</TableCell>
+                <TableCell>{p.codigo_obra || p.codigo_estudios || "—"}</TableCell>
                 <TableCell>{tipoObraLabel(p.tipo_obra)}</TableCell>
                 <TableCell>{p.estado && <BadgeEstado estado={p.estado} />}</TableCell>
                 <TableCell className="text-right">
@@ -215,10 +217,10 @@ function NuevoProyectoDialog() {
       if (estadoNuevo === "en_estudio") {
         if (codigoEstudios) payload.codigo_estudios = codigoEstudios;
       } else {
-        if (!codigoObra || !fechaAdjudicacion || !plazoMeses || !dirObra.municipio || !provinciaId) {
+        if (!fechaAdjudicacion || !plazoMeses || !dirObra.municipio || !provinciaId) {
           throw new Error("Completa los campos obligatorios de adjudicación");
         }
-        payload.codigo_obra = codigoObra;
+        payload.codigo_obra = codigoObra || null;
         payload.fecha_adjudicacion = fechaAdjudicacion;
         payload.plazo_ejecucion_meses = Number(plazoMeses);
         payload.fecha_inicio_proyecto = fechaInicioProyecto || null;
@@ -230,7 +232,7 @@ function NuevoProyectoDialog() {
         payload.provincia_id = provinciaId;
       }
       const { error } = await supabase.from("proyectos").insert(payload);
-      if (error) throw error;
+      if (error) throw errorProyecto(error);
       if (propiedadInactiva) await reactivarPropiedad(clienteId, propiedadId);
     },
     onSuccess: () => {
@@ -301,7 +303,7 @@ function NuevoProyectoDialog() {
             <div className="space-y-3 border-t pt-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-1.5">
-                  <Label>Código de obra *</Label>
+                  <Label>Código de obra</Label>
                   <Input value={codigoObra} onChange={(e) => setCodigoObra(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">

@@ -65,7 +65,7 @@ function Page() {
       (tipo === TODAS || p.tipoObra === tipo),
   );
 
-  const activos = filtrados.filter((p) => p.estado === "adjudicado").length;
+  const activos = filtrados.filter((p) => p.estado === "adjudicado" || p.estado === "en_ejecucion").length;
   const enEstudio = filtrados.filter((p) => p.estado === "en_estudio").length;
   const presupuesto = filtrados.reduce((acc, p) => acc + (p.presupuestoVenta ?? 0), 0);
 
