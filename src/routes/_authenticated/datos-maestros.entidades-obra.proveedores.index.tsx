@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 import { NuevoProveedorDialog, TIPOS_PROVEEDOR, etiquetaTipoProveedor, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
-import { filaClicableProps } from "@/lib/fila-clicable";
+import { ALTURA_FILA_LISTADO, filaClicableProps } from "@/lib/fila-clicable";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -140,7 +140,7 @@ function ProveedoresListado() {
                   key={r.id}
                   {...(r.activo
                     ? filaClicableProps(() => navigate({ to: "/datos-maestros/entidades-obra/proveedores/$id", params: { id: r.proveedorId } }))
-                    : { className: "hover:bg-transparent" })}
+                    : { className: `hover:bg-transparent ${ALTURA_FILA_LISTADO}` })}
                 >
                   <TableCell className={`font-medium ${tenue}`}>{r.nombre}</TableCell>
                   <TableCell className={tenue}>{r.nif}</TableCell>
