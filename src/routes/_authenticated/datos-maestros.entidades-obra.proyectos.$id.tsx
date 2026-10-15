@@ -83,6 +83,8 @@ function ProyectoDetail() {
   const [finalizarOpen, setFinalizarOpen] = useState(false);
   const [ejecucionOpen, setEjecucionOpen] = useState(false);
   const [volverAdjOpen, setVolverAdjOpen] = useState(false);
+  const [volverEstudioOpen, setVolverEstudioOpen] = useState(false);
+  const [volverEjecucionOpen, setVolverEjecucionOpen] = useState(false);
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
   const [editGen, setEditGen] = useState(false);
   const [editProp, setEditProp] = useState(false);
@@ -233,8 +235,9 @@ function ProyectoDetail() {
 
   const cambiarEstado = useMutation({
     mutationFn: async (nuevo: string) => {
-      const cambios: { estado: string; fecha_inicio_real?: null } = { estado: nuevo };
+      const cambios: { estado: string; fecha_inicio_real?: null; fecha_finalizacion_real?: null } = { estado: nuevo };
       if (data?.estado === "en_ejecucion" && nuevo === "adjudicado") cambios.fecha_inicio_real = null;
+      if (data?.estado === "finalizado" && nuevo === "en_ejecucion") cambios.fecha_finalizacion_real = null;
       const { error } = await supabase.from("proyectos").update(cambios).eq("id", id);
       if (error) throw error;
     },
@@ -252,10 +255,15 @@ function ProyectoDetail() {
 
   const editing = puedeEditar && editGen;
   const muestraDF = data.estado === "en_ejecucion" || data.estado === "finalizado";
+  const TRANSICIONES: Record<string, string[]> = {
+    en_estudio: ["perdido", "adjudicado"],
+    adjudicado: ["en_estudio", "en_ejecucion"],
+    perdido: ["en_estudio", "adjudicado"],
+    en_ejecucion: ["adjudicado", "finalizado"],
+    finalizado: ["en_ejecucion"],
+  };
   const estadosDisponibles = ESTADOS.filter(
-    (e) =>
-      e.value === data.estado ||
-      (e.value === "en_ejecucion" ? data.estado === "adjudicado" : e.value === "finalizado" ? data.estado === "en_ejecucion" : true),
+    (e) => e.value === data.estado || (TRANSICIONES[data.estado ?? ""] ?? []).includes(e.value),
   );
   const tipoObraLabel = tipos.find((t) => t.codigo === tipoObra)?.etiqueta || tipoObra;
 
@@ -350,13 +358,18 @@ function ProyectoDetail() {
               <Select
                 value={data.estado ?? "en_estudio"}
                 onValueChange={(v) => {
+                  if (v === data.estado) return;
                   if (v === "adjudicado" && data.estado === "en_ejecucion") {
                     setVolverAdjOpen(true);
-                  } else if (v === "adjudicado" && data.estado !== "adjudicado") {
+                  } else if (v === "adjudicado") {
                     setAdjudicarOpen(true);
+                  } else if (v === "en_estudio" && data.estado === "adjudicado") {
+                    setVolverEstudioOpen(true);
+                  } else if (v === "en_ejecucion" && data.estado === "finalizado") {
+                    setVolverEjecucionOpen(true);
                   } else if (v === "en_ejecucion" && data.estado === "adjudicado") {
                     setEjecucionOpen(true);
-                  } else if (v === "finalizado" && data.estado !== "finalizado") {
+                  } else if (v === "finalizado") {
                     if (!data.fecha_inicio_real) {
                       setAvisoFaltaInicioReal(true);
                       return;
@@ -544,6 +557,50 @@ function ProyectoDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={volverEstudioOpen} onOpenChange={setVolverEstudioOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Volver a En estudio</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Seguro? Se usa si el proyecto se adjudicó por error.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={() => setVolverEstudioOpen(false)}>Cancelar</Button>
+            <AlertDialogAction
+              onClick={() => {
+                setVolverEstudioOpen(false);
+                cambiarEstado.mutate("en_estudio");
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={volverEjecucionOpen} onOpenChange={setVolverEjecucionOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Volver a En ejecución</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se borrará la fecha de finalización real y el proyecto pasará a En ejecución. El resto de datos se conserva.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={() => setVolverEjecucionOpen(false)}>Cancelar</Button>
+            <AlertDialogAction
+              onClick={() => {
+                setVolverEjecucionOpen(false);
+                cambiarEstado.mutate("en_ejecucion");
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={avisoFaltaInicioReal} onOpenChange={setAvisoFaltaInicioReal}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -633,7 +690,7 @@ function AdjudicarDialog({
         </DialogHeader>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label>Código</Label>
+            <Label>Código de obra</Label>
             <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} />
           </div>
           <div className="space-y-1.5">
