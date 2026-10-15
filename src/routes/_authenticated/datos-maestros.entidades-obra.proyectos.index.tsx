@@ -13,6 +13,7 @@ import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 import { DireccionObraFields, type DireccionObra } from "@/components/datos-maestros/DireccionObraFields";
 import { PropiedadSelector, reactivarPropiedad } from "@/components/datos-maestros/PropiedadSelector";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
+import { filaClicableProps } from "@/lib/fila-clicable";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ function Page() {
 }
 
 function ProyectosListado() {
+  const navigate = useNavigate();
   const { usuarioCliente } = useAuth();
   const { puedeCrear } = usePermisosDatosMaestros();
   const clienteId = usuarioCliente?.cliente_id;
