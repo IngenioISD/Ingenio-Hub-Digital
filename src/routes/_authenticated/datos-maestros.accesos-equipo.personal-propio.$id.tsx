@@ -281,8 +281,7 @@ function DatosPersonales({
           <AlertDialogHeader>
             <AlertDialogTitle>Cambiar NIF</AlertDialogTitle>
             <AlertDialogDescription>
-              Vas a cambiar el NIF de {[p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ")}. Se actualizará
-              también en las actas donde aparece como participante.
+              Vas a cambiar el NIF de {[p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ")}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
