@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
-import { toast } from "sonner";
+import { Search } from "lucide-react";
+import { NuevaPersonaDialog } from "@/components/datos-maestros/NuevaPersonaDialog";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -135,11 +135,7 @@ function Listado() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Personal propio</h1>
-        {puedeCrear && (
-          <Button onClick={() => toast.info("Próximamente")}>
-            <Plus className="h-4 w-4" /> Nueva persona
-          </Button>
-        )}
+        {puedeCrear && <NuevaPersonaDialog />}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

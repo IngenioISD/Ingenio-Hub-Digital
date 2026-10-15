@@ -28,6 +28,7 @@ import { Route as AuthenticatedDigitalAppsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedProyectoIdInicioRouteImport } from './routes/_authenticated/proyecto.$id.inicio'
 import { Route as AuthenticatedProyectoIdModulosRouteImport } from './routes/_authenticated/proyecto.$id.modulos'
 import { Route as AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIndexRouteImport } from './routes/_authenticated/datos-maestros.accesos-equipo.personal-propio.index'
+import { Route as AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRouteImport } from './routes/_authenticated/datos-maestros.accesos-equipo.personal-propio.$id'
 import { Route as AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIndexRouteImport } from './routes/_authenticated/datos-maestros.entidades-obra.direccion-facultativa.index'
 import { Route as AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRouteImport } from './routes/_authenticated/datos-maestros.entidades-obra.direccion-facultativa.$id'
 import { Route as AuthenticatedDatosMaestrosEntidadesObraPropiedadIndexRouteImport } from './routes/_authenticated/datos-maestros.entidades-obra.propiedad.index'
@@ -149,6 +150,12 @@ const AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIndexRoute =
     path: '/accesos-equipo/personal-propio/',
     getParentRoute: () => AuthenticatedDatosMaestrosRoute,
   } as any)
+const AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute =
+  AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRouteImport.update({
+    id: '/accesos-equipo/personal-propio/$id',
+    path: '/accesos-equipo/personal-propio/$id',
+    getParentRoute: () => AuthenticatedDatosMaestrosRoute,
+  } as any)
 const AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIndexRoute =
   AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIndexRouteImport.update(
     {
@@ -244,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/datos-maestros/accesos-equipo/personal-propio/$id': typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute
   '/datos-maestros/entidades-obra/direccion-facultativa/$id': typeof AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute
   '/datos-maestros/entidades-obra/propiedad/$id': typeof AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute
   '/datos-maestros/entidades-obra/proveedores/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProveedoresIdRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/digital/apps': typeof AuthenticatedDigitalAppsIndexRoute
+  '/datos-maestros/accesos-equipo/personal-propio/$id': typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute
   '/datos-maestros/entidades-obra/direccion-facultativa/$id': typeof AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute
   '/datos-maestros/entidades-obra/propiedad/$id': typeof AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute
   '/datos-maestros/entidades-obra/proveedores/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProveedoresIdRoute
@@ -308,6 +317,7 @@ export interface FileRoutesById {
   '/_authenticated/proyecto/$id/inicio': typeof AuthenticatedProyectoIdInicioRoute
   '/_authenticated/proyecto/$id/modulos': typeof AuthenticatedProyectoIdModulosRoute
   '/_authenticated/digital/apps/': typeof AuthenticatedDigitalAppsIndexRoute
+  '/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id': typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute
   '/_authenticated/datos-maestros/entidades-obra/direccion-facultativa/$id': typeof AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute
   '/_authenticated/datos-maestros/entidades-obra/propiedad/$id': typeof AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute
   '/_authenticated/datos-maestros/entidades-obra/proveedores/$id': typeof AuthenticatedDatosMaestrosEntidadesObraProveedoresIdRoute
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps/'
+    | '/datos-maestros/accesos-equipo/personal-propio/$id'
     | '/datos-maestros/entidades-obra/direccion-facultativa/$id'
     | '/datos-maestros/entidades-obra/propiedad/$id'
     | '/datos-maestros/entidades-obra/proveedores/$id'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/proyecto/$id/inicio'
     | '/proyecto/$id/modulos'
     | '/digital/apps'
+    | '/datos-maestros/accesos-equipo/personal-propio/$id'
     | '/datos-maestros/entidades-obra/direccion-facultativa/$id'
     | '/datos-maestros/entidades-obra/propiedad/$id'
     | '/datos-maestros/entidades-obra/proveedores/$id'
@@ -405,6 +417,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proyecto/$id/inicio'
     | '/_authenticated/proyecto/$id/modulos'
     | '/_authenticated/digital/apps/'
+    | '/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id'
     | '/_authenticated/datos-maestros/entidades-obra/direccion-facultativa/$id'
     | '/_authenticated/datos-maestros/entidades-obra/propiedad/$id'
     | '/_authenticated/datos-maestros/entidades-obra/proveedores/$id'
@@ -561,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIndexRouteImport
       parentRoute: typeof AuthenticatedDatosMaestrosRoute
     }
+    '/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id': {
+      id: '/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id'
+      path: '/accesos-equipo/personal-propio/$id'
+      fullPath: '/datos-maestros/accesos-equipo/personal-propio/$id'
+      preLoaderRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRouteImport
+      parentRoute: typeof AuthenticatedDatosMaestrosRoute
+    }
     '/_authenticated/datos-maestros/entidades-obra/direccion-facultativa/': {
       id: '/_authenticated/datos-maestros/entidades-obra/direccion-facultativa/'
       path: '/entidades-obra/direccion-facultativa'
@@ -653,6 +673,7 @@ interface AuthenticatedDatosMaestrosRouteChildren {
   AuthenticatedDatosMaestrosAccesosEquipoCatalogosRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoCatalogosRoute
   AuthenticatedDatosMaestrosAccesosEquipoPersonalExternoRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalExternoRoute
   AuthenticatedDatosMaestrosAccesosEquipoUsuariosRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoUsuariosRoute
+  AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute: typeof AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute
   AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute: typeof AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute
   AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute: typeof AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute
   AuthenticatedDatosMaestrosEntidadesObraProveedoresIdRoute: typeof AuthenticatedDatosMaestrosEntidadesObraProveedoresIdRoute
@@ -673,6 +694,8 @@ const AuthenticatedDatosMaestrosRouteChildren: AuthenticatedDatosMaestrosRouteCh
       AuthenticatedDatosMaestrosAccesosEquipoPersonalExternoRoute,
     AuthenticatedDatosMaestrosAccesosEquipoUsuariosRoute:
       AuthenticatedDatosMaestrosAccesosEquipoUsuariosRoute,
+    AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute:
+      AuthenticatedDatosMaestrosAccesosEquipoPersonalPropioIdRoute,
     AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute:
       AuthenticatedDatosMaestrosEntidadesObraDireccionFacultativaIdRoute,
     AuthenticatedDatosMaestrosEntidadesObraPropiedadIdRoute:
