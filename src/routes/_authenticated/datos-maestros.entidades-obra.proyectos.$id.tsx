@@ -12,6 +12,7 @@ import { DireccionObraFields, type DireccionObra } from "@/components/datos-maes
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
 import { PropiedadSelector, reactivarPropiedad, type PropiedadSeleccion } from "@/components/datos-maestros/PropiedadSelector";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
+import { errorProyecto } from "@/lib/erp/proyectos-errores";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,8 +44,9 @@ function formatFecha(v: string | null | undefined): string {
 const ESTADOS = [
   { value: "en_estudio", label: "En estudio" },
   { value: "adjudicado", label: "Adjudicado" },
-  { value: "perdido", label: "Perdido" },
+  { value: "en_ejecucion", label: "En ejecución" },
   { value: "finalizado", label: "Finalizado" },
+  { value: "perdido", label: "Perdido" },
 ] as const;
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/entidades-obra/proyectos/$id")({
@@ -79,6 +81,8 @@ function ProyectoDetail() {
   const { usuarioCliente } = useAuth();
   const [adjudicarOpen, setAdjudicarOpen] = useState(false);
   const [finalizarOpen, setFinalizarOpen] = useState(false);
+  const [ejecucionOpen, setEjecucionOpen] = useState(false);
+  const [volverAdjOpen, setVolverAdjOpen] = useState(false);
   const [avisoFaltaInicioReal, setAvisoFaltaInicioReal] = useState(false);
   const [editGen, setEditGen] = useState(false);
   const [editProp, setEditProp] = useState(false);
@@ -153,6 +157,8 @@ function ProyectoDetail() {
     },
   });
 
+  const conFechasReales = data?.estado === "en_ejecucion" || data?.estado === "finalizado";
+
   const saveGen = useMutation({
     mutationFn: async () => {
       if (data?.estado === "finalizado" && !fechaFinalizacionReal) {
@@ -164,11 +170,16 @@ function ProyectoDetail() {
           nombre,
           tipo_obra: tipoObra,
           codigo_estudios: data?.estado === "en_estudio" ? (codigoEstudios || null) : data?.codigo_estudios ?? null,
-          fecha_inicio_real: data?.estado !== "en_estudio" ? (fechaInicioReal || null) : null,
-          fecha_finalizacion_real: data?.estado === "finalizado" ? fechaFinalizacionReal : data?.fecha_finalizacion_real ?? null,
+          fecha_inicio_real: conFechasReales ? (fechaInicioReal || null) : data?.fecha_inicio_real ?? null,
+          fecha_finalizacion_real:
+            data?.estado === "finalizado"
+              ? fechaFinalizacionReal
+              : data?.estado === "en_ejecucion"
+                ? (fechaFinalizacionReal || null)
+                : data?.fecha_finalizacion_real ?? null,
         })
         .eq("id", id);
-      if (error) throw error;
+      if (error) throw errorProyecto(error);
     },
     onSuccess: () => {
       toast.success("Cambios guardados");
@@ -222,7 +233,9 @@ function ProyectoDetail() {
 
   const cambiarEstado = useMutation({
     mutationFn: async (nuevo: string) => {
-      const { error } = await supabase.from("proyectos").update({ estado: nuevo }).eq("id", id);
+      const cambios: { estado: string; fecha_inicio_real?: null } = { estado: nuevo };
+      if (data?.estado === "en_ejecucion" && nuevo === "adjudicado") cambios.fecha_inicio_real = null;
+      const { error } = await supabase.from("proyectos").update(cambios).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -238,7 +251,12 @@ function ProyectoDetail() {
   if (!data) return <div className="text-sm text-muted-foreground">No encontrado.</div>;
 
   const editing = puedeEditar && editGen;
-  const muestraDF = data.estado === "adjudicado" || data.estado === "finalizado";
+  const muestraDF = data.estado === "en_ejecucion" || data.estado === "finalizado";
+  const estadosDisponibles = ESTADOS.filter(
+    (e) =>
+      e.value === data.estado ||
+      (e.value === "en_ejecucion" ? data.estado === "adjudicado" : e.value === "finalizado" ? data.estado === "en_ejecucion" : true),
+  );
   const tipoObraLabel = tipos.find((t) => t.codigo === tipoObra)?.etiqueta || tipoObra;
 
   const Field = ({ label, value, colSpan = "" }: { label: string; value: string; colSpan?: string }) => (
@@ -332,8 +350,12 @@ function ProyectoDetail() {
               <Select
                 value={data.estado ?? "en_estudio"}
                 onValueChange={(v) => {
-                  if (v === "adjudicado" && data.estado !== "adjudicado") {
+                  if (v === "adjudicado" && data.estado === "en_ejecucion") {
+                    setVolverAdjOpen(true);
+                  } else if (v === "adjudicado" && data.estado !== "adjudicado") {
                     setAdjudicarOpen(true);
+                  } else if (v === "en_ejecucion" && data.estado === "adjudicado") {
+                    setEjecucionOpen(true);
                   } else if (v === "finalizado" && data.estado !== "finalizado") {
                     if (!data.fecha_inicio_real) {
                       setAvisoFaltaInicioReal(true);
@@ -347,8 +369,14 @@ function ProyectoDetail() {
               >
                 <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {ESTADOS.map((e) => (
-                    <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
+                  {estadosDisponibles.map((e) => (
+                    <SelectItem key={e.value} value={e.value}>
+                      {e.value === "en_ejecucion" && data.estado === "adjudicado"
+                        ? "Pasar a En ejecución"
+                        : e.value === "adjudicado" && data.estado === "en_ejecucion"
+                          ? "Volver a Adjudicado"
+                          : e.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -369,8 +397,9 @@ function ProyectoDetail() {
             <Field label="Duración (meses)" value={String(data.plazo_ejecucion_meses ?? "")} />
           </div>
 
-          <div className={`grid grid-cols-1 gap-4 border-t pt-4 ${data.estado === "finalizado" ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}>
-            {editing && data.estado !== "en_estudio" ? (
+          {conFechasReales && (
+          <div className="grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2">
+            {editing ? (
               <div className="space-y-1.5 max-w-xs">
                 <Label>Fecha de inicio (real)</Label>
                 <Input type="date" value={fechaInicioReal} onChange={(e) => setFechaInicioReal(e.target.value)} />
@@ -381,10 +410,10 @@ function ProyectoDetail() {
                 value={formatFecha(data.fecha_inicio_real)}
               />
             )}
-            {data.estado === "finalizado" && (
+            {conFechasReales && (
               editing ? (
                 <div className="space-y-1.5 max-w-xs">
-                  <Label>Fecha real de finalización *</Label>
+                  <Label>Fecha real de finalización{data.estado === "finalizado" ? " *" : ""}</Label>
                   <Input type="date" value={fechaFinalizacionReal} onChange={(e) => setFechaFinalizacionReal(e.target.value)} />
                 </div>
               ) : (
@@ -395,6 +424,7 @@ function ProyectoDetail() {
               )
             )}
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -479,6 +509,41 @@ function ProyectoDetail() {
         }}
       />
 
+      <EjecucionDialog
+        open={ejecucionOpen}
+        onOpenChange={setEjecucionOpen}
+        proyectoId={id}
+        tieneCodigoObra={Boolean(data.codigo_obra)}
+        onDone={() => {
+          setEjecucionOpen(false);
+          qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
+          qc.invalidateQueries({ queryKey: ["datos-maestros", "proyectos"] });
+          qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto-df", id] });
+        }}
+      />
+
+      <AlertDialog open={volverAdjOpen} onOpenChange={setVolverAdjOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Volver a Adjudicado</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se borrará la fecha de inicio real y el proyecto pasará a Adjudicado. El código de obra se conserva.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="ghost" onClick={() => setVolverAdjOpen(false)}>Cancelar</Button>
+            <AlertDialogAction
+              onClick={() => {
+                setVolverAdjOpen(false);
+                cambiarEstado.mutate("adjudicado");
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={avisoFaltaInicioReal} onOpenChange={setAvisoFaltaInicioReal}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -532,7 +597,7 @@ function AdjudicarDialog({
   }, [open, initial]);
 
   async function confirmar() {
-    if (!codigo || !fecha || !meses || !dir.municipio || !provinciaId) {
+    if (!fecha || !meses || !dir.municipio || !provinciaId) {
       toast.error("Faltan campos obligatorios para adjudicar.");
       return;
     }
@@ -541,7 +606,7 @@ function AdjudicarDialog({
       .from("proyectos")
       .update({
         estado: "adjudicado",
-        codigo_obra: codigo,
+        codigo_obra: codigo || null,
         fecha_adjudicacion: fecha,
         plazo_ejecucion_meses: Number(meses),
         fecha_inicio_proyecto: fechaInicio || null,
@@ -554,7 +619,7 @@ function AdjudicarDialog({
       })
       .eq("id", proyectoId);
     setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(errorProyecto(error).message); return; }
     toast.success("Proyecto adjudicado");
     onDone();
   }
@@ -568,7 +633,7 @@ function AdjudicarDialog({
         </DialogHeader>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label>Código *</Label>
+            <Label>Código</Label>
             <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} />
           </div>
           <div className="space-y-1.5">
@@ -594,6 +659,67 @@ function AdjudicarDialog({
             onProvinciaChange={setProvinciaId}
             provinciaRequired
           />
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={confirmar} disabled={submitting}>Confirmar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EjecucionDialog({
+  open, onOpenChange, proyectoId, tieneCodigoObra, onDone,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  proyectoId: string;
+  tieneCodigoObra: boolean;
+  onDone: () => void;
+}) {
+  const [codigo, setCodigo] = useState("");
+  const [fecha, setFecha] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!open) { setCodigo(""); setFecha(""); }
+  }, [open]);
+
+  async function confirmar() {
+    if ((!tieneCodigoObra && !codigo.trim()) || !fecha) {
+      toast.error("Faltan campos obligatorios para pasar a En ejecución.");
+      return;
+    }
+    setSubmitting(true);
+    const cambios: { estado: string; fecha_inicio_real: string; codigo_obra?: string } = {
+      estado: "en_ejecucion",
+      fecha_inicio_real: fecha,
+    };
+    if (!tieneCodigoObra) cambios.codigo_obra = codigo.trim();
+    const { error } = await supabase.from("proyectos").update(cambios).eq("id", proyectoId);
+    setSubmitting(false);
+    if (error) { toast.error(errorProyecto(error).message); return; }
+    toast.success("Proyecto en ejecución");
+    onDone();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Pasar a En ejecución</DialogTitle>
+          <DialogDescription>Completa estos datos para iniciar la obra.</DialogDescription>
+        </DialogHeader>
+        {!tieneCodigoObra && (
+          <div className="space-y-1.5">
+            <Label>Código de obra *</Label>
+            <Input value={codigo} onChange={(e) => setCodigo(e.target.value)} />
+          </div>
+        )}
+        <div className="space-y-1.5">
+          <Label>Fecha de inicio real *</Label>
+          <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
