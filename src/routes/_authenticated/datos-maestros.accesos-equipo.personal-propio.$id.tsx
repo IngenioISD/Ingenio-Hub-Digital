@@ -386,6 +386,12 @@ function DatosLaborales({
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
   const [estadoPendiente, setEstadoPendiente] = useState<string | null>(null);
+  const [codigoExiste, setCodigoExiste] = useState<{ id: string; nombre: string } | null>(null);
+
+  const salirCodigo = async () => {
+    if (!clienteId) return;
+    setCodigoExiste(await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id));
+  };
 
   const codigo = (id: string | null) => catalogos.find((c) => c.id === id)?.codigo ?? null;
   const esBaja = codigo(f.estado_id) === "baja_empresa";
