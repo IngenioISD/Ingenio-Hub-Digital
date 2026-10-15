@@ -379,7 +379,17 @@ export function NuevaPersonaDialog() {
                 <Label>Centro de trabajo</Label>
                 <CatalogoSelect catalogos={catalogos} tipo="centro_trabajo" value={f.centro_trabajo_id} onChange={(v) => set("centro_trabajo_id", v)} permitirVacio />
               </div>
-              {campo("codigo_empleado", "Nº de empleado")}
+              <div className="space-y-1">
+                <Label>Nº de empleado</Label>
+                <Input
+                  value={f.codigo_empleado}
+                  onChange={(e) => {
+                    set("codigo_empleado", e.target.value);
+                    if (existe?.campo === "codigo") setExiste(null);
+                  }}
+                  onBlur={() => void salirCodigo()}
+                />
+              </div>
               <div className="space-y-1">
                 <Label>Fecha de alta *</Label>
                 <Input type="date" value={f.fecha_alta} onChange={(e) => set("fecha_alta", e.target.value)} />
