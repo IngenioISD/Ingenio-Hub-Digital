@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 import { NuevoProveedorDialog, TIPOS_PROVEEDOR, etiquetaTipoProveedor, normalizarNifProveedor } from "@/components/datos-maestros/NuevoProveedorDialog";
+import { filaClicableProps } from "@/lib/fila-clicable";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
