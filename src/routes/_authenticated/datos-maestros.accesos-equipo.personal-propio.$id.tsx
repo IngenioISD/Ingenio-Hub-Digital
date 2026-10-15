@@ -438,7 +438,10 @@ function DatosLaborales({
       .eq("id", p.id);
     setGuardando(false);
     if (error) {
-      toast.error("No se ha podido guardar.");
+      if (error.code === "23505" && error.message.includes("codigo_empleado")) {
+        const e = clienteId ? await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id) : null;
+        setCodigoExiste(e ?? { id: "", nombre: "" });
+      } else toast.error("No se ha podido guardar.");
       return;
     }
     await onGuardado();
