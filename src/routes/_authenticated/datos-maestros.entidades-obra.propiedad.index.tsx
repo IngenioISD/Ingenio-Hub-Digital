@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Search, Trash2 } from "lucide-react";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
 import { NuevaPropiedadDialog } from "@/components/datos-maestros/NuevaPropiedadDialog";
+import { filaClicableProps } from "@/lib/fila-clicable";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ function Page() {
 }
 
 function PropiedadListado() {
+  const navigate = useNavigate();
   const { usuarioCliente } = useAuth();
   const { puedeCrear, puedeEditar, puedeEliminar } = usePermisosDatosMaestros();
   const clienteId = usuarioCliente?.cliente_id;
@@ -149,15 +151,14 @@ function PropiedadListado() {
             {filtradas.map((r) => {
               const proyectos = proyectosPorPropiedad.get(r.propiedadId) ?? [];
               return (
-              <TableRow key={r.id} className={r.activo ? undefined : "hover:bg-transparent"}>
+              <TableRow
+                key={r.id}
+                {...(r.activo
+                  ? filaClicableProps(() => navigate({ to: "/datos-maestros/entidades-obra/propiedad/$id", params: { id: r.propiedadId } }))
+                  : { className: "hover:bg-transparent" })}
+              >
                 <TableCell className={`font-medium ${r.activo ? "" : "opacity-50"}`}>
-                  {r.activo ? (
-                    <Link to="/datos-maestros/entidades-obra/propiedad/$id" params={{ id: r.propiedadId }} className="hover:underline">
-                      {r.nombreComercial || r.nombreLegal}
-                    </Link>
-                  ) : (
-                    <span>{r.nombreComercial || r.nombreLegal}</span>
-                  )}
+                  {r.nombreComercial || r.nombreLegal}
                 </TableCell>
                 <TableCell className={r.activo ? undefined : "opacity-50"}>{r.nif}</TableCell>
                 <TableCell
@@ -166,14 +167,14 @@ function PropiedadListado() {
                 >
                   {proyectos.length === 1 ? proyectos[0] : proyectos.length > 1 ? `${proyectos.length} proyectos` : ""}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={r.activo}
                     disabled={!puedeEditar}
                     onCheckedChange={(activo) => toggle.mutate({ id: r.id, activo })}
                   />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   {puedeEliminar && (
                     <Button size="icon" variant="ghost" onClick={() => eliminar.mutate(r.id)} aria-label="Desvincular">
                       <Trash2 className="h-4 w-4" />
