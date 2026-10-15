@@ -319,7 +319,11 @@ export function NuevaPersonaDialog() {
 
             {existe && (
               <div className="flex items-center justify-between gap-3 rounded-md border border-destructive p-3 text-sm">
-                <span>Ya existe una persona con este {existe.campo === "nif" ? "NIF" : "email"} en tu empresa: {existe.nombre}.</span>
+                <span>
+                  Ya existe una persona con este{" "}
+                  {existe.campo === "nif" ? "NIF" : existe.campo === "email" ? "email" : "número de empleado"} en tu
+                  empresa: {existe.nombre}.
+                </span>
                 {existe.id && (
                   <Button
                     size="sm"
