@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { ArrowLeft, Save, Trash2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,6 +12,7 @@ import { DireccionObraFields, type DireccionObra } from "@/components/datos-maes
 import { BuscarCombobox } from "@/components/datos-maestros/BuscarCombobox";
 import { PropiedadSelector, reactivarPropiedad, type PropiedadSeleccion } from "@/components/datos-maestros/PropiedadSelector";
 import { BadgeEstado } from "@/components/shared/BadgeEstado";
+import { sumarMeses } from "@/lib/erp/fechas";
 import { errorProyecto } from "@/lib/erp/proyectos-errores";
 
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,7 @@ function ProyectoDetail() {
   const [codigoEstudios, setCodigoEstudios] = useState("");
   const [fechaInicioReal, setFechaInicioReal] = useState("");
   const [fechaFinalizacionReal, setFechaFinalizacionReal] = useState("");
+  const finAutoRef = useRef<string>("");
   const [propiedadSel, setPropiedadSel] = useState<PropiedadSeleccion>({ id: null, label: null, inactiva: false });
   const { usuarioCliente } = useAuth();
   const [adjudicarOpen, setAdjudicarOpen] = useState(false);
@@ -118,6 +120,16 @@ function ProyectoDetail() {
     setCodigoEstudios(data.codigo_estudios ?? "");
     setFechaInicioReal(data.fecha_inicio_real ?? "");
     setFechaFinalizacionReal(data.fecha_finalizacion_real ?? "");
+    finAutoRef.current = sumarMeses(data.fecha_inicio_real ?? "", data.plazo_ejecucion_meses);
+  };
+  const cambiarInicioReal = (v: string) => {
+    setFechaInicioReal(v);
+    if (data?.estado !== "en_ejecucion") return;
+    const calc = sumarMeses(v, data?.plazo_ejecucion_meses);
+    if (!fechaFinalizacionReal || fechaFinalizacionReal === finAutoRef.current) {
+      if (calc) setFechaFinalizacionReal(calc);
+      finAutoRef.current = calc;
+    }
   };
   const resetProp = () => {
     if (!data) return;
@@ -236,7 +248,10 @@ function ProyectoDetail() {
   const cambiarEstado = useMutation({
     mutationFn: async (nuevo: string) => {
       const cambios: { estado: string; fecha_inicio_real?: null; fecha_finalizacion_real?: null } = { estado: nuevo };
-      if (data?.estado === "en_ejecucion" && nuevo === "adjudicado") cambios.fecha_inicio_real = null;
+      if (data?.estado === "en_ejecucion" && nuevo === "adjudicado") {
+        cambios.fecha_inicio_real = null;
+        cambios.fecha_finalizacion_real = null;
+      }
       if (data?.estado === "finalizado" && nuevo === "en_ejecucion") cambios.fecha_finalizacion_real = null;
       const { error } = await supabase.from("proyectos").update(cambios).eq("id", id);
       if (error) throw error;
@@ -411,7 +426,7 @@ function ProyectoDetail() {
             {editing ? (
               <div className="space-y-1.5 max-w-xs">
                 <Label>Fecha de inicio (real)</Label>
-                <Input type="date" value={fechaInicioReal} onChange={(e) => setFechaInicioReal(e.target.value)} />
+                <Input type="date" value={fechaInicioReal} onChange={(e) => cambiarInicioReal(e.target.value)} />
               </div>
             ) : (
               <Field
@@ -511,6 +526,7 @@ function ProyectoDetail() {
         open={finalizarOpen}
         onOpenChange={setFinalizarOpen}
         proyectoId={id}
+        fechaInicial={data.fecha_finalizacion_real ?? ""}
         onDone={() => {
           setFinalizarOpen(false);
           qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
@@ -523,6 +539,7 @@ function ProyectoDetail() {
         onOpenChange={setEjecucionOpen}
         proyectoId={id}
         tieneCodigoObra={Boolean(data.codigo_obra)}
+        duracionMeses={data.plazo_ejecucion_meses ?? null}
         onDone={() => {
           setEjecucionOpen(false);
           qc.invalidateQueries({ queryKey: ["datos-maestros", "proyecto", id] });
@@ -536,7 +553,7 @@ function ProyectoDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Volver a Adjudicado</AlertDialogTitle>
             <AlertDialogDescription>
-              Se borrará la fecha de inicio real y el proyecto pasará a Adjudicado. El código de obra se conserva.
+              Se borrarán las fechas de inicio y finalización reales y el proyecto pasará a Adjudicado. El código de obra se conserva.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -723,20 +740,22 @@ function AdjudicarDialog({
 }
 
 function EjecucionDialog({
-  open, onOpenChange, proyectoId, tieneCodigoObra, onDone,
+  open, onOpenChange, proyectoId, tieneCodigoObra, duracionMeses, onDone,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   proyectoId: string;
   tieneCodigoObra: boolean;
+  duracionMeses: number | null;
   onDone: () => void;
 }) {
   const [codigo, setCodigo] = useState("");
   const [fecha, setFecha] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!open) { setCodigo(""); setFecha(""); }
+    if (!open) { setCodigo(""); setFecha(""); setFechaFin(""); }
   }, [open]);
 
   async function confirmar() {
@@ -745,9 +764,10 @@ function EjecucionDialog({
       return;
     }
     setSubmitting(true);
-    const cambios: { estado: string; fecha_inicio_real: string; codigo_obra?: string } = {
+    const cambios: { estado: string; fecha_inicio_real: string; fecha_finalizacion_real: string | null; codigo_obra?: string } = {
       estado: "en_ejecucion",
       fecha_inicio_real: fecha,
+      fecha_finalizacion_real: fechaFin || null,
     };
     if (!tieneCodigoObra) cambios.codigo_obra = codigo.trim();
     const { error } = await supabase.from("proyectos").update(cambios).eq("id", proyectoId);
@@ -772,7 +792,18 @@ function EjecucionDialog({
         )}
         <div className="space-y-1.5">
           <Label>Fecha de inicio real *</Label>
-          <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <Input
+            type="date"
+            value={fecha}
+            onChange={(e) => {
+              setFecha(e.target.value);
+              setFechaFin(sumarMeses(e.target.value, duracionMeses));
+            }}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Fecha de finalización</Label>
+          <Input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
@@ -784,19 +815,20 @@ function EjecucionDialog({
 }
 
 function FinalizarDialog({
-  open, onOpenChange, proyectoId, onDone,
+  open, onOpenChange, proyectoId, fechaInicial, onDone,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   proyectoId: string;
+  fechaInicial: string;
   onDone: () => void;
 }) {
   const [fecha, setFecha] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!open) setFecha("");
-  }, [open]);
+    setFecha(open ? fechaInicial : "");
+  }, [open, fechaInicial]);
 
   async function confirmar() {
     if (!fecha) {
