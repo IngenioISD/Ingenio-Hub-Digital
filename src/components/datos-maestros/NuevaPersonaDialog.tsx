@@ -153,14 +153,14 @@ export function NuevaPersonaDialog() {
 
   const validar = () => {
     const e: Record<string, string> = {};
-    if (!normalizarNif(f.nif)) e.nif = "Indica el NIF.";
-    if (!f.nombre.trim()) e.nombre = "Indica el nombre.";
-    if (!f.apellido_1.trim()) e.apellido_1 = "Indica el primer apellido.";
+    if (!normalizarNif(f.nif)) e["nif"] = "Indica el NIF.";
+    if (!f.nombre.trim()) e["nombre"] = "Indica el nombre.";
+    if (!f.apellido_1.trim()) e["apellido_1"] = "Indica el primer apellido.";
     const email = f.email.trim();
-    if (email && !EMAIL_RE.test(email)) e.email = "Indica un email válido.";
-    if (!f.departamento_id) e.departamento_id = "Indica el departamento.";
-    if (!f.puesto_id) e.puesto_id = "Indica el puesto.";
-    if (!f.fecha_alta) e.fecha_alta = "Indica la fecha de alta.";
+    if (email && !EMAIL_RE.test(email)) e["email"] = "Indica un email válido.";
+    if (!f.departamento_id) e["departamento_id"] = "Indica el departamento.";
+    if (!f.puesto_id) e["puesto_id"] = "Indica el puesto.";
+    if (!f.fecha_alta) e["fecha_alta"] = "Indica la fecha de alta.";
     setErrores(e);
     return Object.keys(e).length === 0;
   };

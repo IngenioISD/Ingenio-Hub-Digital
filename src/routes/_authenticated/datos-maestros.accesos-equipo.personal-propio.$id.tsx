@@ -175,7 +175,7 @@ function DatosPersonales({
   onGuardado,
 }: {
   p: Persona;
-  clienteId?: string;
+  clienteId?: string | undefined;
   puedeEditar: boolean;
   onGuardado: () => Promise<void>;
 }) {
@@ -193,11 +193,11 @@ function DatosPersonales({
 
   const guardar = async () => {
     const e: Record<string, string> = {};
-    if (!f.nombre.trim()) e.nombre = "Indica el nombre.";
-    if (!f.apellido_1.trim()) e.apellido_1 = "Indica el primer apellido.";
+    if (!f.nombre.trim()) e["nombre"] = "Indica el nombre.";
+    if (!f.apellido_1.trim()) e["apellido_1"] = "Indica el primer apellido.";
     const email = f.email.trim().toLowerCase();
-    if (email && !EMAIL_RE.test(email)) e.email = "Indica un email válido.";
-    if (email && !e.email && clienteId) {
+    if (email && !EMAIL_RE.test(email)) e["email"] = "Indica un email válido.";
+    if (email && !e["email"] && clienteId) {
       const { data } = await supabase
         .from("personal")
         .select("id, nombre, apellido_1, apellido_2")
@@ -206,7 +206,7 @@ function DatosPersonales({
         .neq("id", p.id)
         .limit(1);
       const o = data?.[0];
-      if (o) e.email = `Ya existe una persona con este email en tu empresa: ${[o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ")}.`;
+      if (o) e["email"] = `Ya existe una persona con este email en tu empresa: ${[o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ")}.`;
     }
     setErrores(e);
     if (Object.keys(e).length) return;
@@ -327,13 +327,13 @@ function DatosLaborales({
 
   const guardar = async () => {
     const e: Record<string, string> = {};
-    if (!f.departamento_id && p.departamento_id) e.departamento_id = "Indica el departamento.";
-    if (!f.puesto_id && p.puesto_id) e.puesto_id = "Indica el puesto.";
-    if (!f.fecha_alta && p.fecha_alta) e.fecha_alta = "Indica la fecha de alta.";
+    if (!f.departamento_id && p.departamento_id) e["departamento_id"] = "Indica el departamento.";
+    if (!f.puesto_id && p.puesto_id) e["puesto_id"] = "Indica el puesto.";
+    if (!f.fecha_alta && p.fecha_alta) e["fecha_alta"] = "Indica la fecha de alta.";
     if (esBaja) {
-      if (!f.fecha_baja) e.fecha_baja = "Indica la fecha de baja.";
-      else if (f.fecha_alta && f.fecha_baja < f.fecha_alta) e.fecha_baja = "La fecha de baja no puede ser anterior a la de alta.";
-      if (!f.motivo_baja_id) e.motivo_baja_id = "Indica el motivo de baja.";
+      if (!f.fecha_baja) e["fecha_baja"] = "Indica la fecha de baja.";
+      else if (f.fecha_alta && f.fecha_baja < f.fecha_alta) e["fecha_baja"] = "La fecha de baja no puede ser anterior a la de alta.";
+      if (!f.motivo_baja_id) e["motivo_baja_id"] = "Indica el motivo de baja.";
     }
     setErrores(e);
     if (Object.keys(e).length) return;
