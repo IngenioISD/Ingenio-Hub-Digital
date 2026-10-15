@@ -384,11 +384,7 @@ function ProyectoDetail() {
                 <SelectContent>
                   {estadosDisponibles.map((e) => (
                     <SelectItem key={e.value} value={e.value}>
-                      {e.value === "en_ejecucion" && data.estado === "adjudicado"
-                        ? "Pasar a En ejecución"
-                        : e.value === "adjudicado" && data.estado === "en_ejecucion"
-                          ? "Volver a Adjudicado"
-                          : e.label}
+                      {e.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
