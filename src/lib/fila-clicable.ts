@@ -5,9 +5,12 @@ import type { KeyboardEvent } from "react";
  * con cursor de mano y accesible por teclado (Tab + Enter).
  * El color al pasar el ratón lo aporta el propio TableRow (hover:bg-muted/50).
  */
+/** Altura común de las filas de los listados de Datos Maestros. */
+export const ALTURA_FILA_LISTADO = "h-[4.5rem]";
+
 export function filaClicableProps(abrir: () => void) {
   return {
-    className: "cursor-pointer",
+    className: `cursor-pointer ${ALTURA_FILA_LISTADO}`,
     role: "link" as const,
     tabIndex: 0,
     onClick: abrir,

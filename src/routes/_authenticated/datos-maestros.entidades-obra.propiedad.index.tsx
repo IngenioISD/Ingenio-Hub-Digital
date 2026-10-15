@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
 import { NuevaPropiedadDialog } from "@/components/datos-maestros/NuevaPropiedadDialog";
-import { filaClicableProps } from "@/lib/fila-clicable";
+import { ALTURA_FILA_LISTADO, filaClicableProps } from "@/lib/fila-clicable";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,7 +155,7 @@ function PropiedadListado() {
                 key={r.id}
                 {...(r.activo
                   ? filaClicableProps(() => navigate({ to: "/datos-maestros/entidades-obra/propiedad/$id", params: { id: r.propiedadId } }))
-                  : { className: "hover:bg-transparent" })}
+                  : { className: `hover:bg-transparent ${ALTURA_FILA_LISTADO}` })}
               >
                 <TableCell className={`font-medium ${r.activo ? "" : "opacity-50"}`}>
                   {r.nombreComercial || r.nombreLegal}
