@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { fechaCorta } from "@/lib/erp/formato";
 import {
+  buscarCodigoEmpleado,
   CatalogoSelect,
   EMAIL_RE,
   normalizarNif,
@@ -125,7 +126,7 @@ function Ficha() {
         {estado && <span className={p.activo !== false ? "badge badge-success" : "badge badge-neutral"}>{estado.nombre}</span>}
       </div>
       <DatosPersonales p={p} clienteId={clienteId} puedeEditar={puedeEditar} onGuardado={refrescar} />
-      <DatosLaborales p={p} catalogos={catalogos} puedeEditar={puedeEditar} onGuardado={refrescar} />
+      <DatosLaborales p={p} clienteId={clienteId} catalogos={catalogos} puedeEditar={puedeEditar} onGuardado={refrescar} />
     </div>
   );
 }
@@ -358,11 +359,13 @@ function DatosPersonales({
 
 function DatosLaborales({
   p,
+  clienteId,
   catalogos,
   puedeEditar,
   onGuardado,
 }: {
   p: Persona;
+  clienteId?: string | undefined;
   catalogos: CatalogoPersonal[];
   puedeEditar: boolean;
   onGuardado: () => Promise<void>;
@@ -383,6 +386,12 @@ function DatosLaborales({
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
   const [estadoPendiente, setEstadoPendiente] = useState<string | null>(null);
+  const [codigoExiste, setCodigoExiste] = useState<{ id: string; nombre: string } | null>(null);
+
+  const salirCodigo = async () => {
+    if (!clienteId) return;
+    setCodigoExiste(await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id));
+  };
 
   const codigo = (id: string | null) => catalogos.find((c) => c.id === id)?.codigo ?? null;
   const esBaja = codigo(f.estado_id) === "baja_empresa";
@@ -409,6 +418,9 @@ function DatosLaborales({
     }
     setErrores(e);
     if (Object.keys(e).length) return;
+    const dupeCodigo = clienteId ? await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id) : null;
+    setCodigoExiste(dupeCodigo);
+    if (dupeCodigo) return;
     setGuardando(true);
     const { error } = await supabase
       .from("personal")
@@ -426,7 +438,10 @@ function DatosLaborales({
       .eq("id", p.id);
     setGuardando(false);
     if (error) {
-      toast.error("No se ha podido guardar.");
+      if (error.code === "23505" && error.message.includes("codigo_empleado")) {
+        const e = clienteId ? await buscarCodigoEmpleado(clienteId, f.codigo_empleado, p.id) : null;
+        setCodigoExiste(e ?? { id: "", nombre: "" });
+      } else toast.error("No se ha podido guardar.");
       return;
     }
     await onGuardado();
@@ -449,10 +464,11 @@ function DatosLaborales({
         titulo="Datos laborales"
         editando={editando}
         puedeEditar={puedeEditar}
-        guardando={guardando}
+        guardando={guardando || !!codigoExiste}
         onEditar={() => {
           setF(inicial());
           setErrores({});
+          setCodigoExiste(null);
           setEditando(true);
         }}
         onCancelar={() => setEditando(false)}
@@ -467,7 +483,24 @@ function DatosLaborales({
             {sel("centro_trabajo_id", "centro_trabajo", "Centro de trabajo", true)}
             <div className="space-y-1">
               <Label>Nº de empleado</Label>
-              <Input value={f.codigo_empleado} onChange={(e) => set("codigo_empleado", e.target.value)} />
+              <Input
+                value={f.codigo_empleado}
+                onChange={(e) => {
+                  set("codigo_empleado", e.target.value);
+                  setCodigoExiste(null);
+                }}
+                onBlur={() => void salirCodigo()}
+              />
+              {codigoExiste && (
+                <div className="flex items-center justify-between gap-2 text-sm text-destructive">
+                  <span>Ya existe una persona con este número de empleado en tu empresa: {codigoExiste.nombre}.</span>
+                  {codigoExiste.id && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`${LISTADO}/${codigoExiste.id}` as never}>Abrir ficha</Link>
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
             <div className="space-y-1">
               <Label>{p.fecha_alta ? "Fecha de alta *" : "Fecha de alta"}</Label>

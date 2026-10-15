@@ -18,6 +18,12 @@ export const NINGUNO = "__ninguno__";
 export function normalizarNif(s: string) {
   return s.toUpperCase().replace(/[\s.\-]/g, "");
 }
+/** Nº de empleado: sin espacios, minúsculas, sin ceros iniciales ("000" → "0"). */
+export function normalizarCodigoEmpleado(s: string) {
+  const t = s.replace(/\s/g, "").toLowerCase();
+  if (!t) return "";
+  return t.replace(/^0+/, "") || "0";
+}
 export function normalizarTexto(s: string) {
   return s
     .normalize("NFD")
@@ -82,7 +88,24 @@ export function CatalogoSelect({
   );
 }
 
-type Existe = { id: string; nombre: string; campo: "nif" | "email" };
+type Existe = { id: string; nombre: string; campo: "nif" | "email" | "codigo" };
+
+/** Busca en el personal del cliente a alguien con el mismo Nº de empleado (normalizado). */
+export async function buscarCodigoEmpleado(
+  clienteId: string,
+  codigo: string,
+  excluirId?: string,
+): Promise<{ id: string; nombre: string } | null> {
+  const clave = normalizarCodigoEmpleado(codigo);
+  if (!clave) return null;
+  const { data } = await supabase
+    .from("personal")
+    .select("id, nombre, apellido_1, apellido_2, codigo_empleado")
+    .eq("cliente_id", clienteId)
+    .not("codigo_empleado", "is", null);
+  const o = (data ?? []).find((x) => x.id !== excluirId && normalizarCodigoEmpleado(x.codigo_empleado ?? "") === clave);
+  return o ? { id: o.id, nombre: [o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ") } : null;
+}
 
 function hoyIso() {
   const d = new Date();
@@ -127,6 +150,12 @@ export function NuevaPersonaDialog() {
     setAvisoNombre(false);
   };
 
+  const salirCodigo = async () => {
+    if (!clienteId) return;
+    const e = await buscarCodigoEmpleado(clienteId, f.codigo_empleado);
+    setExiste(e ? { ...e, campo: "codigo" } : existe?.campo === "codigo" ? null : existe);
+  };
+
   const buscarPor = async (campo: "nif" | "email", valor: string): Promise<Existe | null> => {
     if (!valor || !clienteId) return null;
     const q = supabase.from("personal").select("id, nombre, apellido_1, apellido_2").eq("cliente_id", clienteId);
@@ -169,9 +198,12 @@ export function NuevaPersonaDialog() {
     if (!clienteId || !validar()) return;
     const nif = normalizarNif(f.nif);
     const email = f.email.trim().toLowerCase();
-    const dupe = (await buscarPor("nif", nif)) ?? (email ? await buscarPor("email", email) : null);
+    const dupe =
+      (await buscarPor("nif", nif)) ??
+      (email ? await buscarPor("email", email) : null) ??
+      ((await buscarCodigoEmpleado(clienteId, f.codigo_empleado)) as Existe | null);
     if (dupe) {
-      setExiste(dupe);
+      setExiste(dupe.campo ? dupe : { ...dupe, campo: "codigo" });
       return;
     }
     if (!saltarAvisoNombre) {
@@ -206,9 +238,14 @@ export function NuevaPersonaDialog() {
     setGuardando(false);
     if (error) {
       if (error.code === "23505") {
-        const campo = error.message.includes("email") ? "email" : "nif";
-        const e = await buscarPor(campo, campo === "nif" ? nif : email);
-        setExiste(e ?? { id: "", nombre: "", campo });
+        if (error.message.includes("codigo_empleado")) {
+          const e = await buscarCodigoEmpleado(clienteId, f.codigo_empleado);
+          setExiste(e ? { ...e, campo: "codigo" } : { id: "", nombre: "", campo: "codigo" });
+        } else {
+          const campo = error.message.includes("email") ? "email" : "nif";
+          const e = await buscarPor(campo, campo === "nif" ? nif : email);
+          setExiste(e ?? { id: "", nombre: "", campo });
+        }
       } else {
         setErrores({ general: "No se ha podido guardar. Inténtalo de nuevo." });
       }
@@ -282,7 +319,11 @@ export function NuevaPersonaDialog() {
 
             {existe && (
               <div className="flex items-center justify-between gap-3 rounded-md border border-destructive p-3 text-sm">
-                <span>Ya existe una persona con este {existe.campo === "nif" ? "NIF" : "email"} en tu empresa: {existe.nombre}.</span>
+                <span>
+                  Ya existe una persona con este{" "}
+                  {existe.campo === "nif" ? "NIF" : existe.campo === "email" ? "email" : "número de empleado"} en tu
+                  empresa: {existe.nombre}.
+                </span>
                 {existe.id && (
                   <Button
                     size="sm"
@@ -338,7 +379,17 @@ export function NuevaPersonaDialog() {
                 <Label>Centro de trabajo</Label>
                 <CatalogoSelect catalogos={catalogos} tipo="centro_trabajo" value={f.centro_trabajo_id} onChange={(v) => set("centro_trabajo_id", v)} permitirVacio />
               </div>
-              {campo("codigo_empleado", "Nº de empleado")}
+              <div className="space-y-1">
+                <Label>Nº de empleado</Label>
+                <Input
+                  value={f.codigo_empleado}
+                  onChange={(e) => {
+                    set("codigo_empleado", e.target.value);
+                    if (existe?.campo === "codigo") setExiste(null);
+                  }}
+                  onBlur={() => void salirCodigo()}
+                />
+              </div>
               <div className="space-y-1">
                 <Label>Fecha de alta *</Label>
                 <Input type="date" value={f.fecha_alta} onChange={(e) => set("fecha_alta", e.target.value)} />
