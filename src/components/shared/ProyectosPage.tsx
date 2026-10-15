@@ -51,7 +51,7 @@ import type { EstadoProyecto, ProyectoListado } from "@/lib/erp/proyectos.types"
 
 const TODAS = "__todas__";
 const STORAGE_KEY = "ingenio:hub:proyectos:filtros";
-const ESTADOS: EstadoProyecto[] = ["en_estudio", "adjudicado", "perdido", "finalizado"];
+const ESTADOS: EstadoProyecto[] = ["en_estudio", "adjudicado", "en_ejecucion", "finalizado", "perdido"];
 const EXPORT_HEADERS = [
   "Proyecto",
   "Propiedad",

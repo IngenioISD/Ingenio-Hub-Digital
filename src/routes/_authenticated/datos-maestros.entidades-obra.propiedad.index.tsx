@@ -52,7 +52,7 @@ function PropiedadListado() {
         .from("proyectos")
         .select("id, nombre, propiedad_id")
         .eq("cliente_id", clienteId)
-        .eq("estado", "adjudicado");
+        .eq("estado", "en_ejecucion");
       if (error) throw error;
       const agrupados = new Map<string, string[]>();
       for (const proyecto of data ?? []) {

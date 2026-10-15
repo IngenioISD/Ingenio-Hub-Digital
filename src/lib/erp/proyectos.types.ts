@@ -1,4 +1,4 @@
-export type EstadoProyecto = "en_estudio" | "adjudicado" | "perdido" | "finalizado";
+export type EstadoProyecto = "en_estudio" | "adjudicado" | "en_ejecucion" | "finalizado" | "perdido";
 
 export type ProyectoListado = {
   id: string;
