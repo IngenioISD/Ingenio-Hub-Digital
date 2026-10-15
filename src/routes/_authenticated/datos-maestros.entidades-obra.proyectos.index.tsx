@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { errorProyecto } from "@/lib/erp/proyectos-errores";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -131,28 +131,20 @@ function ProyectosListado() {
               <TableHead>Código</TableHead>
               <TableHead>Tipo de obra</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
-            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
+            {isLoading && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
+            {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
             {data.map((p) => (
-              <TableRow key={p.id}>
+              <TableRow
+                key={p.id}
+                {...filaClicableProps(() => navigate({ to: "/datos-maestros/entidades-obra/proyectos/$id", params: { id: p.id } }))}
+              >
                 <TableCell className="font-medium">{p.nombre}</TableCell>
                 <TableCell>{p.codigo_obra || p.codigo_estudios || "—"}</TableCell>
                 <TableCell>{tipoObraLabel(p.tipo_obra)}</TableCell>
                 <TableCell>{p.estado && <BadgeEstado estado={p.estado} />}</TableCell>
-                <TableCell className="text-right">
-                  <Button asChild variant="ghost" size="sm">
-                    <Link
-                      to="/datos-maestros/entidades-obra/proyectos/$id"
-                      params={{ id: p.id }}
-                    >
-                      Abrir
-                    </Link>
-                  </Button>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
