@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { fechaCorta } from "@/lib/erp/formato";
 import {
+  buscarCodigoEmpleado,
   CatalogoSelect,
   EMAIL_RE,
   normalizarNif,
@@ -125,7 +126,7 @@ function Ficha() {
         {estado && <span className={p.activo !== false ? "badge badge-success" : "badge badge-neutral"}>{estado.nombre}</span>}
       </div>
       <DatosPersonales p={p} clienteId={clienteId} puedeEditar={puedeEditar} onGuardado={refrescar} />
-      <DatosLaborales p={p} catalogos={catalogos} puedeEditar={puedeEditar} onGuardado={refrescar} />
+      <DatosLaborales p={p} clienteId={clienteId} catalogos={catalogos} puedeEditar={puedeEditar} onGuardado={refrescar} />
     </div>
   );
 }
