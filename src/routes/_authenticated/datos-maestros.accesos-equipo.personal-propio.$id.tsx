@@ -482,7 +482,24 @@ function DatosLaborales({
             {sel("centro_trabajo_id", "centro_trabajo", "Centro de trabajo", true)}
             <div className="space-y-1">
               <Label>Nº de empleado</Label>
-              <Input value={f.codigo_empleado} onChange={(e) => set("codigo_empleado", e.target.value)} />
+              <Input
+                value={f.codigo_empleado}
+                onChange={(e) => {
+                  set("codigo_empleado", e.target.value);
+                  setCodigoExiste(null);
+                }}
+                onBlur={() => void salirCodigo()}
+              />
+              {codigoExiste && (
+                <div className="flex items-center justify-between gap-2 text-sm text-destructive">
+                  <span>Ya existe una persona con este número de empleado en tu empresa: {codigoExiste.nombre}.</span>
+                  {codigoExiste.id && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`${LISTADO}/${codigoExiste.id}` as never}>Abrir ficha</Link>
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
             <div className="space-y-1">
               <Label>{p.fecha_alta ? "Fecha de alta *" : "Fecha de alta"}</Label>
