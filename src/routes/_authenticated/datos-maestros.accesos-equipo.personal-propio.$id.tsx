@@ -452,7 +452,7 @@ function DatosLaborales({
             >
               Continuar
             </AlertDialogAction>
-          </AlertDialogContent>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </Card>
