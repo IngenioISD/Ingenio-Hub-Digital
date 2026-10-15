@@ -464,10 +464,11 @@ function DatosLaborales({
         titulo="Datos laborales"
         editando={editando}
         puedeEditar={puedeEditar}
-        guardando={guardando}
+        guardando={guardando || !!codigoExiste}
         onEditar={() => {
           setF(inicial());
           setErrores({});
+          setCodigoExiste(null);
           setEditando(true);
         }}
         onCancelar={() => setEditando(false)}
