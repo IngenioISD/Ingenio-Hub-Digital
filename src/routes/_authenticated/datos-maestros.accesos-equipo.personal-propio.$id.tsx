@@ -11,6 +11,7 @@ import { fechaCorta } from "@/lib/erp/formato";
 import {
   CatalogoSelect,
   EMAIL_RE,
+  normalizarNif,
   useCatalogosPersonal,
   type CatalogoPersonal,
 } from "@/components/datos-maestros/NuevaPersonaDialog";
@@ -183,6 +184,7 @@ function DatosPersonales({
     nombre: p.nombre,
     apellido_1: p.apellido_1,
     apellido_2: p.apellido_2 ?? "",
+    nif: p.nif,
     email: p.email ?? "",
     telefono: p.telefono ?? "",
   });
@@ -190,11 +192,34 @@ function DatosPersonales({
   const [f, setF] = useState(inicial);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [guardando, setGuardando] = useState(false);
+  const [nifExiste, setNifExiste] = useState<{ id: string; nombre: string } | null>(null);
+  const [confirmarNif, setConfirmarNif] = useState(false);
 
-  const guardar = async () => {
+  const buscarNif = async (nif: string) => {
+    if (!nif || !clienteId) return null;
+    const { data } = await supabase
+      .from("personal")
+      .select("id, nombre, apellido_1, apellido_2")
+      .eq("cliente_id", clienteId)
+      .ilike("nif", nif)
+      .neq("id", p.id)
+      .limit(1);
+    const o = data?.[0];
+    return o ? { id: o.id, nombre: [o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ") } : null;
+  };
+
+  const salirNif = async () => {
+    const nif = normalizarNif(f.nif);
+    setF((x) => ({ ...x, nif }));
+    setNifExiste(await buscarNif(nif));
+  };
+
+  const guardar = async (confirmado = false) => {
     const e: Record<string, string> = {};
     if (!f.nombre.trim()) e["nombre"] = "Indica el nombre.";
     if (!f.apellido_1.trim()) e["apellido_1"] = "Indica el primer apellido.";
+    const nif = normalizarNif(f.nif);
+    if (!nif) e["nif"] = "Indica el NIF.";
     const email = f.email.trim().toLowerCase();
     if (email && !EMAIL_RE.test(email)) e["email"] = "Indica un email válido.";
     if (email && !e["email"] && clienteId) {
@@ -208,8 +233,15 @@ function DatosPersonales({
       const o = data?.[0];
       if (o) e["email"] = `Ya existe una persona con este email en tu empresa: ${[o.nombre, o.apellido_1, o.apellido_2].filter(Boolean).join(" ")}.`;
     }
+    setF((x) => ({ ...x, nif }));
+    const dupe = nif ? await buscarNif(nif) : null;
+    setNifExiste(dupe);
     setErrores(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length || dupe) return;
+    if (nif !== p.nif && !confirmado) {
+      setConfirmarNif(true);
+      return;
+    }
     setGuardando(true);
     const { error } = await supabase
       .from("personal")
@@ -217,21 +249,24 @@ function DatosPersonales({
         nombre: f.nombre.trim(),
         apellido_1: f.apellido_1.trim(),
         apellido_2: f.apellido_2.trim() || null,
+        nif,
         email: email || null,
         telefono: f.telefono.trim() || null,
       })
       .eq("id", p.id);
     setGuardando(false);
     if (error) {
-      if (error.code === "23505") setErrores({ email: "Ya existe una persona con este email en tu empresa." });
-      else toast.error("No se ha podido guardar.");
+      if (error.code === "23505") {
+        if (error.message.includes("email")) setErrores({ email: "Ya existe una persona con este email en tu empresa." });
+        else setNifExiste((await buscarNif(nif)) ?? { id: "", nombre: "" });
+      } else toast.error("No se ha podido guardar.");
       return;
     }
     await onGuardado();
     setEditando(false);
   };
 
-  const campo = (k: keyof typeof f, label: string) => (
+  const campo = (k: "nombre" | "apellido_1" | "apellido_2" | "email" | "telefono", label: string) => (
     <div className="space-y-1">
       <Label>{label}</Label>
       <Input value={f[k]} onChange={(ev) => setF((x) => ({ ...x, [k]: ev.target.value }))} />
@@ -241,14 +276,37 @@ function DatosPersonales({
 
   return (
     <Card>
+      <AlertDialog open={confirmarNif} onOpenChange={setConfirmarNif}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cambiar NIF</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vas a cambiar el NIF de {[p.nombre, p.apellido_1, p.apellido_2].filter(Boolean).join(" ")}. Se actualizará
+              también en las actas donde aparece como participante.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmarNif(false);
+                void guardar(true);
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <CabeceraCard
         titulo="Datos personales"
         editando={editando}
         puedeEditar={puedeEditar}
-        guardando={guardando}
+        guardando={guardando || !!nifExiste}
         onEditar={() => {
           setF(inicial());
           setErrores({});
+          setNifExiste(null);
           setEditando(true);
         }}
         onCancelar={() => setEditando(false)}
@@ -261,11 +319,26 @@ function DatosPersonales({
             {campo("apellido_1", "Primer apellido *")}
             {campo("apellido_2", "Segundo apellido")}
             <div className="space-y-1">
-              <Label>NIF</Label>
-              <p className="text-sm text-muted-foreground">{p.nif}</p>
-              <p className="text-xs text-muted-foreground">
-                El NIF no se puede modificar. Si hay un error, contacta con Ingenio ISD.
-              </p>
+              <Label>NIF *</Label>
+              <Input
+                value={f.nif}
+                onChange={(ev) => {
+                  setF((x) => ({ ...x, nif: ev.target.value }));
+                  setNifExiste(null);
+                }}
+                onBlur={() => void salirNif()}
+              />
+              {errores["nif"] && <p className="text-sm text-destructive">{errores["nif"]}</p>}
+              {nifExiste && (
+                <div className="flex items-center justify-between gap-2 text-sm text-destructive">
+                  <span>Ya existe una persona con este NIF en tu empresa: {nifExiste.nombre}.</span>
+                  {nifExiste.id && (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`${LISTADO}/${nifExiste.id}` as never}>Abrir ficha</Link>
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
             {campo("email", "Email")}
             {campo("telefono", "Teléfono")}
