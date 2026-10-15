@@ -359,11 +359,13 @@ function DatosPersonales({
 
 function DatosLaborales({
   p,
+  clienteId,
   catalogos,
   puedeEditar,
   onGuardado,
 }: {
   p: Persona;
+  clienteId?: string | undefined;
   catalogos: CatalogoPersonal[];
   puedeEditar: boolean;
   onGuardado: () => Promise<void>;
