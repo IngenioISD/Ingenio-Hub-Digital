@@ -198,9 +198,12 @@ export function NuevaPersonaDialog() {
     if (!clienteId || !validar()) return;
     const nif = normalizarNif(f.nif);
     const email = f.email.trim().toLowerCase();
-    const dupe = (await buscarPor("nif", nif)) ?? (email ? await buscarPor("email", email) : null);
+    const dupe =
+      (await buscarPor("nif", nif)) ??
+      (email ? await buscarPor("email", email) : null) ??
+      ((await buscarCodigoEmpleado(clienteId, f.codigo_empleado)) as Existe | null);
     if (dupe) {
-      setExiste(dupe);
+      setExiste(dupe.campo ? dupe : { ...dupe, campo: "codigo" });
       return;
     }
     if (!saltarAvisoNombre) {
