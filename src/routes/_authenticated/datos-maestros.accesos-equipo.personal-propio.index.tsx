@@ -60,7 +60,7 @@ function Listado() {
   const [dep, setDep] = useState(TODOS);
   const [puesto, setPuesto] = useState(TODOS);
   const [estado, setEstado] = useState(TODOS);
-  const [mostrarBajas, setMostrarBajas] = useState(true);
+  const [ocultarBajas, setOcultarBajas] = useState(false);
 
   const { data: catalogos = new Map<string, { tipo: string; nombre: string }>() } = useQuery({
     queryKey: ["datos-maestros", "personal-catalogos", clienteId],
@@ -116,7 +116,7 @@ function Listado() {
 
   const term = normalizar(q);
   const filtradas = data
-    .filter((r) => mostrarBajas || r.activo)
+    .filter((r) => !ocultarBajas || r.activo)
     .filter((r) => dep === TODOS || r.departamentoId === dep)
     .filter((r) => puesto === TODOS || r.puestoId === puesto)
     .filter((r) => estado === TODOS || r.estadoId === estado)
@@ -149,7 +149,7 @@ function Listado() {
         {filtro(puesto, setPuesto, "Todos los puestos", opPuesto)}
         {filtro(estado, setEstado, "Todos los estados", opEstado)}
         <div className="flex items-center gap-2">
-          <Switch id="mostrar-bajas" checked={mostrarBajas} onCheckedChange={setMostrarBajas} />
+          <Switch id="mostrar-bajas" checked={ocultarBajas} onCheckedChange={setOcultarBajas} />
           <Label htmlFor="mostrar-bajas">Eliminar del listado el personal en situación de baja y/o excedencia</Label>
         </div>
       </div>
