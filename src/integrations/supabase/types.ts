@@ -2747,6 +2747,7 @@ export type Database = {
           modo_preferente: string | null
           nivel_aprobacion: number | null
           nombre: string | null
+          personal_id: string
           portal: string
           rol_id: string
           telefono: string | null
@@ -2772,6 +2773,7 @@ export type Database = {
           modo_preferente?: string | null
           nivel_aprobacion?: number | null
           nombre?: string | null
+          personal_id: string
           portal?: string
           rol_id: string
           telefono?: string | null
@@ -2797,6 +2799,7 @@ export type Database = {
           modo_preferente?: string | null
           nivel_aprobacion?: number | null
           nombre?: string | null
+          personal_id?: string
           portal?: string
           rol_id?: string
           telefono?: string | null
@@ -2817,6 +2820,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "grupos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usuarios_cliente_personal_fk"
+            columns: ["personal_id", "cliente_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id", "cliente_id"]
           },
         ]
       }
@@ -3008,6 +3018,21 @@ export type Database = {
       clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      mi_perfil: {
+        Args: never
+        Returns: {
+          acceso_total_proyectos: boolean
+          apellidos: string
+          cliente_id: string
+          nombre: string
+          portal: string
+          puesto: string
+          rol_id: string
+          rol_nombre: string
+          user_id: string
+          usuario_id: string
+        }[]
+      }
       personal_puede: { Args: { p_accion: string }; Returns: boolean }
       sembrar_catalogos_personal: {
         Args: { p_cliente_id: string }
