@@ -120,11 +120,19 @@ export function Sidebar({
   const borderColor = esDireccion ? "var(--sidebar-border)" : "var(--sidebar-proyecto-border)";
 
   const menuBase = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
+  /**
+   * Regla provisional: todo el capítulo "Accesos y Equipo" (Personal propio,
+   * Personal externo, Usuarios y Catálogos) se oculta si el rol no puede ver
+   * Personal. Cuando cada pantalla tenga su propio permiso, se filtrará por
+   * item en lugar de por capítulo.
+   */
   const menu = menuBase.filter(
     (item) =>
       (item.key !== "apps" || appsVisibles.length > 0) &&
-      (item.key !== "personal-propio" || permisosPersonal.puedeVer),
+      (item.section !== CAPITULO_ACCESOS || permisosPersonal.puedeVer),
   );
+
+
 
 
   const renderItem = (item: SidebarItem, isActive: boolean) => {
