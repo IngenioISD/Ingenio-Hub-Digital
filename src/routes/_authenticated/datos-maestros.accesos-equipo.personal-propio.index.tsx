@@ -60,7 +60,7 @@ function Listado() {
   const [dep, setDep] = useState(TODOS);
   const [puesto, setPuesto] = useState(TODOS);
   const [estado, setEstado] = useState(TODOS);
-  const [mostrarBajas, setMostrarBajas] = useState(false);
+  const [mostrarBajas, setMostrarBajas] = useState(true);
 
   const { data: catalogos = new Map<string, { tipo: string; nombre: string }>() } = useQuery({
     queryKey: ["datos-maestros", "personal-catalogos", clienteId],
@@ -150,7 +150,7 @@ function Listado() {
         {filtro(estado, setEstado, "Todos los estados", opEstado)}
         <div className="flex items-center gap-2">
           <Switch id="mostrar-bajas" checked={mostrarBajas} onCheckedChange={setMostrarBajas} />
-          <Label htmlFor="mostrar-bajas">Mostrar también bajas y excedencias</Label>
+          <Label htmlFor="mostrar-bajas">Quitar personal en situación de baja y/o excedencia</Label>
         </div>
       </div>
 
