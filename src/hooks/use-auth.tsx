@@ -12,8 +12,29 @@ export type UsuarioCliente = {
   acceso_total_proyectos: boolean;
 };
 
+export type MiPerfilFila = {
+  usuario_id: string;
+  user_id: string;
+  cliente_id: string;
+  rol_id: string;
+  portal: string;
+  acceso_total_proyectos: boolean | null;
+  nombre: string | null;
+  apellidos: string | null;
+  puesto: string | null;
+  rol_nombre: string | null;
+};
+
+/** Llama a la función mi_perfil (solo devuelve los datos del propio usuario). */
+export async function obtenerMiPerfil(): Promise<MiPerfilFila | null> {
+  const { data } = await (supabase.rpc as unknown as (
+    fn: string,
+  ) => Promise<{ data: MiPerfilFila[] | null }>)("mi_perfil");
+  return data?.[0] ?? null;
+}
+
 /**
- * Usuario logueado + su ficha en usuarios_cliente (cliente_id, rol_id, etc.).
+ * Usuario logueado + su perfil (cliente_id, rol_id, etc.) vía mi_perfil.
  * Fuente única de identidad para las apps internas de Ingenio Digital.
  */
 export function useAuth() {
@@ -22,32 +43,20 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
-      if (!user) return null;
+      if (!userData.user) return null;
 
-      const { data } = await supabase
-        .from("usuarios_cliente")
-        .select(
-          "id, user_id, cliente_id, rol_id, portal, nombre, apellidos, apellido1, apellido2, acceso_total_proyectos",
-        )
-        .eq("user_id", user.id)
-        .eq("activo", true)
-        .maybeSingle();
-
-      if (!data) return null;
-
-      const apellidos =
-        data.apellidos ?? [data.apellido1, data.apellido2].filter(Boolean).join(" ") ?? null;
+      const p = await obtenerMiPerfil();
+      if (!p) return null;
 
       return {
-        id: data.id,
-        user_id: data.user_id,
-        cliente_id: data.cliente_id,
-        rol_id: data.rol_id,
-        portal: data.portal,
-        nombre: data.nombre ?? null,
-        apellidos: apellidos || null,
-        acceso_total_proyectos: Boolean(data.acceso_total_proyectos),
+        id: p.usuario_id,
+        user_id: p.user_id,
+        cliente_id: p.cliente_id,
+        rol_id: p.rol_id,
+        portal: p.portal,
+        nombre: p.nombre ?? null,
+        apellidos: p.apellidos || null,
+        acceso_total_proyectos: Boolean(p.acceso_total_proyectos),
       };
     },
   });
