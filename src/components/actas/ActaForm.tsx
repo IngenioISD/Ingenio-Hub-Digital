@@ -223,23 +223,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
       const filas = (data ?? []) as (Persona & { id: string; email: string | null })[];
       if (accesoTotal) return filas;
 
-      // Roles de un solo proyecto: solo personas asignadas al proyecto de la acta.
-      const { data: asignaciones } = await supabase
-        .from("usuario_proyectos")
-        .select("user_id")
-        .eq("proyecto_id", proyectoId)
-        .eq("activo", true);
-      const userIds = (asignaciones ?? []).map((a) => a.user_id);
-      if (userIds.length === 0) return [];
+      // Roles de un solo proyecto: solo personas con usuario activo asignado al proyecto del acta.
+      const { data: asignadas } = await supabase.rpc("personal_asignado_a_proyecto", {
+        p_proyecto_id: proyectoId,
+      } as never);
+      const personalIds = new Set(((asignadas ?? []) as string[]).filter((v): v is string => Boolean(v)));
+      if (personalIds.size === 0) return [];
 
-      const { data: usuarios } = await supabase
-        .from("usuarios_cliente")
-        .select("personal_id")
-        .eq("cliente_id", clienteId!)
-        .in("user_id", userIds);
-      const personalIds = new Set(
-        (usuarios ?? []).map((u) => u.personal_id).filter((v): v is string => Boolean(v)),
-      );
       return filas.filter((p) => personalIds.has(p.id));
     },
   });

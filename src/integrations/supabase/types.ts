@@ -2729,80 +2729,56 @@ export type Database = {
       }
       usuarios_cliente: {
         Row: {
+          acceso_desactivado: boolean
           acceso_total_proyectos: boolean | null
           activo: boolean | null
           actualizado_en: string | null
-          apellido1: string | null
-          apellido2: string | null
-          apellidos: string | null
-          cargo_visible: string | null
           cliente_id: string
           creado_en: string | null
-          email: string | null
           es_corporativo: boolean | null
-          estado_actual: string | null
-          fecha_inicio: string | null
           grupo_id: string | null
           id: string
           modo_preferente: string | null
           nivel_aprobacion: number | null
-          nombre: string | null
           personal_id: string
           portal: string
           rol_id: string
-          telefono: string | null
           ultimo_acceso: string | null
           user_id: string
         }
         Insert: {
+          acceso_desactivado?: boolean
           acceso_total_proyectos?: boolean | null
           activo?: boolean | null
           actualizado_en?: string | null
-          apellido1?: string | null
-          apellido2?: string | null
-          apellidos?: string | null
-          cargo_visible?: string | null
           cliente_id: string
           creado_en?: string | null
-          email?: string | null
           es_corporativo?: boolean | null
-          estado_actual?: string | null
-          fecha_inicio?: string | null
           grupo_id?: string | null
           id?: string
           modo_preferente?: string | null
           nivel_aprobacion?: number | null
-          nombre?: string | null
           personal_id: string
           portal?: string
           rol_id: string
-          telefono?: string | null
           ultimo_acceso?: string | null
           user_id: string
         }
         Update: {
+          acceso_desactivado?: boolean
           acceso_total_proyectos?: boolean | null
           activo?: boolean | null
           actualizado_en?: string | null
-          apellido1?: string | null
-          apellido2?: string | null
-          apellidos?: string | null
-          cargo_visible?: string | null
           cliente_id?: string
           creado_en?: string | null
-          email?: string | null
           es_corporativo?: boolean | null
-          estado_actual?: string | null
-          fecha_inicio?: string | null
           grupo_id?: string | null
           id?: string
           modo_preferente?: string | null
           nivel_aprobacion?: number | null
-          nombre?: string | null
           personal_id?: string
           portal?: string
           rol_id?: string
-          telefono?: string | null
           ultimo_acceso?: string | null
           user_id?: string
         }
@@ -2829,6 +2805,87 @@ export type Database = {
             referencedColumns: ["id", "cliente_id"]
           },
         ]
+      }
+      usuarios_cliente_copia_20261016: {
+        Row: {
+          acceso_total_proyectos: boolean | null
+          activo: boolean | null
+          actualizado_en: string | null
+          apellido1: string | null
+          apellido2: string | null
+          apellidos: string | null
+          cargo_visible: string | null
+          cliente_id: string | null
+          creado_en: string | null
+          email: string | null
+          es_corporativo: boolean | null
+          estado_actual: string | null
+          fecha_inicio: string | null
+          grupo_id: string | null
+          id: string | null
+          modo_preferente: string | null
+          nivel_aprobacion: number | null
+          nombre: string | null
+          personal_id: string | null
+          portal: string | null
+          rol_id: string | null
+          telefono: string | null
+          ultimo_acceso: string | null
+          user_id: string | null
+        }
+        Insert: {
+          acceso_total_proyectos?: boolean | null
+          activo?: boolean | null
+          actualizado_en?: string | null
+          apellido1?: string | null
+          apellido2?: string | null
+          apellidos?: string | null
+          cargo_visible?: string | null
+          cliente_id?: string | null
+          creado_en?: string | null
+          email?: string | null
+          es_corporativo?: boolean | null
+          estado_actual?: string | null
+          fecha_inicio?: string | null
+          grupo_id?: string | null
+          id?: string | null
+          modo_preferente?: string | null
+          nivel_aprobacion?: number | null
+          nombre?: string | null
+          personal_id?: string | null
+          portal?: string | null
+          rol_id?: string | null
+          telefono?: string | null
+          ultimo_acceso?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          acceso_total_proyectos?: boolean | null
+          activo?: boolean | null
+          actualizado_en?: string | null
+          apellido1?: string | null
+          apellido2?: string | null
+          apellidos?: string | null
+          cargo_visible?: string | null
+          cliente_id?: string | null
+          creado_en?: string | null
+          email?: string | null
+          es_corporativo?: boolean | null
+          estado_actual?: string | null
+          fecha_inicio?: string | null
+          grupo_id?: string | null
+          id?: string | null
+          modo_preferente?: string | null
+          nivel_aprobacion?: number | null
+          nombre?: string | null
+          personal_id?: string | null
+          portal?: string | null
+          rol_id?: string | null
+          telefono?: string | null
+          ultimo_acceso?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       usuarios_estados: {
         Row: {
@@ -3018,6 +3075,8 @@ export type Database = {
       clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      mi_cliente_id: { Args: never; Returns: string }
+      mi_es_admin: { Args: never; Returns: boolean }
       mi_perfil: {
         Args: never
         Returns: {
@@ -3033,11 +3092,17 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      personal_asignado_a_proyecto: {
+        Args: { p_proyecto_id: string }
+        Returns: string[]
+      }
       personal_puede: { Args: { p_accion: string }; Returns: boolean }
+      rol_del_creador: { Args: { p_personal_id: string }; Returns: string }
       sembrar_catalogos_personal: {
         Args: { p_cliente_id: string }
         Returns: undefined
       }
+      usuarios_puede: { Args: { p_accion: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
