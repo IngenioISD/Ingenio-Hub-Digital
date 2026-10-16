@@ -75,6 +75,14 @@ export function itemsProyecto(id: string): SidebarItem[] {
 }
 
 /**
+ * Títulos de los dos capítulos del menú de Datos Maestros. Se repiten en cada
+ * item del capítulo para que el título se pinte sobre el primer item visible,
+ * sea cual sea (así no depende de que un item concreto esté o no oculto).
+ */
+export const CAPITULO_ENTIDADES = "Entidades de Obra";
+export const CAPITULO_ACCESOS = "Accesos y Equipo";
+
+/**
  * Menú dentro de Datos Maestros, con sus dos capítulos:
  * "Entidades de Obra" y "Accesos y Equipo". Los accesos que todavía no
  * tienen pantalla construida llevan a un placeholder "Próximamente"
@@ -85,17 +93,18 @@ export function itemsDatosMaestros(): SidebarItem[] {
   return [
     { key: "volver", label: "Volver a Inicio", icon: ArrowLeft, to: "/hub/inicio" },
 
-    { key: "proyectos", label: "Proyectos", icon: LayoutList, to: "/datos-maestros/entidades-obra/proyectos", section: "Entidades de Obra" },
-    { key: "propiedad", label: "Propiedad", icon: Building2, to: "/datos-maestros/entidades-obra/propiedad" },
-    { key: "df", label: "Dirección Facultativa", icon: HardHat, to: "/datos-maestros/entidades-obra/direccion-facultativa" },
-    { key: "proveedores", label: "Proveedores", icon: Truck, to: "/datos-maestros/entidades-obra/proveedores" },
+    { key: "proyectos", label: "Proyectos", icon: LayoutList, to: "/datos-maestros/entidades-obra/proyectos", section: CAPITULO_ENTIDADES },
+    { key: "propiedad", label: "Propiedad", icon: Building2, to: "/datos-maestros/entidades-obra/propiedad", section: CAPITULO_ENTIDADES },
+    { key: "df", label: "Dirección Facultativa", icon: HardHat, to: "/datos-maestros/entidades-obra/direccion-facultativa", section: CAPITULO_ENTIDADES },
+    { key: "proveedores", label: "Proveedores", icon: Truck, to: "/datos-maestros/entidades-obra/proveedores", section: CAPITULO_ENTIDADES },
 
-    { key: "personal-propio", label: "Personal propio", icon: Users, to: "/datos-maestros/accesos-equipo/personal-propio", section: "Accesos y Equipo" },
-    { key: "personal-externo", label: "Personal externo", icon: UserPlus, to: "/datos-maestros/accesos-equipo/personal-externo" },
-    { key: "usuarios", label: "Usuarios", icon: KeyRound, to: "/datos-maestros/accesos-equipo/usuarios" },
-    { key: "catalogos", label: "Catálogos", icon: ListChecks, to: "/datos-maestros/accesos-equipo/catalogos" },
+    { key: "personal-propio", label: "Personal propio", icon: Users, to: "/datos-maestros/accesos-equipo/personal-propio", section: CAPITULO_ACCESOS },
+    { key: "personal-externo", label: "Personal externo", icon: UserPlus, to: "/datos-maestros/accesos-equipo/personal-externo", section: CAPITULO_ACCESOS },
+    { key: "usuarios", label: "Usuarios", icon: KeyRound, to: "/datos-maestros/accesos-equipo/usuarios", section: CAPITULO_ACCESOS },
+    { key: "catalogos", label: "Catálogos", icon: ListChecks, to: "/datos-maestros/accesos-equipo/catalogos", section: CAPITULO_ACCESOS },
   ];
 }
+
 
 export function Sidebar({
   mode,
@@ -120,11 +129,19 @@ export function Sidebar({
   const borderColor = esDireccion ? "var(--sidebar-border)" : "var(--sidebar-proyecto-border)";
 
   const menuBase = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
+  /**
+   * Regla provisional: todo el capítulo "Accesos y Equipo" (Personal propio,
+   * Personal externo, Usuarios y Catálogos) se oculta si el rol no puede ver
+   * Personal. Cuando cada pantalla tenga su propio permiso, se filtrará por
+   * item en lugar de por capítulo.
+   */
   const menu = menuBase.filter(
     (item) =>
       (item.key !== "apps" || appsVisibles.length > 0) &&
-      (item.key !== "personal-propio" || permisosPersonal.puedeVer),
+      (item.section !== CAPITULO_ACCESOS || permisosPersonal.puedeVer),
   );
+
+
 
 
   const renderItem = (item: SidebarItem, isActive: boolean) => {
