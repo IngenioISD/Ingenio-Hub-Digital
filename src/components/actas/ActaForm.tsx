@@ -216,11 +216,11 @@ export function ActaForm({ actaId }: { actaId?: string }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("personal")
-        .select("nif, nombre, apellido_1, apellido_2, email")
+        .select("id, nif, nombre, apellido_1, apellido_2, email")
         .eq("cliente_id", clienteId!)
         .eq("activo", true)
         .order("apellido_1");
-      const filas = (data ?? []) as (Persona & { email: string | null })[];
+      const filas = (data ?? []) as (Persona & { id: string; email: string | null })[];
       if (accesoTotal) return filas;
 
       // Roles de un solo proyecto: solo personas asignadas al proyecto de la acta.
@@ -234,11 +234,13 @@ export function ActaForm({ actaId }: { actaId?: string }) {
 
       const { data: usuarios } = await supabase
         .from("usuarios_cliente")
-        .select("email")
+        .select("personal_id")
         .eq("cliente_id", clienteId!)
         .in("user_id", userIds);
-      const emails = new Set((usuarios ?? []).map((u) => (u.email ?? "").toLowerCase()).filter(Boolean));
-      return filas.filter((p) => p.email && emails.has(p.email.toLowerCase()));
+      const personalIds = new Set(
+        (usuarios ?? []).map((u) => u.personal_id).filter((v): v is string => Boolean(v)),
+      );
+      return filas.filter((p) => personalIds.has(p.id));
     },
   });
 
