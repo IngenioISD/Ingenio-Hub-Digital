@@ -195,7 +195,7 @@ function Ficha() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cambiar tu rol</AlertDialogTitle>
-            <AlertDialogDescription>Si cambias tu propio rol puedes quedarte sin acceso a Usuarios. ¿Continuar?</AlertDialogDescription>
+            <AlertDialogDescription>Si cambias tu propio rol puedes quedarte sin el control y acceso a Usuarios. ¿Continuar?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
