@@ -70,18 +70,11 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
       if (yo?.id && yo.id === creadoPorId) return permisoGeneral;
 
       // Paso 3: acta ajena -> comprobar jerarquía sobre el rol de quien la creó.
-      const { data: creador } = await supabase
-        .from("personal")
-        .select("email")
-        .eq("id", creadoPorId)
-        .maybeSingle();
-      if (!creador?.email) return { ...SIN_PERMISOS, puedeVer };
-
       const { data: rolCreador } = await supabase
         .from("usuarios_cliente")
         .select("rol_id")
         .eq("cliente_id", usuarioCliente!.cliente_id)
-        .eq("email", creador.email)
+        .eq("personal_id", creadoPorId)
         .maybeSingle();
       if (!rolCreador?.rol_id) return { ...SIN_PERMISOS, puedeVer };
 
