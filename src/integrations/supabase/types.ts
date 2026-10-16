@@ -857,6 +857,7 @@ export type Database = {
           id: string
           nombre: string
           orden: number
+          rol_id: string | null
           tipo: string
         }
         Insert: {
@@ -868,6 +869,7 @@ export type Database = {
           id?: string
           nombre: string
           orden?: number
+          rol_id?: string | null
           tipo: string
         }
         Update: {
@@ -879,6 +881,7 @@ export type Database = {
           id?: string
           nombre?: string
           orden?: number
+          rol_id?: string | null
           tipo?: string
         }
         Relationships: [
