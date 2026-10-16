@@ -81,7 +81,7 @@ export function usePermisosActas(creadoPorId?: string | null): PermisosActas {
         .eq("cliente_id", usuarioCliente!.cliente_id)
         .eq("modulo", "actas_reunion")
         .eq("rol_superior", usuarioCliente!.rol_id)
-        .eq("rol_inferior", rolCreador.rol_id)
+        .eq("rol_inferior", rolCreador)
         .maybeSingle();
 
       return {
