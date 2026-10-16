@@ -3097,11 +3097,16 @@ export type Database = {
         Returns: string[]
       }
       personal_puede: { Args: { p_accion: string }; Returns: boolean }
+      proyecto_de_mi_cliente: {
+        Args: { p_proyecto_id: string }
+        Returns: boolean
+      }
       rol_del_creador: { Args: { p_personal_id: string }; Returns: string }
       sembrar_catalogos_personal: {
         Args: { p_cliente_id: string }
         Returns: undefined
       }
+      usuario_de_mi_cliente: { Args: { p_user_id: string }; Returns: boolean }
       usuarios_puede: { Args: { p_accion: string }; Returns: boolean }
     }
     Enums: {
