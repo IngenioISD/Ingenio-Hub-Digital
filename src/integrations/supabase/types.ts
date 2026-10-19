@@ -2650,6 +2650,80 @@ export type Database = {
           },
         ]
       }
+      usuario_excepcion_proyectos: {
+        Row: {
+          cliente_id: string
+          creado_en: string
+          excepcion_id: string
+          proyecto_id: string
+        }
+        Insert: {
+          cliente_id: string
+          creado_en?: string
+          excepcion_id: string
+          proyecto_id: string
+        }
+        Update: {
+          cliente_id?: string
+          creado_en?: string
+          excepcion_id?: string
+          proyecto_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuario_excepcion_proyectos_excepcion_id_fkey"
+            columns: ["excepcion_id"]
+            isOneToOne: false
+            referencedRelation: "usuario_excepciones_rol"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usuario_excepcion_proyectos_proyecto_id_fkey"
+            columns: ["proyecto_id"]
+            isOneToOne: false
+            referencedRelation: "proyectos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuario_excepciones_rol: {
+        Row: {
+          cliente_id: string
+          creado_en: string
+          creado_por: string | null
+          id: string
+          modulo: string
+          rol_id: string
+          user_id: string
+        }
+        Insert: {
+          cliente_id: string
+          creado_en?: string
+          creado_por?: string | null
+          id?: string
+          modulo: string
+          rol_id: string
+          user_id: string
+        }
+        Update: {
+          cliente_id?: string
+          creado_en?: string
+          creado_por?: string | null
+          id?: string
+          modulo?: string
+          rol_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuario_excepciones_rol_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usuario_notificaciones: {
         Row: {
           actualizado_en: string | null
@@ -3105,6 +3179,7 @@ export type Database = {
         Returns: boolean
       }
       rol_del_creador: { Args: { p_personal_id: string }; Returns: string }
+      rol_efectivo: { Args: { p_modulo: string }; Returns: string }
       sembrar_catalogos_personal: {
         Args: { p_cliente_id: string }
         Returns: undefined
