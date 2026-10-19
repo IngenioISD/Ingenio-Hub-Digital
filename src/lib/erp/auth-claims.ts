@@ -63,22 +63,15 @@ export async function getCurrentClaims(): Promise<IngenioClaims | null> {
 export async function resolvePostLoginPath(claims: IngenioClaims): Promise<string> {
   if (claims.portal === "digital") return "/digital/inicio";
 
-  if (claims.acceso_total_proyectos === false) {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
+  const { data: idsData, error: idsError } = await supabase.rpc(
+    "mis_proyectos",
+    { p_modulo: null } as never,
+  );
+  if (idsError) throw idsError;
+  const proyectoIds = (idsData ?? []) as string[];
 
-    if (userId) {
-      const { data } = await supabase
-        .from("usuario_proyectos")
-        .select("proyecto_id")
-        .eq("user_id", userId)
-        .eq("activo", true)
-        .limit(2);
-
-      if (data && data.length === 1 && data[0]?.proyecto_id) {
-        return `/proyecto/${data[0].proyecto_id}/inicio`;
-      }
-    }
+  if (proyectoIds.length === 1 && proyectoIds[0]) {
+    return `/proyecto/${proyectoIds[0]}/inicio`;
   }
 
   return "/hub/inicio";

@@ -92,20 +92,17 @@ export function ActaForm({ actaId }: { actaId?: string }) {
   const [confirmando, setConfirmando] = useState<null | "cancelar" | "limpiar">(null);
 
   const { data: proyectos = [] } = useQuery<Proyecto[]>({
-    queryKey: ["actas", "proyectos", clienteId, usuarioCliente?.acceso_total_proyectos],
+    queryKey: ["actas", "proyectos", clienteId],
     enabled: !!clienteId,
     queryFn: async () => {
-      let ids: string[] | null = null;
-      if (!usuarioCliente?.acceso_total_proyectos) {
-        const { data } = await supabase
-          .from("usuario_proyectos")
-          .select("proyecto_id")
-          .eq("user_id", usuarioCliente!.user_id)
-          .eq("activo", true);
-        ids = (data ?? []).map((f) => f.proyecto_id);
-      }
-      let q = supabase.from("proyectos").select("id, nombre, codigo_obra").eq("cliente_id", clienteId!).order("nombre");
-      if (ids) q = q.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+      const { data: idsData, error: idsError } = await supabase.rpc(
+        "mis_proyectos",
+        { p_modulo: "actas_reunion" } as never,
+      );
+      if (idsError) throw idsError;
+      const ids = (idsData ?? []) as string[];
+      if (ids.length === 0) return [];
+      const q = supabase.from("proyectos").select("id, nombre, codigo_obra").eq("cliente_id", clienteId!).order("nombre").in("id", ids);
       const { data } = await q;
       return (data ?? []) as Proyecto[];
     },

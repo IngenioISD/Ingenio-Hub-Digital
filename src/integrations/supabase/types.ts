@@ -3188,6 +3188,7 @@ export type Database = {
           solo_sus_proyectos: boolean
         }[]
       }
+      mis_proyectos: { Args: { p_modulo?: string }; Returns: string[] }
       personal_asignado_a_proyecto: {
         Args: { p_proyecto_id: string }
         Returns: string[]

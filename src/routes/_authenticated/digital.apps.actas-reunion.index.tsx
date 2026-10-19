@@ -104,25 +104,20 @@ function Contenido() {
     queryKey: ["actas", "listado", usuarioCliente?.cliente_id],
     enabled: !!usuarioCliente?.cliente_id,
     queryFn: async () => {
-      let proyectoIds: string[] | null = null;
-      if (!usuarioCliente!.acceso_total_proyectos) {
-        const { data } = await supabase
-          .from("usuario_proyectos")
-          .select("proyecto_id")
-          .eq("user_id", usuarioCliente!.user_id)
-          .eq("activo", true);
-        proyectoIds = (data ?? []).map((f) => f.proyecto_id);
-      }
+      const { data: idsData, error: idsError } = await supabase.rpc(
+        "mis_proyectos",
+        { p_modulo: "actas_reunion" } as never,
+      );
+      if (idsError) throw idsError;
+      const proyectoIds = (idsData ?? []) as string[];
+      if (proyectoIds.length === 0) return { actas: [], tipos: [] };
 
-      let consulta = supabase
+      const consulta = supabase
         .from("actas")
         .select("id, asunto, lugar, fecha_reunion, tipo_reunion, tipo_otro_descripcion, estado, proyecto_id")
         .eq("cliente_id", usuarioCliente!.cliente_id)
-        .order("fecha_reunion", { ascending: false });
-      if (proyectoIds) {
-        if (proyectoIds.length === 0) return { actas: [], tipos: [] };
-        consulta = consulta.in("proyecto_id", proyectoIds);
-      }
+        .order("fecha_reunion", { ascending: false })
+        .in("proyecto_id", proyectoIds);
 
       const { data: filas } = await consulta;
       const ids = [...new Set((filas ?? []).map((f) => f.proyecto_id).filter(Boolean))] as string[];
