@@ -20,6 +20,7 @@ import {
 import { useAppsVisibles } from "@/hooks/use-apps-visibles";
 import { usePerfilUsuario } from "@/hooks/use-perfil-usuario";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
+import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 
 
 export type SidebarMode = "direccion" | "proyecto";
@@ -119,6 +120,7 @@ export function Sidebar({
   const perfil = usePerfilUsuario();
   const appsVisibles = useAppsVisibles();
   const permisosPersonal = usePermisosPersonal();
+  const permisosUsuarios = usePermisosUsuarios();
   const esDireccion = mode === "direccion";
 
   const bg = esDireccion ? "var(--sidebar-bg)" : "var(--sidebar-proyecto-bg)";
@@ -130,15 +132,22 @@ export function Sidebar({
 
   const menuBase = items ?? (contexto === "digital" ? ITEMS_DIGITAL : ITEMS_HUB);
   /**
-   * Regla provisional: todo el capítulo "Accesos y Equipo" (Personal propio,
-   * Personal externo, Usuarios y Catálogos) se oculta si el rol no puede ver
-   * Personal. Cuando cada pantalla tenga su propio permiso, se filtrará por
-   * item en lugar de por capítulo.
+   * Regla de visibilidad por opción: cada entrada del menú se muestra con su
+   * propio permiso de módulo (rol_permisos). En el capítulo "Accesos y Equipo",
+   * "Personal propio", "Personal externo" y "Catálogos" se ven si el rol puede
+   * ver Personal, y "Usuarios" se ve si el rol puede ver Usuarios. Mientras se
+   * cargan los permisos puede_ver vale false, así que ninguna de esas opciones
+   * aparece; como el título del capítulo se pinta sobre su primera opción
+   * visible, tampoco se pinta si no queda ninguna.
    */
+  const puedeVerOpcion = (item: SidebarItem) => {
+    if (item.key === "usuarios") return permisosUsuarios.puedeVer;
+    if (item.section === CAPITULO_ACCESOS) return permisosPersonal.puedeVer;
+    return true;
+  };
+
   const menu = menuBase.filter(
-    (item) =>
-      (item.key !== "apps" || appsVisibles.length > 0) &&
-      (item.section !== CAPITULO_ACCESOS || permisosPersonal.puedeVer),
+    (item) => (item.key !== "apps" || appsVisibles.length > 0) && puedeVerOpcion(item),
   );
 
 
