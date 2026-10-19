@@ -20,7 +20,7 @@ export function AvisoRolPuesto({ puesto }: { puesto: string | null }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex align-middle text-muted-foreground" aria-label={`Rol distinto al de su puesto (${puesto})`}>
+          <span className="inline-flex align-middle" style={{ color: "var(--state-warning)" }} aria-label={`Rol distinto al de su puesto (${puesto})`}>
             <AlertTriangle className="h-4 w-4" />
           </span>
         </TooltipTrigger>
