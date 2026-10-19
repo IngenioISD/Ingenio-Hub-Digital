@@ -2655,18 +2655,21 @@ export type Database = {
           cliente_id: string
           creado_en: string
           excepcion_id: string
+          id: string
           proyecto_id: string
         }
         Insert: {
           cliente_id: string
           creado_en?: string
           excepcion_id: string
+          id?: string
           proyecto_id: string
         }
         Update: {
           cliente_id?: string
           creado_en?: string
           excepcion_id?: string
+          id?: string
           proyecto_id?: string
         }
         Relationships: [
@@ -2694,6 +2697,7 @@ export type Database = {
           id: string
           modulo: string
           rol_id: string
+          todos_los_proyectos: boolean
           user_id: string
         }
         Insert: {
@@ -2703,6 +2707,7 @@ export type Database = {
           id?: string
           modulo: string
           rol_id: string
+          todos_los_proyectos?: boolean
           user_id: string
         }
         Update: {
@@ -2712,6 +2717,7 @@ export type Database = {
           id?: string
           modulo?: string
           rol_id?: string
+          todos_los_proyectos?: boolean
           user_id?: string
         }
         Relationships: [
@@ -3169,6 +3175,19 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      mis_permisos: {
+        Args: { p_modulo: string }
+        Returns: {
+          puede_aprobar: boolean
+          puede_crear: boolean
+          puede_editar: boolean
+          puede_eliminar: boolean
+          puede_exportar: boolean
+          puede_ver: boolean
+          rol_aplicado: string
+          solo_sus_proyectos: boolean
+        }[]
+      }
       personal_asignado_a_proyecto: {
         Args: { p_proyecto_id: string }
         Returns: string[]
@@ -3178,7 +3197,15 @@ export type Database = {
         Args: { p_proyecto_id: string }
         Returns: boolean
       }
-      rol_del_creador: { Args: { p_personal_id: string }; Returns: string }
+      proyecto_visible: {
+        Args: { p_modulo?: string; p_proyecto_id: string }
+        Returns: boolean
+      }
+      proyectos_visibles_ids: { Args: { p_modulo?: string }; Returns: string[] }
+      rol_del_creador: {
+        Args: { p_modulo?: string; p_personal_id: string }
+        Returns: string
+      }
       rol_efectivo: { Args: { p_modulo: string }; Returns: string }
       sembrar_catalogos_personal: {
         Args: { p_cliente_id: string }
@@ -3186,6 +3213,7 @@ export type Database = {
       }
       usuario_de_mi_cliente: { Args: { p_user_id: string }; Returns: boolean }
       usuarios_puede: { Args: { p_accion: string }; Returns: boolean }
+      ve_todos_proyectos: { Args: { p_modulo?: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
