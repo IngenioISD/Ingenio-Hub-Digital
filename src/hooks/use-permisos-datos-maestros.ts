@@ -12,15 +12,24 @@ export type PermisosDatosMaestros = {
 
 const SIN_PERMISOS = { puedeVer: false, puedeCrear: false, puedeEditar: false, puedeEliminar: false };
 
+type FilaMisPermisos = {
+  puede_ver: boolean | null;
+  puede_crear: boolean | null;
+  puede_editar: boolean | null;
+  puede_eliminar: boolean | null;
+};
+
 /**
- * Permisos del rol actual sobre el módulo datos_maestros.
+ * Permisos del rol aplicado a la persona sobre el módulo datos_maestros.
+ * El rol aplicado lo resuelve la función mis_permisos: el de la excepción
+ * si la persona la tiene en este módulo, y si no su rol base.
  *
  * A diferencia de Actas, aquí los permisos son planos: dependen solo del rol
- * del usuario (rol_permisos), sin distinguir quién creó cada registro ni
- * mirar rol_jerarquia. Hoy solo administracion y director_estudios tienen
- * CRUD; el resto de roles, solo lectura. Cuando exista la pantalla de
- * gestión de roles, será Administración quien reparta CRUD a otros roles
- * — este hook no cambia entonces, sigue leyendo rol_permisos tal cual.
+ * aplicado, sin distinguir quién creó cada registro ni mirar rol_jerarquia.
+ * Hoy solo administracion y director_estudios tienen CRUD; el resto de roles,
+ * solo lectura. Cuando exista la pantalla de gestión de roles, será
+ * Administración quien reparta CRUD a otros roles — este hook no cambia
+ * entonces, sigue leyendo mis_permisos tal cual.
  */
 export function usePermisosDatosMaestros(): PermisosDatosMaestros {
   const { usuarioCliente, isLoading: cargandoAuth } = useAuth();
@@ -28,17 +37,15 @@ export function usePermisosDatosMaestros(): PermisosDatosMaestros {
   const habilitado = !!usuarioCliente?.cliente_id && !!usuarioCliente?.rol_id;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["permisos", "datos_maestros", usuarioCliente?.cliente_id, usuarioCliente?.rol_id],
+    queryKey: ["permisos", "datos_maestros", usuarioCliente?.cliente_id],
     enabled: habilitado,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
-      const { data: fila } = await supabase
-        .from("rol_permisos")
-        .select("puede_ver, puede_crear, puede_editar, puede_eliminar")
-        .eq("modulo", "datos_maestros")
-        .eq("cliente_id", usuarioCliente!.cliente_id)
-        .eq("rol_id", usuarioCliente!.rol_id)
-        .maybeSingle();
+      const { data: filas } = await supabase.rpc("mis_permisos", {
+        p_modulo: "datos_maestros",
+      } as never);
+      const fila = (filas as FilaMisPermisos[] | null)?.[0] ?? null;
 
       return {
         puedeVer: Boolean(fila?.puede_ver),
