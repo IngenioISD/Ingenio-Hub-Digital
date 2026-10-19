@@ -35,7 +35,7 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
 
     const { data: usuario } = await supabase
       .from("usuarios_cliente")
-      .select("cliente_id, acceso_total_proyectos")
+      .select("cliente_id")
       .eq("user_id", userId)
       .eq("activo", true)
       .maybeSingle();
@@ -43,25 +43,20 @@ export const getProyectosInicio = createServerFn({ method: "GET" })
     const clienteId = usuario?.cliente_id;
     if (!clienteId) return [];
 
-    const accesoTotal = usuario?.acceso_total_proyectos === true;
+    const { data: idsData, error: idsError } = await supabase.rpc(
+      "mis_proyectos",
+      { p_modulo: null } as never,
+    );
+    if (idsError) throw idsError;
+    const proyectoIds = (idsData ?? []) as string[];
+    if (proyectoIds.length === 0) return [];
 
-    let proyectoIds: string[] | null = null;
-    if (!accesoTotal) {
-      const { data: asignaciones } = await supabase
-        .from("usuario_proyectos")
-        .select("proyecto_id")
-        .eq("user_id", userId)
-        .eq("activo", true);
-      proyectoIds = (asignaciones ?? []).map((a) => a.proyecto_id);
-      if (proyectoIds.length === 0) return [];
-    }
-
-    let consulta = supabase
+    const consulta = supabase
       .from("proyectos")
       .select("id, nombre, estado, provincia_id, catalogo_provincias(nombre), tipo_obra, propiedad_id")
       .eq("cliente_id", clienteId)
-      .in("estado", ["en_estudio", "adjudicado", "en_ejecucion"]);
-    if (proyectoIds) consulta = consulta.in("id", proyectoIds);
+      .in("estado", ["en_estudio", "adjudicado", "en_ejecucion"])
+      .in("id", proyectoIds);
 
     const { data: proyectos, error } = await consulta;
     if (error) throw error;

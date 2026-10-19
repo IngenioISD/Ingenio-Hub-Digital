@@ -28,7 +28,7 @@ export async function readProyectosCliente(
 ): Promise<ProyectoListado[]> {
   const { data: usuario, error: usuarioError } = await supabase
     .from("usuarios_cliente")
-    .select("cliente_id, acceso_total_proyectos")
+    .select("cliente_id")
     .eq("user_id", userId)
     .eq("activo", true)
     .limit(1)
@@ -38,17 +38,13 @@ export async function readProyectosCliente(
 
   const clienteId = usuario.cliente_id;
 
-  let proyectoIds: string[] | null = null;
-  if (!usuario.acceso_total_proyectos) {
-    const { data: asignaciones, error: asignacionesError } = await supabase
-      .from("usuario_proyectos")
-      .select("proyecto_id")
-      .eq("user_id", userId)
-      .eq("activo", true);
-    if (asignacionesError) throw asignacionesError;
-    proyectoIds = (asignaciones ?? []).map((row) => row.proyecto_id);
-    if (proyectoIds.length === 0) return [];
-  }
+  const { data: idsData, error: idsError } = await supabase.rpc(
+    "mis_proyectos",
+    { p_modulo: null } as never,
+  );
+  if (idsError) throw idsError;
+  const proyectoIds = (idsData ?? []) as string[];
+  if (proyectoIds.length === 0) return [];
 
   const [proyectos, configs, propiedadesCliente, propiedades, provincias] = await Promise.all([
     readAll((from, to) => {
