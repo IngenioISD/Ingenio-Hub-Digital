@@ -10,6 +10,7 @@ import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
+import { UsuarioAccesosTabla } from "@/components/datos-maestros/UsuarioAccesosTabla";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -173,6 +174,8 @@ function Ficha() {
           )}
         </CardContent>
       </Card>
+
+      {clienteId && <UsuarioAccesosTabla usuario={u} clienteId={clienteId} roles={roles} puedeEditar={puedeEditar} esPropio={esPropio} />}
 
       <Card>
         <CardHeader><CardTitle>Proyectos</CardTitle></CardHeader>
