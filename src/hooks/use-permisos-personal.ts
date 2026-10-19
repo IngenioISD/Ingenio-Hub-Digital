@@ -11,23 +11,31 @@ export type PermisosPersonal = {
 
 const SIN_PERMISOS = { puedeVer: false, puedeCrear: false, puedeEditar: false };
 
-/** Permisos del rol actual sobre el módulo personal (rol_permisos). */
+type FilaMisPermisos = {
+  puede_ver: boolean | null;
+  puede_crear: boolean | null;
+  puede_editar: boolean | null;
+};
+
+/**
+ * Permisos del rol aplicado a la persona sobre el módulo personal.
+ * El rol aplicado lo resuelve la función mis_permisos: el de la excepción
+ * si la persona la tiene en este módulo, y si no su rol base.
+ */
 export function usePermisosPersonal(): PermisosPersonal {
   const { usuarioCliente, isLoading: cargandoAuth } = useAuth();
   const habilitado = !!usuarioCliente?.cliente_id && !!usuarioCliente?.rol_id;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["permisos", "personal", usuarioCliente?.cliente_id, usuarioCliente?.rol_id],
+    queryKey: ["permisos", "personal", usuarioCliente?.cliente_id],
     enabled: habilitado,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
-      const { data: fila } = await supabase
-        .from("rol_permisos")
-        .select("puede_ver, puede_crear, puede_editar")
-        .eq("modulo", "personal")
-        .eq("cliente_id", usuarioCliente!.cliente_id)
-        .eq("rol_id", usuarioCliente!.rol_id)
-        .maybeSingle();
+      const { data: filas } = await supabase.rpc("mis_permisos", {
+        p_modulo: "personal",
+      } as never);
+      const fila = (filas as FilaMisPermisos[] | null)?.[0] ?? null;
       return {
         puedeVer: Boolean(fila?.puede_ver),
         puedeCrear: Boolean(fila?.puede_crear),
