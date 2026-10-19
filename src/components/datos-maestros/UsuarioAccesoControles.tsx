@@ -57,7 +57,14 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
             <TooltipContent>No puedes desactivar tu propio acceso</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      ) : boton}
+      ) : (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>{boton}</TooltipTrigger>
+            <TooltipContent>Desactivación de usuario</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       <AlertDialog open={abierto} onOpenChange={setAbierto}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
