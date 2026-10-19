@@ -3154,10 +3154,40 @@ export type Database = {
       }
     }
     Functions: {
+      accesos_usuario: {
+        Args: { p_user_id: string }
+        Returns: {
+          es_excepcion: boolean
+          excepcion_id: string
+          modulo: string
+          orden: number
+          proyectos: string[]
+          puede_aprobar: boolean
+          puede_crear: boolean
+          puede_editar: boolean
+          puede_eliminar: boolean
+          puede_exportar: boolean
+          puede_ver: boolean
+          rol_aplicado: string
+          rol_base: string
+          tipo: string
+          todos_los_proyectos: boolean
+        }[]
+      }
       clientes_que_usan_df: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      guardar_excepcion_rol: {
+        Args: {
+          p_modulo: string
+          p_proyectos?: string[]
+          p_rol_id: string
+          p_todos: boolean
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       mi_cliente_id: { Args: never; Returns: string }
       mi_es_admin: { Args: never; Returns: boolean }
       mi_perfil: {
@@ -3203,6 +3233,10 @@ export type Database = {
         Returns: boolean
       }
       proyectos_visibles_ids: { Args: { p_modulo?: string }; Returns: string[] }
+      quitar_excepcion_rol: {
+        Args: { p_modulo: string; p_user_id: string }
+        Returns: undefined
+      }
       rol_del_creador: {
         Args: { p_modulo?: string; p_personal_id: string }
         Returns: string
