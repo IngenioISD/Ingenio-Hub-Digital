@@ -150,7 +150,7 @@ function Listado() {
         {filtro(estado, setEstado, "Todos los estados", opEstado)}
         <div className="flex items-center gap-2">
           <Switch id="mostrar-bajas" checked={ocultarBajas} onCheckedChange={setOcultarBajas} />
-          <Label htmlFor="mostrar-bajas">Eliminar del listado el personal en situación de baja y/o excedencia</Label>
+          <Label htmlFor="mostrar-bajas">Eliminar del listado el personal en situación de baja y excedencia</Label>
         </div>
       </div>
 
