@@ -1,5 +1,11 @@
-import { describe, expect, test } from "bun:test";
+import { describe, it as test } from "node:test";
+import assert from "node:assert/strict";
 import { nivelAcceso, permiteAcciones, puedeGuardarExcepcion, seleccionarVisibles, type AccesoUsuario } from "./usuario-accesos-reglas";
+
+const expect = <T,>(actual: T) => ({
+  toBe: (expected: T) => assert.equal(actual, expected),
+  toEqual: (expected: T) => assert.deepEqual(actual, expected),
+});
 
 const fila: AccesoUsuario = { modulo: "personal", tipo: "modulo", orden: 1, rol_base: "administracion", rol_aplicado: "tecnico", es_excepcion: false, excepcion_id: null, todos_los_proyectos: false, proyectos: [], puede_ver: true, puede_crear: false, puede_editar: false, puede_eliminar: false, puede_aprobar: false, puede_exportar: false };
 describe("Reglas de excepciones de acceso", () => {
