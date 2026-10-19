@@ -10,6 +10,7 @@ import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
+import { UsuarioAccesosTabla } from "@/components/datos-maestros/UsuarioAccesosTabla";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +21,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/usuarios/$id")({
-  head: () => ({ meta: [{ title: "Ficha de usuario · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Ficha de usuario · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Ficha de usuario de Ingenio ISD: datos, rol, accesos por módulo y app y proyectos asignados." },
+    { property: "og:title", content: "Ficha de usuario · Ingenio ISD" },
+    { property: "og:description", content: "Datos, rol, accesos por módulo y app y proyectos del usuario en Ingenio ISD." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 
@@ -173,6 +181,8 @@ function Ficha() {
           )}
         </CardContent>
       </Card>
+
+      {clienteId && <UsuarioAccesosTabla usuario={u} clienteId={clienteId} roles={roles} puedeEditar={puedeEditar} esPropio={esPropio} />}
 
       <Card>
         <CardHeader><CardTitle>Proyectos</CardTitle></CardHeader>

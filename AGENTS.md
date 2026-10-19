@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep the user access-exception table and dialogs in a dedicated component, with pure selection and permission rules in a separate helper, to preserve the existing user-detail behavior and test access rules independently.
