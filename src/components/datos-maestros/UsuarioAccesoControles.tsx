@@ -54,7 +54,15 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild><span tabIndex={0}>{boton}</span></TooltipTrigger>
-            <TooltipContent>No puedes desactivar tu propio acceso</TooltipContent>
+            <TooltipContent
+              style={{
+                backgroundColor: "var(--state-error-bg)",
+                color: "var(--text-primary)",
+                border: "0.5px solid var(--state-error-border)",
+              }}
+            >
+              No puedes desactivar tu propio acceso
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ) : (
