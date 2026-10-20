@@ -147,7 +147,7 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
             <Label>Persona</Label>
             {errorPersonas ? (
               <>
-                <p className="text-sm text-destructive">No se pudo cargar el personal. Inténtalo de nuevo.</p>
+                <p className="text-sm" style={{ color: "var(--state-error)" }}>No se pudo cargar el personal. Inténtalo de nuevo.</p>
                 <Button variant="outline" onClick={() => reintentarPersonas()}>Reintentar</Button>
               </>
             ) : sinPersonal ? (
@@ -178,10 +178,10 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
                 </PopoverContent>
               </Popover>
             )}
-            {persona && !email && <p className="text-sm text-destructive">{MSG_SIN_EMAIL}</p>}
+            {persona && !email && <p className="text-sm" style={{ color: "var(--state-error)" }}>{MSG_SIN_EMAIL}</p>}
             {persona && email && <>
               <Input aria-label="Correo electrónico" value={email} readOnly />
-              {emailExiste === true && <p className="text-sm text-destructive">{MSG_EMAIL_EXISTE}</p>}
+              {emailExiste === true && <p className="text-sm" style={{ color: "var(--state-error)" }}>{MSG_EMAIL_EXISTE}</p>}
             </>}
           </div>
 
@@ -215,8 +215,8 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
             <Label htmlFor="nuevo-usuario-pass2">Repetir contraseña</Label>
             <Input id="nuevo-usuario-pass2" type={ver ? "text" : "password"} autoComplete="new-password" value={pass2} onChange={(e) => setPass2(e.target.value)} disabled={ocupado} />
             <p className="text-xs text-muted-foreground">Mínimo 8 caracteres, con letras y números. La persona deberá cambiarla en su primer acceso.</p>
-            {pass1 && !passOk && <p className="text-sm text-destructive">La contraseña debe tener al menos 8 caracteres, con letras y números</p>}
-            {pass2 && !coinciden && <p className="text-sm text-destructive">{MSG_PASSWORD_DISTINTA}</p>}
+            {pass1 && !passOk && <p className="text-sm" style={{ color: "var(--state-error)" }}>La contraseña debe tener al menos 8 caracteres, con letras y números</p>}
+            {pass2 && !coinciden && <p className="text-sm" style={{ color: "var(--state-error)" }}>{MSG_PASSWORD_DISTINTA}</p>}
           </div>
           </>}
         </div>
