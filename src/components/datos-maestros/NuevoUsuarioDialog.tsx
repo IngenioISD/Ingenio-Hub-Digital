@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { RolFila } from "@/lib/datos-maestros/usuarios";
 import { crearUsuario } from "@/lib/erp/usuarios-alta.functions";
-import { MSG_EMAIL_EXISTE, MSG_SIN_EMAIL, passwordValida } from "@/lib/datos-maestros/usuario-alta-reglas";
+import { MSG_EMAIL_EXISTE, MSG_PASSWORD_DISTINTA, MSG_SIN_EMAIL, passwordValida } from "@/lib/datos-maestros/usuario-alta-reglas";
 import { SelectorProyectos, type ProyectoOpcion } from "@/components/datos-maestros/SelectorProyectos";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -216,7 +216,7 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
             <Input id="nuevo-usuario-pass2" type={ver ? "text" : "password"} autoComplete="new-password" value={pass2} onChange={(e) => setPass2(e.target.value)} disabled={ocupado} />
             <p className="text-xs text-muted-foreground">Mínimo 8 caracteres, con letras y números. La persona deberá cambiarla en su primer acceso.</p>
             {pass1 && !passOk && <p className="text-sm text-destructive">La contraseña debe tener al menos 8 caracteres, con letras y números</p>}
-            {pass2 && !coinciden && <p className="text-sm text-destructive">Las contraseñas no coinciden</p>}
+            {pass2 && !coinciden && <p className="text-sm text-destructive">{MSG_PASSWORD_DISTINTA}</p>}
           </div>
           </>}
         </div>
