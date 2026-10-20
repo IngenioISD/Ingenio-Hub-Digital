@@ -1,10 +1,8 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { obtenerMiPerfil, useAuth } from "@/hooks/use-auth";
-import { crearCachePerfil } from "@/lib/erp/perfil-acceso-cache";
-
-const perfilCache = crearCachePerfil(obtenerMiPerfil);
+import { useAuth } from "@/hooks/use-auth";
+import { perfilAccesoCache as perfilCache } from "@/lib/erp/perfil-acceso";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -16,6 +14,7 @@ export const Route = createFileRoute("/_authenticated")({
     }
     const perfil = await perfilCache.consultar(data.user.id);
     if (!perfil) throw redirect({ to: "/sin-acceso" });
+    if (perfil.debeCambiarPassword) throw redirect({ to: "/cambiar-contrasena" });
     return { user: data.user };
   },
   component: LayoutAutenticado,

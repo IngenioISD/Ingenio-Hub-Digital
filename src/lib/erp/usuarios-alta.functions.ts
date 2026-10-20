@@ -14,6 +14,23 @@ const Entrada = z.object({
 type Resultado = { ok: true } | { ok: false; error: string };
 type PersonaPendiente = { id: string; email: string | null };
 
+export const cambiarContrasenaInicial = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ password: z.string() }).parse(d))
+  .handler(async ({ data, context }): Promise<Resultado> => {
+    if (!passwordValida(data.password)) return { ok: false, error: MSG_PASSWORD };
+    const { data: pendiente, error: ePendiente } = await context.supabase.rpc("mi_debe_cambiar_password", {} as never);
+    if (ePendiente) return { ok: false, error: "No se pudo comprobar el cambio pendiente. Inténtalo de nuevo." };
+    if (pendiente !== true) return { ok: false, error: "No tienes ninguna contraseña pendiente de cambiar" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: ePassword } = await supabaseAdmin.auth.admin.updateUserById(context.userId, { password: data.password });
+    if (ePassword) return { ok: false, error: "No se pudo actualizar la contraseña. Inténtalo de nuevo." };
+    const { data: filas, error: eMarca } = await supabaseAdmin.from("usuarios_cliente")
+      .update({ debe_cambiar_password: false } as never).eq("user_id", context.userId).select("id");
+    if (eMarca || !filas?.length) return { ok: false, error: "No se pudo completar el cambio. Inténtalo de nuevo." };
+    return { ok: true };
+  });
+
 export const crearUsuario = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Entrada.parse(d))

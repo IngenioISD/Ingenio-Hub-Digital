@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { claimsFromToken, resolvePostLoginPath } from "@/lib/erp/auth-claims";
+import { obtenerDebeCambiarPassword } from "@/lib/erp/perfil-acceso";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/")({
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token) throw redirect({ to: "/login" });
+    if (await obtenerDebeCambiarPassword()) throw redirect({ to: "/cambiar-contrasena" });
     const destino = await resolvePostLoginPath(claimsFromToken(token));
     throw redirect({ to: destino as never });
   },
