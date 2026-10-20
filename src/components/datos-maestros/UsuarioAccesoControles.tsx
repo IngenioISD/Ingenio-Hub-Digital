@@ -12,14 +12,14 @@ import { haceDias } from "@/lib/datos-maestros/usuario-alta-reglas";
 import { cambiarAccesoDesactivado, type UsuarioFila } from "@/lib/datos-maestros/usuarios";
 
 export function BadgeAccesoUsuario({ activo }: { activo: boolean }) {
-  return <span className={activo ? "badge badge-success" : "badge badge-neutral"}>{activo ? "Activo" : "Sin acceso"}</span>;
+  return <span className={activo ? "badge badge-success" : "badge badge-error"}>{activo ? "Activo" : "Sin acceso"}</span>;
 }
 
 /** Badge de estado; si el usuario activo no ha cambiado aún su contraseña, «Primer acceso pendiente». */
 export function EstadoUsuario({ usuario }: { usuario: UsuarioFila }) {
   if (usuario.debeCambiarPassword && usuario.activo) {
     return <span className="inline-flex flex-col items-start gap-0.5">
-      <span className="badge badge-neutral">Primer acceso pendiente</span>
+      <span className="badge badge-info">Primer acceso pendiente</span>
       <span className="text-xs text-muted-foreground">{haceDias(usuario.creadoEn)}</span>
     </span>;
   }
