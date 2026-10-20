@@ -15,6 +15,8 @@ export type UsuarioFila = {
   puestoId: string | null;
   estadoId: string | null;
   fichaActiva: boolean;
+  debeCambiarPassword: boolean;
+  creadoEn: string | null;
 };
 
 export type CatalogoFila = { id: string; tipo: string; nombre: string; rol_id: string | null };
@@ -23,12 +25,13 @@ export type RolFila = { rol_id: string; nombre_visible: string; tipo_portal: str
 type Raw = {
   id: string; user_id: string; rol_id: string; acceso_desactivado: boolean;
   acceso_total_proyectos: boolean | null; activo: boolean | null; personal_id: string;
+  debe_cambiar_password: boolean | null; creado_en: string | null;
   personal: { nombre: string; apellido_1: string; apellido_2: string | null; email: string | null;
     puesto_id: string | null; estado_id: string | null; activo: boolean | null } | null;
 };
 
 const SELECT =
-  "id, user_id, rol_id, acceso_desactivado, acceso_total_proyectos, activo, personal_id, personal(nombre, apellido_1, apellido_2, email, puesto_id, estado_id, activo)";
+  "id, user_id, rol_id, acceso_desactivado, acceso_total_proyectos, activo, personal_id, debe_cambiar_password, creado_en, personal(nombre, apellido_1, apellido_2, email, puesto_id, estado_id, activo)";
 
 function mapear(r: Raw): UsuarioFila {
   const p = r.personal;
@@ -42,6 +45,7 @@ function mapear(r: Raw): UsuarioFila {
     nombreCompleto: p ? `${ap}, ${p.nombre}` : "—",
     email: p?.email ?? "", puestoId: p?.puesto_id ?? null, estadoId: p?.estado_id ?? null,
     fichaActiva: p?.activo !== false,
+    debeCambiarPassword: Boolean(r.debe_cambiar_password), creadoEn: r.creado_en ?? null,
   };
 }
 

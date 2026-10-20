@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-export type PermisosUsuarios = { puedeVer: boolean; puedeEditar: boolean; cargando: boolean };
+export type PermisosUsuarios = { puedeVer: boolean; puedeEditar: boolean; puedeCrear: boolean; cargando: boolean };
 
-const SIN_PERMISOS = { puedeVer: false, puedeEditar: false };
+const SIN_PERMISOS = { puedeVer: false, puedeEditar: false, puedeCrear: false };
 
 type FilaMisPermisos = {
   puede_ver: boolean | null;
   puede_editar: boolean | null;
+  puede_crear: boolean | null;
 };
 
 /**
@@ -30,7 +31,7 @@ export function usePermisosUsuarios(): PermisosUsuarios {
         p_modulo: "usuarios",
       } as never);
       const fila = (filas as FilaMisPermisos[] | null)?.[0] ?? null;
-      return { puedeVer: Boolean(fila?.puede_ver), puedeEditar: Boolean(fila?.puede_editar) };
+      return { puedeVer: Boolean(fila?.puede_ver), puedeEditar: Boolean(fila?.puede_editar), puedeCrear: Boolean(fila?.puede_crear) };
     },
   });
 

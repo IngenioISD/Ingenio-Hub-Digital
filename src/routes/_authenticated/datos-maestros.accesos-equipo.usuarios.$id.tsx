@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
-import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
+import { AvisoRolPuesto, EstadoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
 import { UsuarioAccesosTabla } from "@/components/datos-maestros/UsuarioAccesosTabla";
 import { SinAcceso } from "@/components/layout/SinAcceso";
 
@@ -140,7 +140,7 @@ function Ficha() {
 
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold tracking-tight">{u.nombreCompleto}</h1>
-        <BadgeAccesoUsuario activo={u.activo} />
+        <EstadoUsuario usuario={u} />
         {puedeEditar && <OjoAcceso usuario={u} esPropio={esPropio} onCambiado={refrescar} />}
       </div>
       {motivo && <p className="text-sm text-muted-foreground">{motivo}</p>}

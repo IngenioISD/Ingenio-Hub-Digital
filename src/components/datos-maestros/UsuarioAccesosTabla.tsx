@@ -4,7 +4,7 @@ import { Pencil, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { RolFila, UsuarioFila } from "@/lib/datos-maestros/usuarios";
-import { nombreElemento, nivelAcceso, permiteAcciones, puedeGuardarExcepcion, seleccionarVisibles, type AccesoUsuario } from "@/lib/datos-maestros/usuario-accesos-reglas";
+import { nombreElemento, nivelAcceso, permiteAcciones, puedeGuardarExcepcion, type AccesoUsuario } from "@/lib/datos-maestros/usuario-accesos-reglas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,8 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { SelectorProyectos } from "@/components/datos-maestros/SelectorProyectos";
 import { Label } from "@/components/ui/label";
 
 type Props = { usuario: UsuarioFila; clienteId: string; roles: RolFila[]; puedeEditar: boolean; esPropio: boolean };
@@ -110,7 +109,6 @@ function EditorExcepcion({ fila, usuario, clienteId, roles, esPropio, cerrar, re
   const [rol, setRol] = useState(fila.rol_aplicado ?? "");
   const [todos, setTodos] = useState(fila.es_excepcion && fila.todos_los_proyectos);
   const [seleccion, setSeleccion] = useState<string[]>(fila.es_excepcion ? fila.proyectos ?? [] : []);
-  const [busqueda, setBusqueda] = useState("");
   const [confirmar, setConfirmar] = useState(false);
   const { data: proyectos = [], error, isLoading } = useQuery({
     queryKey: ["datos-maestros", "usuarios", clienteId, "proyectos-excepcion"],
@@ -134,7 +132,6 @@ function EditorExcepcion({ fila, usuario, clienteId, roles, esPropio, cerrar, re
     onSuccess: async () => { cerrar(); await refrescar(); },
     onError: (error) => { setConfirmar(false); toast.error(mensajeError(error)); },
   });
-  const visibles = proyectos.filter((p) => `${p.nombre} ${p.codigo_obra ?? ""}`.toLocaleLowerCase("es").includes(busqueda.trim().toLocaleLowerCase("es")));
   return <>
     <Dialog open onOpenChange={(open) => { if (!open && !guardar.isPending) cerrar(); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
@@ -154,21 +151,7 @@ function EditorExcepcion({ fila, usuario, clienteId, roles, esPropio, cerrar, re
             <div className="flex items-center gap-2"><RadioGroupItem id="proyectos-concretos" value="concretos" /><Label htmlFor="proyectos-concretos">Proyectos concretos</Label></div>
             <div className="flex items-start gap-2"><RadioGroupItem id="proyectos-todos" value="todos" /><Label htmlFor="proyectos-todos">Todos los proyectos (incluidos los que se creen en el futuro)</Label></div>
           </RadioGroup>
-          {!todos && <div className="space-y-3">
-            <Input aria-label="Buscar proyectos" placeholder="Buscar proyectos" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} disabled={guardar.isPending} />
-            <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" disabled={guardar.isPending || !visibles.length} onClick={() => setSeleccion((s) => seleccionarVisibles(s, visibles.map((p) => p.id)))}>Seleccionar todos</Button>
-              <Button variant="outline" size="sm" disabled={guardar.isPending || !seleccion.length} onClick={() => setSeleccion([])}>Quitar selección</Button>
-              <span className="text-xs text-muted-foreground">{seleccion.length} seleccionados</span>
-            </div>
-            <div className="max-h-64 space-y-3 overflow-y-auto">
-              {!isLoading && !error && !visibles.length && <p className="text-sm text-muted-foreground">No hay proyectos.</p>}
-              {visibles.map((p) => <div key={p.id} className="flex items-start gap-2">
-                <Checkbox id={`excepcion-proyecto-${p.id}`} checked={seleccion.includes(p.id)} disabled={guardar.isPending} onCheckedChange={(checked) => setSeleccion((s) => checked === true ? seleccionarVisibles(s, [p.id]) : s.filter((id) => id !== p.id))} />
-                <Label htmlFor={`excepcion-proyecto-${p.id}`} className="break-words">{p.codigo_obra ? `${p.codigo_obra} · ` : ""}{p.nombre}</Label>
-              </div>)}
-            </div>
-          </div>}
+          {!todos && <SelectorProyectos proyectos={proyectos} cargando={isLoading} conError={Boolean(error)} seleccion={seleccion} setSeleccion={setSeleccion} deshabilitado={guardar.isPending} idPrefijo="excepcion-proyecto" />}
         </div>
         <DialogFooter><Button variant="outline" onClick={cerrar} disabled={guardar.isPending}>Cancelar</Button>
           <Button disabled={!valido || guardar.isPending} onClick={() => esPropio ? setConfirmar(true) : guardar.mutate()}>Guardar</Button>
