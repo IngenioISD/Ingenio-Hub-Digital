@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as CambiarContrasenaRouteImport } from './routes/cambiar-contrasena'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SinAccesoRouteImport } from './routes/sin-acceso'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
@@ -51,6 +52,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CambiarContrasenaRoute = CambiarContrasenaRouteImport.update({
+  id: '/cambiar-contrasena',
+  path: '/cambiar-contrasena',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -248,6 +254,7 @@ const AuthenticatedDigitalAppsActasReunionIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cambiar-contrasena'
     | '/login'
     | '/sin-acceso'
     | '/configuracion'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cambiar-contrasena'
     | '/login'
     | '/sin-acceso'
     | '/configuracion'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/cambiar-contrasena'
     | '/login'
     | '/sin-acceso'
     | '/_authenticated/configuracion'
@@ -461,6 +473,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  CambiarContrasenaRoute: typeof CambiarContrasenaRoute
   LoginRoute: typeof LoginRoute
   SinAccesoRoute: typeof SinAccesoRoute
 }
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cambiar-contrasena': {
+      id: '/cambiar-contrasena'
+      path: '/cambiar-contrasena'
+      fullPath: '/cambiar-contrasena'
+      preLoaderRoute: typeof CambiarContrasenaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -822,6 +842,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  CambiarContrasenaRoute: CambiarContrasenaRoute,
   LoginRoute: LoginRoute,
   SinAccesoRoute: SinAccesoRoute,
 }
