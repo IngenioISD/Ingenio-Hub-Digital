@@ -18,6 +18,23 @@ test("un perfil null conserva la falta de acceso", async () => {
   assert.equal(await cache.consultar("usuario"), null);
 });
 
+test("perfil y contraseña pendiente comparten los 30 segundos y se limpian al guardar", async () => {
+  let tiempo = 0;
+  let pendiente = true;
+  const cache = crearCachePerfil(async () => ({ perfil: { id: "perfil" }, debeCambiarPassword: pendiente }), () => tiempo);
+  assert.equal((await cache.consultar("uno"))?.debeCambiarPassword, true);
+  pendiente = false;
+  tiempo = 29_999;
+  assert.equal((await cache.consultar("uno"))?.debeCambiarPassword, true);
+  tiempo = 30_000;
+  assert.equal((await cache.consultar("uno"))?.debeCambiarPassword, false);
+  pendiente = true;
+  assert.equal((await cache.consultar("dos"))?.debeCambiarPassword, true);
+  pendiente = false;
+  cache.limpiar();
+  assert.equal((await cache.consultar("dos"))?.debeCambiarPassword, false);
+});
+
 test("no reutiliza el perfil de otra identidad ni tras cerrar sesión", async () => {
   let llamadas = 0;
   const cache = crearCachePerfil(async () => ++llamadas);

@@ -10,4 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep the user access-exception table and dialogs in a dedicated component, with pure selection and permission rules in a separate helper, to preserve the existing user-detail behavior and test access rules independently.
-- Keep inactive-profile handling in the login and authenticated layout, with a user-keyed browser-only profile cache and a shared element-denial component, to avoid silent redirects and repeated profile reads.
+- Keep inactive-profile and initial-password handling in the login and authenticated layout, with a shared user-keyed browser-only cache for profile and pending-password status and a shared element-denial component, to avoid silent redirects and repeated access reads. Password completion clears this cache before home navigation.

@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { obtenerMiPerfil } from "@/hooks/use-auth";
+import { obtenerDebeCambiarPassword, perfilAccesoCache } from "@/lib/erp/perfil-acceso";
 import { claimsFromToken, resolvePostLoginPath } from "@/lib/erp/auth-claims";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -61,16 +62,26 @@ function LoginPage() {
       return;
     }
 
+    perfilAccesoCache.limpiar();
+    try {
     const perfil = await obtenerMiPerfil();
     if (!perfil) {
       await navigate({ to: "/sin-acceso", replace: true });
       setCargando(false);
       return;
     }
+    if (await obtenerDebeCambiarPassword()) {
+      await navigate({ to: "/cambiar-contrasena", replace: true });
+      return;
+    }
     const claims = claimsFromToken(data.session.access_token);
     const destino = await resolvePostLoginPath(claims);
     await navigate({ to: destino, replace: true });
+    } catch {
+      setError("No se pudo comprobar el acceso. Inténtalo de nuevo.");
+    } finally {
     setCargando(false);
+    }
   }
 
   return (
