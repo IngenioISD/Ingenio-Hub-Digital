@@ -43,11 +43,14 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
 
   const rolesInternos = roles.filter((r) => r.tipo_portal === "interno" && r.activo !== false);
 
-  const { data: personas = [], isLoading: cargandoPersonas } = useQuery({
+  const { data: personas = [], isLoading: cargandoPersonas, isError: errorPersonas, refetch: reintentarPersonas } = useQuery({
     queryKey: ["datos-maestros", "usuarios", clienteId, "personal-sin-usuario"],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("personal_sin_usuario", {} as never);
-      if (error) throw error;
+      if (error) {
+        console.error("[NuevoUsuarioDialog] Error al cargar el personal:", error.message);
+        throw error;
+      }
       return ((data ?? []) as Persona[]).sort((a, b) => etiqueta(a).localeCompare(etiqueta(b), "es"));
     },
   });
@@ -98,6 +101,9 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
     onError: (e) => toast.error(e instanceof Error ? e.message : "No se pudo crear el usuario"),
   });
   const ocupado = guardar.isPending;
+  // Paso 1: sin personal disponible o con error de carga; Paso 2: persona elegida sin problemas.
+  const sinPersonal = !cargandoPersonas && !errorPersonas && personas.length === 0;
+  const formVisible = !!persona && !!email && emailExiste === false && !comprobandoEmail;
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o && !ocupado) cerrar(); }}>
@@ -109,7 +115,12 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Persona</Label>
-            {!cargandoPersonas && personas.length === 0 ? (
+            {errorPersonas ? (
+              <>
+                <p className="text-sm text-destructive">No se pudo cargar el personal. Inténtalo de nuevo.</p>
+                <Button variant="outline" onClick={() => reintentarPersonas()}>Reintentar</Button>
+              </>
+            ) : sinPersonal ? (
               <p className="text-sm text-muted-foreground">No hay personal pendiente de acceso.</p>
             ) : (
               <Popover open={buscadorAbierto} onOpenChange={setBuscadorAbierto}>
@@ -144,6 +155,7 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
             </>}
           </div>
 
+          {formVisible && <>
           <div className="space-y-2">
             <Label htmlFor="nuevo-usuario-rol">Rol</Label>
             <Select value={rol} onValueChange={setRol} disabled={ocupado}>
@@ -176,10 +188,17 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
             {pass1 && !passOk && <p className="text-sm text-destructive">La contraseña debe tener al menos 8 caracteres, con letras y números</p>}
             {pass2 && !coinciden && <p className="text-sm text-destructive">Las contraseñas no coinciden</p>}
           </div>
+          </>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={cerrar} disabled={ocupado}>Cancelar</Button>
-          <Button disabled={!valido || ocupado} onClick={() => guardar.mutate()}>Crear usuario</Button>
+          {sinPersonal ? (
+            <Button onClick={cerrar}>Cerrar</Button>
+          ) : (
+            <>
+              <Button variant="outline" onClick={cerrar} disabled={ocupado}>Cancelar</Button>
+              {formVisible && <Button disabled={!valido || ocupado} onClick={() => guardar.mutate()}>Crear usuario</Button>}
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
