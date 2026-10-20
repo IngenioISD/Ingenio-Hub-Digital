@@ -16,6 +16,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 type Persona = { id: string; nombre: string; apellido_1: string; apellido_2: string | null; email: string | null; puesto_id: string | null; rol_sugerido: string | null };
@@ -93,17 +94,46 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
       const r = await crear({ data: { personalId: persona!.id, rolId: rol, accesoTotalProyectos: todos, proyectoIds: todos ? [] : seleccion, password: pass1 } });
       if (!r.ok) throw new Error(r.error);
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("Usuario creado. Deberá cambiar su contraseña en el primer acceso.");
-      cerrar();
-      await qc.invalidateQueries({ queryKey: ["datos-maestros", "usuarios"] });
+      // Solo nombre y correo: la contraseña nunca entra en la pantalla de éxito.
+      setExito({ nombre: persona!.nombre, email });
+      setPass1(""); setPass2("");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "No se pudo crear el usuario"),
   });
+  const [exito, setExito] = useState<{ nombre: string; email: string } | null>(null);
   const ocupado = guardar.isPending;
   // Paso 1: sin personal disponible o con error de carga; Paso 2: persona elegida sin problemas.
   const sinPersonal = !cargandoPersonas && !errorPersonas && personas.length === 0;
   const formVisible = !!persona && !!email && emailExiste === false && !comprobandoEmail;
+
+  if (exito) {
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    const mensaje = `Hola ${exito.nombre}, la administración de tu empresa te ha dado acceso a Ingenio HUB. Tu usuario es ${exito.email}. Ponte en contacto con la administración para que te facilite tu contraseña temporal. En tu primer acceso tendrás que elegir una contraseña personal. Accede aquí: ${origin}`;
+    const mailto = `mailto:${encodeURIComponent(exito.email)}?subject=${encodeURIComponent("Se te ha dado acceso a Ingenio HUB")}&body=${encodeURIComponent(mensaje)}`;
+    const cerrarExito = () => { cerrar(); void qc.invalidateQueries({ queryKey: ["datos-maestros", "usuarios"] }); };
+    const copiar = async () => {
+      try { await navigator.clipboard.writeText(mensaje); toast.success("Mensaje copiado"); }
+      catch { toast.error("No se pudo copiar el mensaje"); }
+    };
+    return (
+      <Dialog open onOpenChange={(o) => { if (!o) cerrarExito(); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Usuario creado</DialogTitle>
+            <DialogDescription>Comunícale la contraseña temporal por teléfono. Deberá cambiarla en su primer acceso.</DialogDescription>
+          </DialogHeader>
+          <Textarea aria-label="Mensaje de aviso" value={mensaje} readOnly rows={6} />
+          <DialogFooter>
+            <Button variant="outline" asChild><a href={mailto}>Enviar por correo</a></Button>
+            <Button variant="outline" onClick={copiar}>Copiar mensaje</Button>
+            <Button onClick={cerrarExito}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o && !ocupado) cerrar(); }}>
