@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { obtenerMiPerfil } from "@/hooks/use-auth";
 import { claimsFromToken, resolvePostLoginPath } from "@/lib/erp/auth-claims";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,12 @@ function LoginPage() {
       return;
     }
 
+    const perfil = await obtenerMiPerfil();
+    if (!perfil) {
+      await navigate({ to: "/sin-acceso", replace: true });
+      setCargando(false);
+      return;
+    }
     const claims = claimsFromToken(data.session.access_token);
     const destino = await resolvePostLoginPath(claims);
     await navigate({ to: destino, replace: true });

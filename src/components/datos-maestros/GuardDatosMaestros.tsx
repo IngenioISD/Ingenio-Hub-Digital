@@ -1,27 +1,15 @@
-import { useEffect, type ReactNode } from "react";
-import { useNavigate } from "@tanstack/react-router";
-
-import { useAuth } from "@/hooks/use-auth";
+import { type ReactNode } from "react";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 import { usePermisosDatosMaestros } from "@/hooks/use-permisos-datos-maestros";
 
 /**
  * Control de acceso a las pantallas de Datos Maestros.
- * Solo se muestra el contenido si rol_permisos.puede_ver = true para datos_maestros.
- * Mientras se carga el permiso no se renderiza nada; si no hay permiso, redirige a Inicio.
+ * Solo se muestra el contenido si el permiso efectivo puede_ver es true para datos_maestros.
+ * Mientras carga no se renderiza nada; sin permiso se muestra el aviso de acceso.
  */
 export function GuardDatosMaestros({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
-  const { usuarioCliente } = useAuth();
   const { puedeVer, cargando } = usePermisosDatosMaestros();
-
-  const inicio = usuarioCliente?.portal === "digital" ? "/digital/inicio" : "/hub/inicio";
-
-  useEffect(() => {
-    if (!cargando && !puedeVer) {
-      void navigate({ to: inicio, replace: true });
-    }
-  }, [cargando, puedeVer, inicio, navigate]);
-
-  if (cargando || !puedeVer) return null;
+  if (cargando) return null;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros" />;
   return <>{children}</>;
 }

@@ -40,7 +40,8 @@ export async function obtenerMiPerfil(): Promise<MiPerfilFila | null> {
 export function useAuth() {
   const query = useQuery<UsuarioCliente | null>({
     queryKey: ["auth", "usuario-cliente"],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return null;

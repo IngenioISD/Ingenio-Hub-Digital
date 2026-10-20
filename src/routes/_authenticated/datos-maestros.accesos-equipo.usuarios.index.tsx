@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 import { filaClicableProps } from "@/lib/fila-clicable";
 import { listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
@@ -25,7 +26,7 @@ function normalizar(s: string) {
 function Page() {
   const { puedeVer, cargando } = usePermisosUsuarios();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Usuarios" />;
   return <Listado />;
 }
 

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 import { fechaCorta } from "@/lib/erp/formato";
 import {
   buscarCodigoEmpleado,
@@ -62,7 +63,7 @@ type Persona = {
 function Page() {
   const { puedeVer, cargando } = usePermisosPersonal();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Personal" />;
   return <Ficha />;
 }
 

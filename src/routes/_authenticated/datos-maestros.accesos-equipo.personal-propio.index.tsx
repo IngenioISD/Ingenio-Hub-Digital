@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { NuevaPersonaDialog } from "@/components/datos-maestros/NuevaPersonaDialog";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,7 +47,7 @@ function normalizar(s: string) {
 function Page() {
   const { puedeVer, cargando } = usePermisosPersonal();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Personal" />;
   return <Listado />;
 }
 
