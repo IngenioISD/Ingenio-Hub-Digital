@@ -97,12 +97,12 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
     onSuccess: () => {
       toast.success("Usuario creado. Deberá cambiar su contraseña en el primer acceso.");
       // Solo nombre y correo: la contraseña nunca entra en la pantalla de éxito.
-      setExito({ nombre: persona!.nombre, email });
+      setExito({ nombre: persona!.nombre, nombreCompleto: [persona!.nombre, persona!.apellido_1, persona!.apellido_2].filter(Boolean).join(" "), email });
       setPass1(""); setPass2("");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "No se pudo crear el usuario"),
   });
-  const [exito, setExito] = useState<{ nombre: string; email: string } | null>(null);
+  const [exito, setExito] = useState<{ nombre: string; nombreCompleto: string; email: string } | null>(null);
   const ocupado = guardar.isPending;
   // Paso 1: sin personal disponible o con error de carga; Paso 2: persona elegida sin problemas.
   const sinPersonal = !cargandoPersonas && !errorPersonas && personas.length === 0;
@@ -121,8 +121,8 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
       <Dialog open onOpenChange={(o) => { if (!o) cerrarExito(); }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Usuario creado</DialogTitle>
-            <DialogDescription>Comunícale la contraseña temporal por teléfono. Deberá cambiarla en su primer acceso.</DialogDescription>
+            <DialogTitle>Usuario {exito.nombreCompleto} creado</DialogTitle>
+            <DialogDescription>Comunícale la contraseña temporal (nunca por escrito). Deberá cambiarla en su primer acceso.</DialogDescription>
           </DialogHeader>
           <Textarea aria-label="Mensaje de aviso" value={mensaje} readOnly rows={6} />
           <DialogFooter>
