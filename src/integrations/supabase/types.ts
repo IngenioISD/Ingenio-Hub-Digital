@@ -2818,6 +2818,7 @@ export type Database = {
           actualizado_en: string | null
           cliente_id: string
           creado_en: string | null
+          debe_cambiar_password: boolean
           es_corporativo: boolean | null
           grupo_id: string | null
           id: string
@@ -2836,6 +2837,7 @@ export type Database = {
           actualizado_en?: string | null
           cliente_id: string
           creado_en?: string | null
+          debe_cambiar_password?: boolean
           es_corporativo?: boolean | null
           grupo_id?: string | null
           id?: string
@@ -2854,6 +2856,7 @@ export type Database = {
           actualizado_en?: string | null
           cliente_id?: string
           creado_en?: string | null
+          debe_cambiar_password?: boolean
           es_corporativo?: boolean | null
           grupo_id?: string | null
           id?: string
@@ -3178,6 +3181,7 @@ export type Database = {
       clientes_que_usan_propiedad: { Args: { p_id: string }; Returns: number }
       clientes_que_usan_proveedor: { Args: { p_id: string }; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      email_con_cuenta: { Args: { p_email: string }; Returns: boolean }
       guardar_excepcion_rol: {
         Args: {
           p_modulo: string
@@ -3189,6 +3193,7 @@ export type Database = {
         Returns: undefined
       }
       mi_cliente_id: { Args: never; Returns: string }
+      mi_debe_cambiar_password: { Args: never; Returns: boolean }
       mi_es_admin: { Args: never; Returns: boolean }
       mi_perfil: {
         Args: never
@@ -3224,6 +3229,18 @@ export type Database = {
         Returns: string[]
       }
       personal_puede: { Args: { p_accion: string }; Returns: boolean }
+      personal_sin_usuario: {
+        Args: never
+        Returns: {
+          apellido_1: string
+          apellido_2: string
+          email: string
+          id: string
+          nombre: string
+          puesto_id: string
+          rol_sugerido: string
+        }[]
+      }
       proyecto_de_mi_cliente: {
         Args: { p_proyecto_id: string }
         Returns: boolean
