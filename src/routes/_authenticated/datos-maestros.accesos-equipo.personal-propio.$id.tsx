@@ -34,7 +34,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id")({
-  head: () => ({ meta: [{ title: "Ficha de persona · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Ficha de persona · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Datos personales y laborales de personal propio en Ingenio HUB." },
+    { property: "og:title", content: "Ficha de persona · Datos Maestros · Ingenio HUB" },
+    { property: "og:description", content: "Datos personales y laborales de personal propio en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 

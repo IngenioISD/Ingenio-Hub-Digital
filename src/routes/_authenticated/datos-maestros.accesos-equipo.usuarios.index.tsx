@@ -15,7 +15,14 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/usuarios/")({
-  head: () => ({ meta: [{ title: "Usuarios · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Usuarios · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Listado de usuarios y accesos de tu empresa en Ingenio HUB." },
+    { property: "og:title", content: "Usuarios · Datos Maestros · Ingenio HUB" },
+    { property: "og:description", content: "Listado de usuarios y accesos de tu empresa en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 

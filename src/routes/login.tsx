@@ -18,6 +18,8 @@ export const Route = createFileRoute("/login")({
           "Accede a Ingenio HUB, la plataforma de gestión integral para empresas constructoras.",
       },
       { property: "og:title", content: "Acceder | Ingenio HUB" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         property: "og:description",
         content:
