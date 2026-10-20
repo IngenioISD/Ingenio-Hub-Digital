@@ -43,11 +43,14 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
 
   const rolesInternos = roles.filter((r) => r.tipo_portal === "interno" && r.activo !== false);
 
-  const { data: personas = [], isLoading: cargandoPersonas } = useQuery({
+  const { data: personas = [], isLoading: cargandoPersonas, isError: errorPersonas, refetch: reintentarPersonas } = useQuery({
     queryKey: ["datos-maestros", "usuarios", clienteId, "personal-sin-usuario"],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("personal_sin_usuario", {} as never);
-      if (error) throw error;
+      if (error) {
+        console.error("[NuevoUsuarioDialog] Error al cargar el personal:", error.message);
+        throw error;
+      }
       return ((data ?? []) as Persona[]).sort((a, b) => etiqueta(a).localeCompare(etiqueta(b), "es"));
     },
   });
@@ -98,6 +101,9 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
     onError: (e) => toast.error(e instanceof Error ? e.message : "No se pudo crear el usuario"),
   });
   const ocupado = guardar.isPending;
+  // Paso 1: sin personal disponible o con error de carga; Paso 2: persona elegida sin problemas.
+  const sinPersonal = !cargandoPersonas && !errorPersonas && personas.length === 0;
+  const formVisible = !!persona && !!email && emailExiste === false && !comprobandoEmail;
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o && !ocupado) cerrar(); }}>
