@@ -11,6 +11,7 @@ import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
 import { listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
 import { UsuarioAccesosTabla } from "@/components/datos-maestros/UsuarioAccesosTabla";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equ
 function Page() {
   const { puedeVer, cargando } = usePermisosUsuarios();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Usuarios" />;
   return <Ficha />;
 }
 

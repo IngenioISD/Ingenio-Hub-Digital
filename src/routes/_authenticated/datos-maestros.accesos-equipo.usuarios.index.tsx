@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 import { filaClicableProps } from "@/lib/fila-clicable";
 import { listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
@@ -14,7 +15,14 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/usuarios/")({
-  head: () => ({ meta: [{ title: "Usuarios · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Usuarios · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Listado de usuarios y accesos de tu empresa en Ingenio HUB." },
+    { property: "og:title", content: "Usuarios · Datos Maestros · Ingenio HUB" },
+    { property: "og:description", content: "Listado de usuarios y accesos de tu empresa en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 
@@ -25,7 +33,7 @@ function normalizar(s: string) {
 function Page() {
   const { puedeVer, cargando } = usePermisosUsuarios();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Usuarios" />;
   return <Listado />;
 }
 

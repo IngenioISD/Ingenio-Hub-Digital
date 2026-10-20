@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 import { fechaCorta } from "@/lib/erp/formato";
 import {
   buscarCodigoEmpleado,
@@ -33,7 +34,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/personal-propio/$id")({
-  head: () => ({ meta: [{ title: "Ficha de persona · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Ficha de persona · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Datos personales y laborales de personal propio en Ingenio HUB." },
+    { property: "og:title", content: "Ficha de persona · Datos Maestros · Ingenio HUB" },
+    { property: "og:description", content: "Datos personales y laborales de personal propio en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 
@@ -62,7 +70,7 @@ type Persona = {
 function Page() {
   const { puedeVer, cargando } = usePermisosPersonal();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Personal" />;
   return <Ficha />;
 }
 

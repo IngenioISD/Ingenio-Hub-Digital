@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { NuevaPersonaDialog } from "@/components/datos-maestros/NuevaPersonaDialog";
+import { SinAcceso } from "@/components/layout/SinAcceso";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,7 +19,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/personal-propio/")({
-  head: () => ({ meta: [{ title: "Personal propio · Datos Maestros · Ingenio HUB" }] }),
+  head: () => ({ meta: [
+    { title: "Personal propio · Datos Maestros · Ingenio HUB" },
+    { name: "description", content: "Listado de personal propio de tu empresa en Ingenio HUB." },
+    { property: "og:title", content: "Personal propio · Datos Maestros · Ingenio HUB" },
+    { property: "og:description", content: "Listado de personal propio de tu empresa en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 
@@ -46,7 +54,7 @@ function normalizar(s: string) {
 function Page() {
   const { puedeVer, cargando } = usePermisosPersonal();
   if (cargando) return null;
-  if (!puedeVer) return <p className="py-16 text-center text-muted-foreground">No tienes acceso a esta sección.</p>;
+  if (!puedeVer) return <SinAcceso elemento="Datos Maestros · Personal" />;
   return <Listado />;
 }
 

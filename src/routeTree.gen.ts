@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as SinAccesoRouteImport } from './routes/sin-acceso'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDatosMaestrosRouteImport } from './routes/_authenticated/datos-maestros'
 import { Route as AuthenticatedDatosMaestrosIndexRouteImport } from './routes/_authenticated/datos-maestros.index'
@@ -55,6 +56,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SinAccesoRoute = SinAccesoRouteImport.update({
+  id: '/sin-acceso',
+  path: '/sin-acceso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedConfiguracionRoute =
@@ -243,6 +249,7 @@ const AuthenticatedDigitalAppsActasReunionIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
   '/digital/inicio': typeof AuthenticatedDigitalInicioRoute
@@ -311,6 +319,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/sin-acceso': typeof SinAccesoRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
   '/_authenticated/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/sin-acceso'
     | '/configuracion'
     | '/datos-maestros'
     | '/digital/agentes'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/sin-acceso'
     | '/configuracion'
     | '/digital/agentes'
     | '/digital/inicio'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/sin-acceso'
     | '/_authenticated/configuracion'
     | '/_authenticated/datos-maestros'
     | '/_authenticated/digital/agentes'
@@ -450,6 +462,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SinAccesoRoute: typeof SinAccesoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sin-acceso': {
+      id: '/sin-acceso'
+      path: '/sin-acceso'
+      fullPath: '/sin-acceso'
+      preLoaderRoute: typeof SinAccesoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/configuracion': {
@@ -803,6 +823,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  SinAccesoRoute: SinAccesoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
