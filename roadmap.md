@@ -1,4 +1,6 @@
 # Tareas
+- [ ] Implementar cambio obligatorio de contraseña, comprobaciones de acceso y pruebas.
+- [ ] Verificar el primer acceso con sesión real; pendiente de comprobar disponibilidad.
 - [x] Añadir avisos de acceso por elemento y pantalla de acceso general inactivo.
 - [x] Verificar caché (3 pruebas), compilación y redirección sin sesión a Login, sin errores de página.
 - [ ] Verificar acceso inactivo, acceso activo y cierre de sesión con sesión real: bloqueado por Supabase externo sin sesión gestionada disponible.
