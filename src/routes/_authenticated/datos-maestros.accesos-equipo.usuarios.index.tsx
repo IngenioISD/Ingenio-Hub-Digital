@@ -8,7 +8,8 @@ import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { SinAcceso } from "@/components/layout/SinAcceso";
 import { filaClicableProps } from "@/lib/fila-clicable";
 import { listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
-import { AvisoRolPuesto, BadgeAccesoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
+import { AvisoRolPuesto, EstadoUsuario, OjoAcceso }
+import { NuevoUsuarioDialog } from "@/components/datos-maestros/NuevoUsuarioDialog"; from "@/components/datos-maestros/UsuarioAccesoControles";
 
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -41,7 +42,7 @@ function Listado() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { usuarioCliente } = useAuth();
-  const { puedeEditar } = usePermisosUsuarios();
+  const { puedeEditar, puedeCrear } = usePermisosUsuarios();
   const clienteId = usuarioCliente?.cliente_id;
   const [q, setQ] = useState("");
 
@@ -70,7 +71,10 @@ function Listado() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Usuarios</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold tracking-tight">Usuarios</h1>
+        {puedeCrear && clienteId && <NuevoUsuarioDialog clienteId={clienteId} roles={roles} />}
+      </div>
 
       <div className="relative w-full max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -105,7 +109,7 @@ function Listado() {
                     <AvisoRolPuesto puesto={puestoConRolDistinto(r, cats)} />
                   </span>
                 </TableCell>
-                <TableCell><BadgeAccesoUsuario activo={r.activo} /></TableCell>
+                <TableCell><EstadoUsuario usuario={r} /></TableCell>
                 {puedeEditar && (
                   <TableCell>
                     <OjoAcceso
