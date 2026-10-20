@@ -158,7 +158,34 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
           {formVisible && <>
           <div className="space-y-2">
             <Label htmlFor="nuevo-usuario-rol">Rol</Label>
-            ...
+            <Select value={rol} onValueChange={setRol} disabled={ocupado}>
+              <SelectTrigger id="nuevo-usuario-rol"><SelectValue placeholder="Selecciona un rol" /></SelectTrigger>
+              <SelectContent>{rolesInternos.map((r) => <SelectItem key={r.rol_id} value={r.rol_id}>{r.nombre_visible}</SelectItem>)}</SelectContent>
+            </Select>
+            {rolEsSugerido && <p className="text-xs text-muted-foreground">Rol sugerido según su puesto</p>}
+          </div>
+
+          <div className="space-y-3">
+            <Label>Proyectos</Label>
+            <RadioGroup value={todos ? "todos" : "concretos"} onValueChange={(v) => setTodos(v === "todos")} disabled={ocupado} aria-label="Proyectos del usuario">
+              <div className="flex items-center gap-2"><RadioGroupItem id="nuevo-proyectos-concretos" value="concretos" /><Label htmlFor="nuevo-proyectos-concretos">Proyectos concretos</Label></div>
+              <div className="flex items-start gap-2"><RadioGroupItem id="nuevo-proyectos-todos" value="todos" /><Label htmlFor="nuevo-proyectos-todos">Todos los proyectos (incluidos los que se creen en el futuro)</Label></div>
+            </RadioGroup>
+            {!todos && <SelectorProyectos proyectos={proyectos} cargando={cargandoProy} conError={Boolean(errorProy)} seleccion={seleccion} setSeleccion={setSeleccion} deshabilitado={ocupado} idPrefijo="nuevo-usuario-proyecto" />}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="nuevo-usuario-pass1">Contraseña temporal</Label>
+            <div className="flex gap-2">
+              <Input id="nuevo-usuario-pass1" type={ver ? "text" : "password"} autoComplete="new-password" value={pass1} onChange={(e) => setPass1(e.target.value)} disabled={ocupado} />
+              <Button type="button" variant="outline" size="icon" aria-label={ver ? "Ocultar contraseña" : "Mostrar contraseña"} onClick={() => setVer((v) => !v)} disabled={ocupado}>
+                {ver ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <Label htmlFor="nuevo-usuario-pass2">Repetir contraseña</Label>
+            <Input id="nuevo-usuario-pass2" type={ver ? "text" : "password"} autoComplete="new-password" value={pass2} onChange={(e) => setPass2(e.target.value)} disabled={ocupado} />
+            <p className="text-xs text-muted-foreground">Mínimo 8 caracteres, con letras y números. La persona deberá cambiarla en su primer acceso.</p>
+            {pass1 && !passOk && <p className="text-sm text-destructive">La contraseña debe tener al menos 8 caracteres, con letras y números</p>}
             {pass2 && !coinciden && <p className="text-sm text-destructive">Las contraseñas no coinciden</p>}
           </div>
           </>}
