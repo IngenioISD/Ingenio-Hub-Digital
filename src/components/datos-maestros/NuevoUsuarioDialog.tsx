@@ -164,8 +164,14 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
           </>}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={cerrar} disabled={ocupado}>Cancelar</Button>
-          <Button disabled={!valido || ocupado} onClick={() => guardar.mutate()}>Crear usuario</Button>
+          {sinPersonal ? (
+            <Button onClick={cerrar}>Cerrar</Button>
+          ) : (
+            <>
+              <Button variant="outline" onClick={cerrar} disabled={ocupado}>Cancelar</Button>
+              {formVisible && <Button disabled={!valido || ocupado} onClick={() => guardar.mutate()}>Crear usuario</Button>}
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
