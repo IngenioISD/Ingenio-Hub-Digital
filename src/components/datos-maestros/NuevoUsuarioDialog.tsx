@@ -115,7 +115,12 @@ function Formulario({ clienteId, roles, cerrar }: { clienteId: string; roles: Ro
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Persona</Label>
-            {!cargandoPersonas && personas.length === 0 ? (
+            {errorPersonas ? (
+              <>
+                <p className="text-sm text-destructive">No se pudo cargar el personal. Inténtalo de nuevo.</p>
+                <Button variant="outline" onClick={() => reintentarPersonas()}>Reintentar</Button>
+              </>
+            ) : sinPersonal ? (
               <p className="text-sm text-muted-foreground">No hay personal pendiente de acceso.</p>
             ) : (
               <Popover open={buscadorAbierto} onOpenChange={setBuscadorAbierto}>
