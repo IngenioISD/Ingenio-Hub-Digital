@@ -1,4 +1,5 @@
 export const MSG_PASSWORD = "La contraseña debe tener al menos 8 caracteres, con letras y números";
+export const MSG_PASSWORD_DISTINTA = "La contraseña introducida debe ser igual";
 export const MSG_SIN_EMAIL = "El trabajador elegido no tiene correo electrónico en la ficha de personal, dato obligatorio para realizar el registro";
 export const MSG_EMAIL_EXISTE = "Ese correo electrónico ya tiene un usuario relacionado. Revisa la ficha de personal de este trabajador para modificarlo";
 
