@@ -8,8 +8,8 @@ import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { SinAcceso } from "@/components/layout/SinAcceso";
 import { filaClicableProps } from "@/lib/fila-clicable";
 import { listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
-import { AvisoRolPuesto, EstadoUsuario, OjoAcceso }
-import { NuevoUsuarioDialog } from "@/components/datos-maestros/NuevoUsuarioDialog"; from "@/components/datos-maestros/UsuarioAccesoControles";
+import { AvisoRolPuesto, EstadoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
+import { NuevoUsuarioDialog } from "@/components/datos-maestros/NuevoUsuarioDialog";
 
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
