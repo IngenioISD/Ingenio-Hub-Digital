@@ -6,6 +6,14 @@ import { AppShell } from "@/components/layout/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/configuracion")({
+  head: () => ({ meta: [
+    { title: "Configuración · Ingenio HUB" },
+    { name: "description", content: "Configuración de tu cuenta en Ingenio HUB." },
+    { property: "og:title", content: "Configuración · Ingenio HUB" },
+    { property: "og:description", content: "Configuración de tu cuenta en Ingenio HUB." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Page,
 });
 
