@@ -1,4 +1,6 @@
 # Tareas
+- [ ] Añadir recuperación y restablecimiento de contraseña, conectar el enlace de Login y comprobar reglas y pantallas públicas.
+- [ ] Verificar correo y restablecimiento con una sesión real de recuperación: bloqueado por Supabase externo sin sesión gestionada disponible.
 - [x] Implementar cambio obligatorio de contraseña, comprobaciones de acceso y pruebas (10 correctas); sin sesión redirige a Login y sin errores de página.
 - [ ] Verificar el primer acceso con sesión real: bloqueado por Supabase externo sin sesión gestionada disponible.
 - [x] Añadir avisos de acceso por elemento y pantalla de acceso general inactivo.
