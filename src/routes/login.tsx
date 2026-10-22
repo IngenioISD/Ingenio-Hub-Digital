@@ -57,7 +57,14 @@ function LoginPage() {
     });
 
     if (authError || !data.session) {
-      setError("Credenciales incorrectas. Revisa tu correo y contraseña e inténtalo de nuevo.");
+      const accesoNoActivo =
+        authError?.status === 403 ||
+        (authError?.message ?? "").toLowerCase().includes("acceso no está activo");
+      setError(
+        accesoNoActivo
+          ? "Sin permiso para acceder"
+          : "Credenciales incorrectas. Revisa tu correo y contraseña e inténtalo de nuevo."
+      );
       setCargando(false);
       return;
     }
