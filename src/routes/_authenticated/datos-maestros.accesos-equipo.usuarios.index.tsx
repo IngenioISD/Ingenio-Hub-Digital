@@ -13,6 +13,8 @@ import { NuevoUsuarioDialog } from "@/components/datos-maestros/NuevoUsuarioDial
 
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/datos-maestros/accesos-equipo/usuarios/")({
@@ -45,6 +47,7 @@ function Listado() {
   const { puedeEditar, puedeCrear } = usePermisosUsuarios();
   const clienteId = usuarioCliente?.cliente_id;
   const [q, setQ] = useState("");
+  const [mostrarBajas, setMostrarBajas] = useState(false);
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["datos-maestros", "usuarios", clienteId],
@@ -64,7 +67,9 @@ function Listado() {
   const nombreRol = (id: string) => roles.find((r) => r.rol_id === id)?.nombre_visible ?? id;
 
   const term = normalizar(q);
-  const filtradas = data
+  // Apagado: se ocultan los bloqueados por su estado en Personal (etiqueta roja "Sin acceso").
+  const visibles = mostrarBajas ? data : data.filter((r) => r.activo || r.accesoDesactivado);
+  const filtradas = visibles
     .filter((r) => !term || normalizar(`${r.nombreCompleto} ${r.email}`).includes(term))
     .sort((a, b) => a.apellido1.localeCompare(b.apellido1, "es") || a.nombre.localeCompare(b.nombre, "es"));
   const cols = puedeEditar ? 5 : 4;
