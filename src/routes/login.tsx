@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
@@ -202,12 +202,12 @@ function LoginPage() {
           </form>
 
           <div className="mt-4 text-center">
-            <a
-              href="#"
+            <Link
+              to="/recuperar-contrasena"
               style={{ color: "var(--text-muted)", fontSize: "var(--text-sm)" }}
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
 
           <p
