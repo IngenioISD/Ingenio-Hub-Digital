@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as CambiarContrasenaRouteImport } from './routes/cambiar-contrasena'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as RecuperarContrasenaRouteImport } from './routes/recuperar-contrasena'
+import { Route as RestablecerContrasenaRouteImport } from './routes/restablecer-contrasena'
 import { Route as SinAccesoRouteImport } from './routes/sin-acceso'
 import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedDatosMaestrosRouteImport } from './routes/_authenticated/datos-maestros'
@@ -62,6 +64,16 @@ const CambiarContrasenaRoute = CambiarContrasenaRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecuperarContrasenaRoute = RecuperarContrasenaRouteImport.update({
+  id: '/recuperar-contrasena',
+  path: '/recuperar-contrasena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestablecerContrasenaRoute = RestablecerContrasenaRouteImport.update({
+  id: '/restablecer-contrasena',
+  path: '/restablecer-contrasena',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SinAccesoRoute = SinAccesoRouteImport.update({
@@ -256,6 +268,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
+  '/recuperar-contrasena': typeof RecuperarContrasenaRoute
+  '/restablecer-contrasena': typeof RestablecerContrasenaRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
@@ -292,6 +306,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
+  '/recuperar-contrasena': typeof RecuperarContrasenaRoute
+  '/restablecer-contrasena': typeof RestablecerContrasenaRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/digital/agentes': typeof AuthenticatedDigitalAgentesRoute
@@ -328,6 +344,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/cambiar-contrasena': typeof CambiarContrasenaRoute
   '/login': typeof LoginRoute
+  '/recuperar-contrasena': typeof RecuperarContrasenaRoute
+  '/restablecer-contrasena': typeof RestablecerContrasenaRoute
   '/sin-acceso': typeof SinAccesoRoute
   '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/datos-maestros': typeof AuthenticatedDatosMaestrosRouteWithChildren
@@ -366,6 +384,8 @@ export interface FileRouteTypes {
     | '/'
     | '/cambiar-contrasena'
     | '/login'
+    | '/recuperar-contrasena'
+    | '/restablecer-contrasena'
     | '/sin-acceso'
     | '/configuracion'
     | '/datos-maestros'
@@ -402,6 +422,8 @@ export interface FileRouteTypes {
     | '/'
     | '/cambiar-contrasena'
     | '/login'
+    | '/recuperar-contrasena'
+    | '/restablecer-contrasena'
     | '/sin-acceso'
     | '/configuracion'
     | '/digital/agentes'
@@ -437,6 +459,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/cambiar-contrasena'
     | '/login'
+    | '/recuperar-contrasena'
+    | '/restablecer-contrasena'
     | '/sin-acceso'
     | '/_authenticated/configuracion'
     | '/_authenticated/datos-maestros'
@@ -475,6 +499,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CambiarContrasenaRoute: typeof CambiarContrasenaRoute
   LoginRoute: typeof LoginRoute
+  RecuperarContrasenaRoute: typeof RecuperarContrasenaRoute
+  RestablecerContrasenaRoute: typeof RestablecerContrasenaRoute
   SinAccesoRoute: typeof SinAccesoRoute
 }
 
@@ -506,6 +532,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recuperar-contrasena': {
+      id: '/recuperar-contrasena'
+      path: '/recuperar-contrasena'
+      fullPath: '/recuperar-contrasena'
+      preLoaderRoute: typeof RecuperarContrasenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restablecer-contrasena': {
+      id: '/restablecer-contrasena'
+      path: '/restablecer-contrasena'
+      fullPath: '/restablecer-contrasena'
+      preLoaderRoute: typeof RestablecerContrasenaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sin-acceso': {
@@ -844,6 +884,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CambiarContrasenaRoute: CambiarContrasenaRoute,
   LoginRoute: LoginRoute,
+  RecuperarContrasenaRoute: RecuperarContrasenaRoute,
+  RestablecerContrasenaRoute: RestablecerContrasenaRoute,
   SinAccesoRoute: SinAccesoRoute,
 }
 export const routeTree = rootRouteImport
