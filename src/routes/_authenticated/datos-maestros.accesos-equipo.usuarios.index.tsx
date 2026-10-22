@@ -101,15 +101,15 @@ function Listado() {
                 key={r.id}
                 {...filaClicableProps(() => void navigate({ to: "/datos-maestros/accesos-equipo/usuarios/$id", params: { id: r.id } }))}
               >
-                <TableCell className="font-medium">{r.nombreCompleto}</TableCell>
-                <TableCell>{r.email}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium" style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>{r.nombreCompleto}</TableCell>
+                <TableCell style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>{r.email}</TableCell>
+                <TableCell style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>
                   <span className="inline-flex items-center gap-2">
                     {nombreRol(r.rolId)}
                     <AvisoRolPuesto puesto={puestoConRolDistinto(r, cats)} />
                   </span>
                 </TableCell>
-                <TableCell><EstadoUsuario usuario={r} /></TableCell>
+                <TableCell><EstadoUsuario usuario={r} motivo={r.estadoId ? cats.get(r.estadoId)?.nombre : undefined} /></TableCell>
                 {puedeEditar && (
                   <TableCell>
                     <OjoAcceso

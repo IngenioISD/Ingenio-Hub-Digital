@@ -15,8 +15,16 @@ export function BadgeAccesoUsuario({ activo }: { activo: boolean }) {
   return <span className={activo ? "badge badge-success" : "badge badge-error"}>{activo ? "Activo" : "Sin acceso"}</span>;
 }
 
-/** Badge de estado; si el usuario activo no ha cambiado aún su contraseña, «Primer acceso pendiente». */
-export function EstadoUsuario({ usuario }: { usuario: UsuarioFila }) {
+/** Badge de estado: Deshabilitado > Sin acceso (con motivo opcional) > Primer acceso pendiente / Activo. */
+export function EstadoUsuario({ usuario, motivo }: { usuario: UsuarioFila; motivo?: string }) {
+  if (usuario.accesoDesactivado) return <span className="badge badge-neutral">Deshabilitado</span>;
+  if (!usuario.activo) {
+    if (!motivo) return <BadgeAccesoUsuario activo={false} />;
+    return <span className="inline-flex flex-col items-start gap-0.5">
+      <BadgeAccesoUsuario activo={false} />
+      <span className="text-xs text-muted-foreground">{motivo}</span>
+    </span>;
+  }
   if (usuario.debeCambiarPassword && usuario.activo) {
     return <span className="inline-flex flex-col items-start gap-0.5">
       <span className="badge badge-info">Primer acceso pendiente</span>
