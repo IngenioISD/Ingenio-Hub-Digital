@@ -62,7 +62,7 @@ function LoginPage() {
         (authError?.message ?? "").toLowerCase().includes("acceso no está activo");
       setError(
         accesoNoActivo
-          ? "Sin permiso para acceder"
+          ? "No tienes permiso de acceso.\nSi crees que hay un error contacta con tu empresa"
           : "Credenciales incorrectas. Revisa tu correo y contraseña e inténtalo de nuevo."
       );
       setCargando(false);
