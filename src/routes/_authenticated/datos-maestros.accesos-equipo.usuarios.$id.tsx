@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { usePermisosPersonal } from "@/hooks/use-permisos-personal";
-import { listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
+import { bloqueadoPorPersonal, listarCatalogos, listarRoles, obtenerUsuario, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, EstadoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
 import { UsuarioAccesosTabla } from "@/components/datos-maestros/UsuarioAccesosTabla";
 import { SinAcceso } from "@/components/layout/SinAcceso";
@@ -109,12 +109,13 @@ function Ficha() {
   const nombreRol = roles.find((r) => r.rol_id === u.rolId)?.nombre_visible ?? u.rolId;
   const puesto = u.puestoId ? cats.get(u.puestoId)?.nombre ?? null : null;
   const estadoFicha = u.estadoId ? cats.get(u.estadoId)?.nombre ?? "" : "";
+  const bloqueado = bloqueadoPorPersonal(u, cats);
   const motivo = u.activo
     ? null
-    : u.accesoDesactivado
-      ? "Acceso desactivado manualmente"
-      : !u.fichaActiva
-        ? `Sin acceso por el estado en la ficha: ${estadoFicha}`
+    : bloqueado
+      ? `Sin acceso por el estado en la ficha: ${estadoFicha}`
+      : u.accesoDesactivado
+        ? "Acceso desactivado manualmente"
         : null;
 
   const guardarRol = async () => {
@@ -140,8 +141,8 @@ function Ficha() {
 
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold tracking-tight">{u.nombreCompleto}</h1>
-        <EstadoUsuario usuario={u} />
-        {puedeEditar && <OjoAcceso usuario={u} esPropio={esPropio} onCambiado={refrescar} />}
+        <EstadoUsuario usuario={u} motivo={u.estadoId ? cats.get(u.estadoId)?.nombre : undefined} bloqueadoPersonal={bloqueado} />
+        {puedeEditar && <OjoAcceso usuario={u} esPropio={esPropio} bloqueadoPersonal={bloqueado} onCambiado={refrescar} />}
       </div>
       {motivo && <p className="text-sm text-muted-foreground">{motivo}</p>}
 
