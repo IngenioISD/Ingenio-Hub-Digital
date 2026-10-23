@@ -115,7 +115,7 @@ function Ficha() {
     : bloqueado
       ? `Sin acceso por el estado en la ficha: ${estadoFicha}`
       : u.accesoDesactivado
-        ? "Acceso desactivado manualmente"
+        ? "Acceso deshabilitado manualmente"
         : null;
 
   const guardarRol = async () => {
