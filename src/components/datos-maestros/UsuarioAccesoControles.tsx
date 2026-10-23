@@ -61,12 +61,21 @@ export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: 
   const [guardando, setGuardando] = useState(false);
   const desactivado = usuario.accesoDesactivado;
 
+  // Texto del ojo: tu propia fila manda; luego el bloqueo por Personal; luego deshabilitado / habilitable.
+  const textoOjo = esPropio
+    ? "No puedes desactivar tu propio acceso"
+    : bloqueadoPersonal
+      ? "Deshabilitado en ficha de personal"
+      : desactivado
+        ? "Usuario deshabilitado"
+        : "Deshabilitar usuario";
+
   const boton = (
     <Button
       variant="ghost"
       size="icon"
       disabled={esPropio || bloqueadoPersonal}
-      aria-label={desactivado ? "Reactivar acceso" : "Desactivar acceso"}
+      aria-label={textoOjo}
       onClick={(e) => { e.stopPropagation(); setAbierto(true); }}
       onKeyDown={(e) => e.stopPropagation()}
     >
@@ -95,25 +104,25 @@ export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: 
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild><span tabIndex={0}>{boton}</span></TooltipTrigger>
-            <TooltipContent>Su acceso depende de su estado en Personal</TooltipContent>
+            <TooltipContent>{textoOjo}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ) : (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>{boton}</TooltipTrigger>
-            <TooltipContent>Desactivación de usuario</TooltipContent>
+            <TooltipContent>{textoOjo}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
       <AlertDialog open={abierto} onOpenChange={setAbierto}>
         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
-            <AlertDialogTitle>{desactivado ? "Reactivar acceso" : "Desactivar acceso"}</AlertDialogTitle>
+            <AlertDialogTitle>{desactivado ? "Habilitar acceso" : "Deshabilitar acceso"}</AlertDialogTitle>
             <AlertDialogDescription>
               {desactivado
-                ? `¿Reactivar el acceso de ${usuario.nombreCompleto}?`
-                : `¿Desactivar el acceso de ${usuario.nombreCompleto}?`}
+                ? `¿Habilitar el acceso de ${usuario.nombreCompleto}?`
+                : `¿Deshabilitar el acceso de ${usuario.nombreCompleto}?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -124,7 +133,7 @@ export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: 
                 setGuardando(true);
                 try {
                   await cambiarAccesoDesactivado(usuario.id, !desactivado);
-                  toast.success(desactivado ? "Acceso reactivado" : "Acceso desactivado");
+                  toast.success(desactivado ? "Acceso habilitado" : "Acceso deshabilitado");
                   onCambiado();
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : "No se pudo guardar");
@@ -133,7 +142,7 @@ export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: 
                 }
               }}
             >
-              {desactivado ? "Reactivar" : "Desactivar"}
+              {desactivado ? "Habilitar" : "Deshabilitar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
