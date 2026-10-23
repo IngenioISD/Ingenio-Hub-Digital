@@ -19,7 +19,7 @@ export type UsuarioFila = {
   creadoEn: string | null;
 };
 
-export type CatalogoFila = { id: string; tipo: string; nombre: string; rol_id: string | null };
+export type CatalogoFila = { id: string; tipo: string; nombre: string; rol_id: string | null; cuenta_como_activo: boolean | null };
 export type RolFila = { rol_id: string; nombre_visible: string; tipo_portal: string; activo: boolean | null };
 
 type Raw = {
@@ -65,7 +65,7 @@ export async function obtenerUsuario(clienteId: string, id: string): Promise<Usu
 
 export async function listarCatalogos(clienteId: string): Promise<Map<string, CatalogoFila>> {
   const { data, error } = await (supabase.from("cliente_catalogos") as any)
-    .select("id, tipo, nombre, rol_id").eq("cliente_id", clienteId);
+    .select("id, tipo, nombre, rol_id, cuenta_como_activo").eq("cliente_id", clienteId);
   if (error) throw error;
   return new Map(((data ?? []) as CatalogoFila[]).map((c) => [c.id, c]));
 }
@@ -80,6 +80,14 @@ export async function listarRoles(clienteId: string): Promise<RolFila[]> {
 export async function cambiarAccesoDesactivado(id: string, valor: boolean) {
   const { error } = await supabase.from("usuarios_cliente").update({ acceso_desactivado: valor }).eq("id", id);
   if (error) throw error;
+}
+
+/** True si Personal bloquea el acceso: ficha inactiva o estado que no cuenta como activo. */
+export function bloqueadoPorPersonal(u: UsuarioFila, cats: Map<string, CatalogoFila>): boolean {
+  if (!u.fichaActiva) return true;
+  if (!u.estadoId) return false;
+  const estado = cats.get(u.estadoId);
+  return estado ? estado.cuenta_como_activo === false : false;
 }
 
 /** Devuelve el nombre del puesto si su rol equivalente difiere del rol del usuario. */

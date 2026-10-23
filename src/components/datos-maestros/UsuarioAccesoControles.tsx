@@ -15,8 +15,14 @@ export function BadgeAccesoUsuario({ activo }: { activo: boolean }) {
   return <span className={activo ? "badge badge-success" : "badge badge-error"}>{activo ? "Activo" : "Sin acceso"}</span>;
 }
 
-/** Badge de estado: Deshabilitado > Sin acceso (con motivo opcional) > Primer acceso pendiente / Activo. */
-export function EstadoUsuario({ usuario, motivo }: { usuario: UsuarioFila; motivo?: string }) {
+/** Badge de estado: Sin acceso por Personal > Deshabilitado > Sin acceso > Primer acceso pendiente / Activo. */
+export function EstadoUsuario({ usuario, motivo, bloqueadoPersonal }: { usuario: UsuarioFila; motivo?: string; bloqueadoPersonal?: boolean }) {
+  if (bloqueadoPersonal) {
+    return <span className="inline-flex flex-col items-start gap-0.5">
+      <BadgeAccesoUsuario activo={false} />
+      {motivo && <span className="text-xs text-muted-foreground">{motivo}</span>}
+    </span>;
+  }
   if (usuario.accesoDesactivado) return <span className="badge badge-neutral">Deshabilitado</span>;
   if (!usuario.activo) {
     if (!motivo) return <BadgeAccesoUsuario activo={false} />;
@@ -50,7 +56,7 @@ export function AvisoRolPuesto({ puesto }: { puesto: string | null }) {
   );
 }
 
-export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioFila; esPropio: boolean; onCambiado: () => void }) {
+export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: { usuario: UsuarioFila; esPropio: boolean; bloqueadoPersonal?: boolean; onCambiado: () => void }) {
   const [abierto, setAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const desactivado = usuario.accesoDesactivado;
@@ -59,7 +65,7 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
     <Button
       variant="ghost"
       size="icon"
-      disabled={esPropio}
+      disabled={esPropio || bloqueadoPersonal}
       aria-label={desactivado ? "Reactivar acceso" : "Desactivar acceso"}
       onClick={(e) => { e.stopPropagation(); setAbierto(true); }}
       onKeyDown={(e) => e.stopPropagation()}
@@ -83,6 +89,13 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
             >
               No puedes desactivar tu propio acceso
             </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : bloqueadoPersonal ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild><span tabIndex={0}>{boton}</span></TooltipTrigger>
+            <TooltipContent>Su acceso depende de su estado en Personal</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ) : (
