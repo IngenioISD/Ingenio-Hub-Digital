@@ -56,7 +56,7 @@ export function AvisoRolPuesto({ puesto }: { puesto: string | null }) {
   );
 }
 
-export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioFila; esPropio: boolean; onCambiado: () => void }) {
+export function OjoAcceso({ usuario, esPropio, bloqueadoPersonal, onCambiado }: { usuario: UsuarioFila; esPropio: boolean; bloqueadoPersonal?: boolean; onCambiado: () => void }) {
   const [abierto, setAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const desactivado = usuario.accesoDesactivado;
@@ -65,7 +65,7 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
     <Button
       variant="ghost"
       size="icon"
-      disabled={esPropio}
+      disabled={esPropio || bloqueadoPersonal}
       aria-label={desactivado ? "Reactivar acceso" : "Desactivar acceso"}
       onClick={(e) => { e.stopPropagation(); setAbierto(true); }}
       onKeyDown={(e) => e.stopPropagation()}
@@ -89,6 +89,13 @@ export function OjoAcceso({ usuario, esPropio, onCambiado }: { usuario: UsuarioF
             >
               No puedes desactivar tu propio acceso
             </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : bloqueadoPersonal ? (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild><span tabIndex={0}>{boton}</span></TooltipTrigger>
+            <TooltipContent>Su acceso depende de su estado en Personal</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ) : (
