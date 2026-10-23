@@ -25,9 +25,8 @@ export const cambiarContrasenaInicial = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error: ePassword } = await supabaseAdmin.auth.admin.updateUserById(context.userId, { password: data.password });
     if (ePassword) return { ok: false, error: "No se pudo actualizar la contraseña. Inténtalo de nuevo." };
-    const { data: filas, error: eMarca } = await supabaseAdmin.from("usuarios_cliente")
-      .update({ debe_cambiar_password: false } as never).eq("user_id", context.userId).select("id");
-    if (eMarca || !filas?.length) return { ok: false, error: "No se pudo completar el cambio. Inténtalo de nuevo." };
+    const { data: marcada, error: eMarca } = await supabaseAdmin.rpc("marcar_password_cambiada", { p_user_id: context.userId } as never);
+    if (eMarca || marcada !== true) return { ok: false, error: "No se pudo completar el cambio. Inténtalo de nuevo." };
     return { ok: true };
   });
 
@@ -86,27 +85,19 @@ export const crearUsuario = createServerFn({ method: "POST" })
     }
     const userId = creada.user.id;
 
-    // h, i) filas; j) deshacer si falla
-    let usuarioClienteId: string | null = null;
-    try {
-      const { data: uc, error: eUc } = await supabaseAdmin.from("usuarios_cliente").insert({
-        user_id: userId, cliente_id: clienteId as string, personal_id: data.personalId,
-        rol_id: data.rolId, acceso_total_proyectos: data.accesoTotalProyectos, debe_cambiar_password: true,
-      } as never).select("id").single();
-      if (eUc || !uc) throw new Error("No se pudo registrar el usuario en la empresa");
-      usuarioClienteId = (uc as { id: string }).id;
-      if (proyectoIds.length) {
-        const { error: eUp } = await supabaseAdmin.from("usuario_proyectos").insert(
-          proyectoIds.map((proyecto_id) => ({ user_id: userId, cliente_id: clienteId as string, proyecto_id, activo: true })) as never,
-        );
-        if (eUp) throw new Error("No se pudieron asignar los proyectos");
-      }
-    } catch (e) {
-      await supabaseAdmin.from("usuario_proyectos").delete().eq("user_id", userId);
-      if (usuarioClienteId) await supabaseAdmin.from("usuarios_cliente").delete().eq("id", usuarioClienteId);
-      else await supabaseAdmin.from("usuarios_cliente").delete().eq("user_id", userId);
+    // h, i) registro atómico; j) deshacer la cuenta si falla
+    const { error: eAlta } = await supabaseAdmin.rpc("alta_usuario_registrada", {
+      p_actor: context.userId,
+      p_user_id: userId,
+      p_cliente_id: clienteId,
+      p_personal_id: data.personalId,
+      p_rol_id: data.rolId,
+      p_acceso_total: data.accesoTotalProyectos,
+      p_proyectos: proyectoIds,
+    } as never);
+    if (eAlta) {
       await supabaseAdmin.auth.admin.deleteUser(userId);
-      return fallo(e instanceof Error ? e.message : "No se pudo crear el usuario");
+      return fallo("No se pudo crear el usuario");
     }
 
     return { ok: true };
