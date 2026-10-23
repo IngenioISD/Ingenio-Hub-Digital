@@ -15,8 +15,14 @@ export function BadgeAccesoUsuario({ activo }: { activo: boolean }) {
   return <span className={activo ? "badge badge-success" : "badge badge-error"}>{activo ? "Activo" : "Sin acceso"}</span>;
 }
 
-/** Badge de estado: Deshabilitado > Sin acceso (con motivo opcional) > Primer acceso pendiente / Activo. */
-export function EstadoUsuario({ usuario, motivo }: { usuario: UsuarioFila; motivo?: string }) {
+/** Badge de estado: Sin acceso por Personal > Deshabilitado > Sin acceso > Primer acceso pendiente / Activo. */
+export function EstadoUsuario({ usuario, motivo, bloqueadoPersonal }: { usuario: UsuarioFila; motivo?: string; bloqueadoPersonal?: boolean }) {
+  if (bloqueadoPersonal) {
+    return <span className="inline-flex flex-col items-start gap-0.5">
+      <BadgeAccesoUsuario activo={false} />
+      {motivo && <span className="text-xs text-muted-foreground">{motivo}</span>}
+    </span>;
+  }
   if (usuario.accesoDesactivado) return <span className="badge badge-neutral">Deshabilitado</span>;
   if (!usuario.activo) {
     if (!motivo) return <BadgeAccesoUsuario activo={false} />;
