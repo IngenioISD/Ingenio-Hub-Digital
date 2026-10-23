@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePermisosUsuarios } from "@/hooks/use-permisos-usuarios";
 import { SinAcceso } from "@/components/layout/SinAcceso";
 import { filaClicableProps } from "@/lib/fila-clicable";
-import { listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
+import { bloqueadoPorPersonal, listarCatalogos, listarRoles, listarUsuarios, puestoConRolDistinto } from "@/lib/datos-maestros/usuarios";
 import { AvisoRolPuesto, EstadoUsuario, OjoAcceso } from "@/components/datos-maestros/UsuarioAccesoControles";
 import { NuevoUsuarioDialog } from "@/components/datos-maestros/NuevoUsuarioDialog";
 
@@ -67,8 +67,8 @@ function Listado() {
   const nombreRol = (id: string) => roles.find((r) => r.rol_id === id)?.nombre_visible ?? id;
 
   const term = normalizar(q);
-  // Apagado: se ocultan los bloqueados por su estado en Personal (etiqueta roja "Sin acceso").
-  const visibles = mostrarBajas ? data : data.filter((r) => r.activo || r.accesoDesactivado);
+  // Apagado: se ocultan los bloqueados por su estado en Personal (aunque también estén deshabilitados a mano).
+  const visibles = mostrarBajas ? data : data.filter((r) => !bloqueadoPorPersonal(r, cats));
   const filtradas = visibles
     .filter((r) => !term || normalizar(`${r.nombreCompleto} ${r.email}`).includes(term))
     .sort((a, b) => a.apellido1.localeCompare(b.apellido1, "es") || a.nombre.localeCompare(b.nombre, "es"));
@@ -107,31 +107,36 @@ function Listado() {
             {isLoading && <TableRow><TableCell colSpan={cols} className="text-center text-muted-foreground">Cargando…</TableCell></TableRow>}
             {!isLoading && data.length === 0 && <TableRow><TableCell colSpan={cols} className="text-center text-muted-foreground">Todavía no hay usuarios.</TableCell></TableRow>}
             {!isLoading && data.length > 0 && filtradas.length === 0 && <TableRow><TableCell colSpan={cols} className="text-center text-muted-foreground">Sin resultados</TableCell></TableRow>}
-            {filtradas.map((r) => (
+            {filtradas.map((r) => {
+              const bloqueado = bloqueadoPorPersonal(r, cats);
+              const atenuado = bloqueado || r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined;
+              return (
               <TableRow
                 key={r.id}
                 {...filaClicableProps(() => void navigate({ to: "/datos-maestros/accesos-equipo/usuarios/$id", params: { id: r.id } }))}
               >
-                <TableCell className="font-medium" style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>{r.nombreCompleto}</TableCell>
-                <TableCell style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>{r.email}</TableCell>
-                <TableCell style={r.accesoDesactivado ? { color: "var(--text-muted)" } : undefined}>
+                <TableCell className="font-medium" style={atenuado}>{r.nombreCompleto}</TableCell>
+                <TableCell style={atenuado}>{r.email}</TableCell>
+                <TableCell style={atenuado}>
                   <span className="inline-flex items-center gap-2">
                     {nombreRol(r.rolId)}
                     <AvisoRolPuesto puesto={puestoConRolDistinto(r, cats)} />
                   </span>
                 </TableCell>
-                <TableCell><EstadoUsuario usuario={r} motivo={r.estadoId ? cats.get(r.estadoId)?.nombre : undefined} /></TableCell>
+                <TableCell><EstadoUsuario usuario={r} motivo={r.estadoId ? cats.get(r.estadoId)?.nombre : undefined} bloqueadoPersonal={bloqueado} /></TableCell>
                 {puedeEditar && (
                   <TableCell>
                     <OjoAcceso
                       usuario={r}
                       esPropio={r.userId === usuarioCliente?.user_id}
+                      bloqueadoPersonal={bloqueado}
                       onCambiado={() => void qc.invalidateQueries({ queryKey: ["datos-maestros", "usuarios"] })}
                     />
                   </TableCell>
                 )}
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
