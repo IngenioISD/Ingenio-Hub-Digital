@@ -1,40 +1,41 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
 import { esEstadoProtegido, motivoNoBorrar, nombreDuplicado } from "./catalogos-reglas";
 
 const ops = [{ id: "1", nombre: "Administración" }, { id: "2", nombre: "Obra" }];
 
 describe("nombreDuplicado", () => {
   it("detecta duplicado sin distinguir mayúsculas, tildes ni espacios", () => {
-    expect(nombreDuplicado("  ADMINISTRACION ", ops)).toBe(true);
+    assert.equal(nombreDuplicado("  ADMINISTRACION ", ops), true);
   });
   it("no cuenta la propia fila al editar", () => {
-    expect(nombreDuplicado("administración", ops, "1")).toBe(false);
+    assert.equal(nombreDuplicado("administración", ops, "1"), false);
   });
   it("acepta un nombre nuevo", () => {
-    expect(nombreDuplicado("Compras", ops)).toBe(false);
+    assert.equal(nombreDuplicado("Compras", ops), false);
   });
 });
 
 describe("esEstadoProtegido", () => {
   it("alta y baja_empresa son protegidos en estados", () => {
-    expect(esEstadoProtegido("estado_personal", "alta")).toBe(true);
-    expect(esEstadoProtegido("estado_personal", "baja_empresa")).toBe(true);
+    assert.equal(esEstadoProtegido("estado_personal", "alta"), true);
+    assert.equal(esEstadoProtegido("estado_personal", "baja_empresa"), true);
   });
   it("otros códigos o tipos no", () => {
-    expect(esEstadoProtegido("estado_personal", "excedencia")).toBe(false);
-    expect(esEstadoProtegido("puesto", "alta")).toBe(false);
-    expect(esEstadoProtegido("estado_personal", null)).toBe(false);
+    assert.equal(esEstadoProtegido("estado_personal", "excedencia"), false);
+    assert.equal(esEstadoProtegido("puesto", "alta"), false);
+    assert.equal(esEstadoProtegido("estado_personal", null), false);
   });
 });
 
 describe("motivoNoBorrar", () => {
   it("bloquea si está en uso", () => {
-    expect(motivoNoBorrar("departamento", null, 3)).toBe("En uso por 3 personas. Puedes desactivarla.");
+    assert.equal(motivoNoBorrar("departamento", null, 3), "En uso por 3 personas. Puedes desactivarla.");
   });
   it("permite borrar si nadie la usa", () => {
-    expect(motivoNoBorrar("departamento", null, 0)).toBeNull();
+    assert.equal(motivoNoBorrar("departamento", null, 0), null);
   });
   it("bloquea estados protegidos aunque no se usen", () => {
-    expect(motivoNoBorrar("estado_personal", "alta", 0)).not.toBeNull();
+    assert.notEqual(motivoNoBorrar("estado_personal", "alta", 0), null);
   });
 });

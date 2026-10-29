@@ -358,14 +358,14 @@ function DialogoOpcion({
     setGuardando(true);
     const limpio = nombre.trim();
     const extra: Record<string, unknown> = {};
-    if (esPuesto) extra.rol_id = rol === SIN_ROL ? null : rol;
-    if (esEstado && !protegido) extra.cuenta_como_activo = acceso === "si";
+    if (esPuesto) extra["rol_id"] = rol === SIN_ROL ? null : rol;
+    if (esEstado && !protegido) extra["cuenta_como_activo"] = acceso === "si";
     const { error: e } = fila
       ? await supabase.from("cliente_catalogos").update({ nombre: limpio, ...extra } as never).eq("id", fila.id)
       : await supabase.from("cliente_catalogos").insert({
           cliente_id: clienteId, tipo, codigo: null, orden: 0, activo: true, nombre: limpio,
           ...(esEstado ? { cuenta_como_activo: acceso === "si" } : {}),
-          ...(esPuesto ? { rol_id: extra.rol_id } : {}),
+          ...(esPuesto ? { rol_id: extra["rol_id"] } : {}),
         } as never);
     setGuardando(false);
     if (e) {
