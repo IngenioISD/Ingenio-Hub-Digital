@@ -24,7 +24,7 @@ export function esEstadoProtegido(tipo: string, codigo: string | null | undefine
 /** Motivo por el que no se puede borrar, o null si se puede. */
 export function motivoNoBorrar(tipo: string, codigo: string | null | undefined, enUso: number): string | null {
   if (esEstadoProtegido(tipo, codigo)) return "Estado del sistema: no se puede desactivar ni borrar.";
-  if (enUso > 0) return `En uso por ${enUso} ${enUso === 1 ? "persona" : "personas"}. Puedes desactivarla.`;
+  if (enUso > 0) return `En uso por ${enUso} personas. Puedes desactivarla.`;
   return null;
 }
 
