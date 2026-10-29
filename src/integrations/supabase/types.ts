@@ -1465,66 +1465,6 @@ export type Database = {
           },
         ]
       }
-      copia_cliente_catalogos_20261029: {
-        Row: {
-          activo: boolean | null
-          cliente_id: string | null
-          codigo: string | null
-          creado_en: string | null
-          cuenta_como_activo: boolean | null
-          id: string | null
-          nombre: string | null
-          orden: number | null
-          rol_id: string | null
-          tipo: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          cliente_id?: string | null
-          codigo?: string | null
-          creado_en?: string | null
-          cuenta_como_activo?: boolean | null
-          id?: string | null
-          nombre?: string | null
-          orden?: number | null
-          rol_id?: string | null
-          tipo?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          cliente_id?: string | null
-          codigo?: string | null
-          creado_en?: string | null
-          cuenta_como_activo?: boolean | null
-          id?: string | null
-          nombre?: string | null
-          orden?: number | null
-          rol_id?: string | null
-          tipo?: string | null
-        }
-        Relationships: []
-      }
-      copia_personal_20261029: {
-        Row: {
-          cliente_id: string | null
-          id: string | null
-          motivo_baja_id: string | null
-          tipo_contrato_id: string | null
-        }
-        Insert: {
-          cliente_id?: string | null
-          id?: string | null
-          motivo_baja_id?: string | null
-          tipo_contrato_id?: string | null
-        }
-        Update: {
-          cliente_id?: string | null
-          id?: string | null
-          motivo_baja_id?: string | null
-          tipo_contrato_id?: string | null
-        }
-        Relationships: []
-      }
       dashboard_config: {
         Row: {
           alto_filas: number | null
