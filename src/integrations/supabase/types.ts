@@ -727,16 +727,19 @@ export type Database = {
       }
       catalogo_comunidades_autonomas: {
         Row: {
+          codigo_iso: string
           id: string
           nombre: string
           pais_id: string
         }
         Insert: {
+          codigo_iso: string
           id?: string
           nombre: string
           pais_id: string
         }
         Update: {
+          codigo_iso?: string
           id?: string
           nombre?: string
           pais_id?: string
@@ -771,16 +774,19 @@ export type Database = {
       }
       catalogo_provincias: {
         Row: {
+          codigo_iso: string
           comunidad_autonoma_id: string
           id: string
           nombre: string
         }
         Insert: {
+          codigo_iso: string
           comunidad_autonoma_id: string
           id?: string
           nombre: string
         }
         Update: {
+          codigo_iso?: string
           comunidad_autonoma_id?: string
           id?: string
           nombre?: string
@@ -1459,6 +1465,66 @@ export type Database = {
           },
         ]
       }
+      copia_cliente_catalogos_20261029: {
+        Row: {
+          activo: boolean | null
+          cliente_id: string | null
+          codigo: string | null
+          creado_en: string | null
+          cuenta_como_activo: boolean | null
+          id: string | null
+          nombre: string | null
+          orden: number | null
+          rol_id: string | null
+          tipo: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          cliente_id?: string | null
+          codigo?: string | null
+          creado_en?: string | null
+          cuenta_como_activo?: boolean | null
+          id?: string | null
+          nombre?: string | null
+          orden?: number | null
+          rol_id?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          cliente_id?: string | null
+          codigo?: string | null
+          creado_en?: string | null
+          cuenta_como_activo?: boolean | null
+          id?: string | null
+          nombre?: string | null
+          orden?: number | null
+          rol_id?: string | null
+          tipo?: string | null
+        }
+        Relationships: []
+      }
+      copia_personal_20261029: {
+        Row: {
+          cliente_id: string | null
+          id: string | null
+          motivo_baja_id: string | null
+          tipo_contrato_id: string | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          id?: string | null
+          motivo_baja_id?: string | null
+          tipo_contrato_id?: string | null
+        }
+        Update: {
+          cliente_id?: string | null
+          id?: string | null
+          motivo_baja_id?: string | null
+          tipo_contrato_id?: string | null
+        }
+        Relationships: []
+      }
       dashboard_config: {
         Row: {
           alto_filas: number | null
@@ -1901,6 +1967,7 @@ export type Database = {
           fecha_alta: string | null
           fecha_baja: string | null
           id: string
+          motivo_baja_detalle: string | null
           motivo_baja_id: string | null
           nif: string
           nombre: string
@@ -1923,6 +1990,7 @@ export type Database = {
           fecha_alta?: string | null
           fecha_baja?: string | null
           id?: string
+          motivo_baja_detalle?: string | null
           motivo_baja_id?: string | null
           nif: string
           nombre: string
@@ -1945,6 +2013,7 @@ export type Database = {
           fecha_alta?: string | null
           fecha_baja?: string | null
           id?: string
+          motivo_baja_detalle?: string | null
           motivo_baja_id?: string | null
           nif?: string
           nombre?: string
@@ -1983,10 +2052,10 @@ export type Database = {
           },
           {
             foreignKeyName: "personal_motivo_baja_fkey"
-            columns: ["motivo_baja_id", "cliente_id"]
+            columns: ["motivo_baja_id"]
             isOneToOne: false
-            referencedRelation: "cliente_catalogos"
-            referencedColumns: ["id", "cliente_id"]
+            referencedRelation: "catalogo"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "personal_puesto_fkey"
@@ -1997,10 +2066,10 @@ export type Database = {
           },
           {
             foreignKeyName: "personal_tipo_contrato_fkey"
-            columns: ["tipo_contrato_id", "cliente_id"]
+            columns: ["tipo_contrato_id"]
             isOneToOne: false
-            referencedRelation: "cliente_catalogos"
-            referencedColumns: ["id", "cliente_id"]
+            referencedRelation: "catalogo"
+            referencedColumns: ["id"]
           },
         ]
       }
