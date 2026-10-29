@@ -41,12 +41,26 @@ export function useCatalogosPersonal(clienteId?: string) {
     queryKey: ["datos-maestros", "personal-catalogos-full", clienteId],
     enabled: !!clienteId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cliente_catalogos")
-        .select("id, tipo, codigo, nombre, activo")
-        .eq("cliente_id", clienteId!);
-      if (error) throw error;
-      return (data ?? []) as CatalogoPersonal[];
+      const [cli, com] = await Promise.all([
+        supabase
+          .from("cliente_catalogos")
+          .select("id, tipo, codigo, nombre, activo")
+          .eq("cliente_id", clienteId!),
+        supabase
+          .from("catalogo")
+          .select("id, categoria, codigo, etiqueta, activo")
+          .in("categoria", ["tipo_contrato", "motivo_baja"]),
+      ]);
+      if (cli.error) throw cli.error;
+      if (com.error) throw com.error;
+      const comunes: CatalogoPersonal[] = (com.data ?? []).map((r) => ({
+        id: r.id,
+        tipo: r.categoria,
+        codigo: r.codigo,
+        nombre: r.etiqueta,
+        activo: r.activo ?? true,
+      }));
+      return [...((cli.data ?? []) as CatalogoPersonal[]), ...comunes];
     },
   });
 }
