@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -61,6 +62,7 @@ type Persona = {
   centro_trabajo_id: string | null;
   estado_id: string | null;
   motivo_baja_id: string | null;
+  motivo_baja_detalle: string | null;
   codigo_empleado: string | null;
   fecha_alta: string | null;
   fecha_baja: string | null;
@@ -104,7 +106,7 @@ function Ficha() {
       const { data, error } = await supabase
         .from("personal")
         .select(
-          "id, nif, nombre, apellido_1, apellido_2, email, telefono, departamento_id, puesto_id, tipo_contrato_id, centro_trabajo_id, estado_id, motivo_baja_id, codigo_empleado, fecha_alta, fecha_baja, activo",
+          "id, nif, nombre, apellido_1, apellido_2, email, telefono, departamento_id, puesto_id, tipo_contrato_id, centro_trabajo_id, estado_id, motivo_baja_id, motivo_baja_detalle, codigo_empleado, fecha_alta, fecha_baja, activo",
         )
         .eq("id", id)
         .maybeSingle();
@@ -388,6 +390,7 @@ function DatosLaborales({
     estado_id: p.estado_id,
     fecha_baja: p.fecha_baja ?? "",
     motivo_baja_id: p.motivo_baja_id,
+    motivo_baja_detalle: p.motivo_baja_detalle ?? "",
   });
   const [editando, setEditando] = useState(false);
   const [f, setF] = useState(inicial);
@@ -403,6 +406,7 @@ function DatosLaborales({
 
   const codigo = (id: string | null) => catalogos.find((c) => c.id === id)?.codigo ?? null;
   const esBaja = codigo(f.estado_id) === "baja_empresa";
+  const esOtros = esBaja && codigo(f.motivo_baja_id) === "otros";
   const set = <K extends keyof ReturnType<typeof inicial>>(k: K, v: ReturnType<typeof inicial>[K]) =>
     setF((x) => ({ ...x, [k]: v }));
 
@@ -442,6 +446,7 @@ function DatosLaborales({
         estado_id: f.estado_id,
         fecha_baja: esBaja ? f.fecha_baja : null,
         motivo_baja_id: esBaja ? f.motivo_baja_id : null,
+        motivo_baja_detalle: esOtros ? f.motivo_baja_detalle.trim() || null : null,
       })
       .eq("id", p.id);
     setGuardando(false);
@@ -527,6 +532,12 @@ function DatosLaborales({
                   {err("fecha_baja")}
                 </div>
                 {sel("motivo_baja_id", "motivo_baja", "Motivo de baja *", false)}
+                {esOtros && (
+                  <div className="space-y-1">
+                    <Label>Explica el motivo (opcional)</Label>
+                    <Textarea maxLength={500} value={f.motivo_baja_detalle} onChange={(e) => set("motivo_baja_detalle", e.target.value)} />
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -543,6 +554,9 @@ function DatosLaborales({
               <>
                 <Dato label="Fecha de baja">{p.fecha_baja ? fechaCorta(p.fecha_baja) : null}</Dato>
                 <Dato label="Motivo de baja">{nombreCat(catalogos, p.motivo_baja_id)}</Dato>
+                {catalogos.find((c) => c.id === p.motivo_baja_id)?.codigo === "otros" && p.motivo_baja_detalle && (
+                  <Dato label="Detalle del motivo">{p.motivo_baja_detalle}</Dato>
+                )}
               </>
             )}
           </div>
